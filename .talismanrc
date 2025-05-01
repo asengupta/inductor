@@ -1,0 +1,7 @@
+fileignoreconfig:
+- filename: .env.example
+  checksum: 119ae2bfaf87b339c431a761a90ad60e6c40b1153d0f8a3fe6f80bd9b0c87d9e
+- filename: poetry.lock
+  checksum: e9b1c2e454325f276774e8c72f6f803c2781db22599294d774a8bd1183d4e68c
+- filename: README.md
+  checksum: 2a1769de4e0ac203f49b35564833771814b2cb798ddcc460976a7003cd0ca4c9
