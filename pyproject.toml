@@ -16,11 +16,12 @@ dependencies = [
     "uv",
     "langchain-mcp-adapters",
     "langchain-anthropic",
-    "openai"
+    "openai",
+    "mypy"
 ]
 
 [tool.poetry.dependencies]
-python = "^3.11"
+python = "^3.13"
 
 [project.optional-dependencies]
 dev = ["mypy>=1.11.1", "ruff>=0.6.1"]
