@@ -142,10 +142,13 @@ async def run_thing():
     async with make_graph(mcp_client) as graph:
         while True:
             try:
-                user_input = input("What do you want to do? ")
+                user_input:str = input("What do you want to do? ")
                 if user_input.lower() in ["quit", "exit", "q"]:
                     print("Goodbye!")
                     break
+                elif user_input.strip() == "":
+                    print("No input provided. Please try again.")
+                    continue
                 await update(user_input, graph)
                 continue
             except:
