@@ -131,7 +131,7 @@ async def make_graph(client: MultiServerMCPClient) -> AsyncGenerator[CompiledSta
 async def update(user_input: str, graph: CompiledStateGraph):
     print("Sending message: " + user_input)
     result = await graph.ainvoke({"messages":
-                                      ["You have tools, use them.",
+                                      ["You have multiple tools, use as many of them as needed to fulfill a single request.",
                                        HumanMessage(content=user_input)]})
     print("Results")
     for event in result:
