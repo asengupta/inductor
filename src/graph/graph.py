@@ -4,15 +4,13 @@ from typing import TypedDict, Any, AsyncGenerator, Annotated
 
 from dotenv import load_dotenv
 from langchain_anthropic import ChatAnthropic
-from langchain_core.messages import HumanMessage, ToolMessage, BaseMessage, AnyMessage
+from langchain_core.messages import HumanMessage, BaseMessage
 from langchain_mcp_adapters.client import MultiServerMCPClient
 from langgraph.constants import START, END
 from langgraph.graph import StateGraph
 from langgraph.graph.message import add_messages
 from langgraph.graph.state import CompiledStateGraph
 from langgraph.prebuilt import ToolNode, tools_condition
-from langgraph.prebuilt import create_react_agent
-from pydantic.main import BaseModel
 
 load_dotenv("./env/.env")
 
@@ -70,34 +68,6 @@ def penultimate_step(state: MyState) -> dict[str, any]:
     return {"exiting_state": "DONE"}
 
 
-# async def tool_run_step(state: MyState) -> dict[str, any]:
-#     print("In step 3")
-#     print(state)
-
-# async with MultiServerMCPClient(
-#         {
-#             "getStuff": {
-#                 "command": "python",
-#                 "args": ["/Users/asgupta/code/inductor-langgraph-mcp/src/src/agent/simple_mcp_server.py"],
-#                 "transport": "stdio",
-#             }
-#         }
-# ) as client:
-#     agent = create_react_agent(
-#         "anthropic:claude-3-5-sonnet-20241022",
-#         client.get_tools()
-#     )
-#
-# stuff_response = await agent.ainvoke({"messages":
-#                                           ["You have tools, use them.",
-#                                            HumanMessage(content="Get me stuff")]})
-
-# stuff_response = await agent.ainvoke(
-#     {"messages": [{"role": "user", "content": "Get me stuff"}]}
-# )
-# print("STUFF RESPONSE:", stuff_response)
-# return {"step_2_state": stuff_response}
-
 llm = ChatAnthropic(  # type: ignore
     model="claude-3-5-sonnet-20240620",
     temperature=0,
@@ -106,9 +76,14 @@ llm = ChatAnthropic(  # type: ignore
 
 mcp_client = MultiServerMCPClient(
     {
+        # "getStuff": {
+        #     "command": "python",
+        #     "args": ["/Users/asgupta/code/inductor-langgraph-mcp/src/agent/simple_mcp_server.py"],
+        #     "transport": "stdio",
+        # }
         "getStuff": {
-            "command": "python",
-            "args": ["/Users/asgupta/code/inductor-langgraph-mcp/src/src/agent/simple_mcp_server.py"],
+            "command": "java",
+            "args": ["-jar", "/Users/asgupta/code/hlasm-analyser/hlasm-mcp-server/target/hlasm-mcp-server-1.0-SNAPSHOT.jar"],
             "transport": "stdio",
         }
     })
@@ -157,7 +132,7 @@ async def update(user_input: str, graph: CompiledStateGraph):
     print("Sending message: " + user_input)
     result = await graph.ainvoke({"messages":
                                       ["You have tools, use them.",
-                                       HumanMessage(content="Get me stuff")]})
+                                       HumanMessage(content="Get me stuff called " + user_input)]})
     print("Results")
     for event in result:
         print(event)
