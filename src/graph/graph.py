@@ -16,7 +16,7 @@ load_dotenv("./env/.env")
 
 
 def build_agent(tool_llm):
-    def run_agent(state: MyState) -> dict[str, any]:
+    def run_agent(state: MyState) -> dict[str, Any]:
         messages = state["messages"]
         print("Input\n----------\n")
         print(state)
@@ -38,31 +38,31 @@ class MyState(TypedDict):
     tool_calls: list[str]
 
 
-def step_1(state: MyState) -> dict[str, any]:
+def step_1(state: MyState) -> dict[str, Any]:
     print("In step 1")
     print(state)
     return {"step_1_state": "DONE"}
 
 
-def step_2(state: MyState) -> dict[str, any]:
+def step_2(state: MyState) -> dict[str, Any]:
     print("In step 2")
     print(state)
     return {"step_2_state": "DONE"}
 
 
-def before_tool(state: MyState) -> dict[str, any]:
+def before_tool(state: MyState) -> dict[str, Any]:
     print("In before tool")
     print(state)
-    return state
+    return {}
 
 
-def tool_output(state: MyState) -> dict[str, any]:
+def tool_output(state: MyState) -> dict[str, Any]:
     print("In tool_output...")
     print(state)
     return {"tool_output_state": "DONE"}
 
 
-def before_exit(state: MyState) -> dict[str, any]:
+def before_exit(state: MyState) -> dict[str, Any]:
     print("Before exit...")
     print(state)
     return {"exiting_state": "DONE"}
@@ -131,7 +131,7 @@ async def make_graph(client: MultiServerMCPClient) -> AsyncGenerator[CompiledSta
 async def update(user_input: str, graph: CompiledStateGraph):
     print("Sending message: " + user_input)
     result = await graph.ainvoke({"messages":
-                                      ["You have multiple tools, use as many of them as needed to fulfill a single request.",
+                                      ["You have multiple tools, use as mAny of them as needed to fulfill a single request.",
                                        HumanMessage(content=user_input)]})
     print("Results")
     for event in result:
