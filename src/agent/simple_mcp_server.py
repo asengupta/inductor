@@ -4,9 +4,9 @@ mcp = FastMCP("Hello World")
 
 
 @mcp.tool()
-async def get_stuff():
+async def say_hello(name: str):
     print("Called MCP Server...")
-    return {"result": "ok"}
+    return {"result": f"Hi hello! {name}"}
 
 
 if __name__ == "__main__":

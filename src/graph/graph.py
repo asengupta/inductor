@@ -62,8 +62,8 @@ def tool_output(state: MyState) -> dict[str, any]:
     return {"tool_output_state": "DONE"}
 
 
-def penultimate_step(state: MyState) -> dict[str, any]:
-    print("In penultimate_step...")
+def before_exit(state: MyState) -> dict[str, any]:
+    print("Before exit...")
     print(state)
     return {"exiting_state": "DONE"}
 
@@ -76,11 +76,11 @@ llm = ChatAnthropic(  # type: ignore
 
 mcp_client = MultiServerMCPClient(
     {
-        # "getStuff": {
-        #     "command": "python",
-        #     "args": ["/Users/asgupta/code/inductor-langgraph-mcp/src/agent/simple_mcp_server.py"],
-        #     "transport": "stdio",
-        # }
+        "say_hello": {
+            "command": "python",
+            "args": ["/Users/asgupta/code/inductor-langgraph-mcp/src/agent/simple_mcp_server.py"],
+            "transport": "stdio",
+        },
         "getStuff": {
             "command": "java",
             "args": ["-jar", "/Users/asgupta/code/hlasm-analyser/hlasm-mcp-server/target/hlasm-mcp-server-1.0-SNAPSHOT.jar"],
@@ -107,7 +107,7 @@ async def make_graph(client: MultiServerMCPClient) -> AsyncGenerator[CompiledSta
         workflow.add_node("before_tool", before_tool)
         workflow.add_node("tool", ToolNode(mcp_tools))
         workflow.add_node(tool_output)
-        workflow.add_node(penultimate_step)
+        workflow.add_node(before_exit)
 
         # workflow.add_node(tool_run_step)
 
@@ -117,11 +117,11 @@ async def make_graph(client: MultiServerMCPClient) -> AsyncGenerator[CompiledSta
         workflow.add_conditional_edges("agent_runner", tools_condition, {
             # Translate the condition outputs to nodes in our graph
             "tools": "tool",
-            END: "penultimate_step"
+            END: "before_exit"
         })
         workflow.add_edge("tool", "tool_output")
         workflow.add_edge("tool_output", "agent_runner")
-        workflow.add_edge("penultimate_step", END)
+        workflow.add_edge("before_exit", END)
 
         graph = workflow.compile()
         graph.name = "My Graph"
