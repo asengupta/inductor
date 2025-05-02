@@ -132,7 +132,7 @@ async def update(user_input: str, graph: CompiledStateGraph):
     print("Sending message: " + user_input)
     result = await graph.ainvoke({"messages":
                                       ["You have tools, use them.",
-                                       HumanMessage(content="Get me stuff called " + user_input)]})
+                                       HumanMessage(content=user_input)]})
     print("Results")
     for event in result:
         print(event)
@@ -142,12 +142,13 @@ async def run_thing():
     async with make_graph(mcp_client) as graph:
         while True:
             try:
-                user_input = input("User: ")
+                user_input = input("What do you want to do? ")
                 if user_input.lower() in ["quit", "exit", "q"]:
                     print("Goodbye!")
                     break
                 await update(user_input, graph)
-            finally:
+                continue
+            except:
                 print("Closing graph")
                 break
 
