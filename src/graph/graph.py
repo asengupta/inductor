@@ -22,7 +22,7 @@ def build_agent(tool_llm):
         print(state)
         response = tool_llm.invoke(messages)
         print("LLM Response\n----------\n")
-        print(response)
+        print(response.content)
         print("Messages=============================")
         return {"messages": [response]}
 
