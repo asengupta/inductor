@@ -81,7 +81,7 @@ mcp_client = MultiServerMCPClient(
             "args": ["/Users/asgupta/code/inductor-langgraph-mcp/src/agent/simple_mcp_server.py"],
             "transport": "stdio",
         },
-        "getStuff": {
+        "analyseHLASM": {
             "command": "java",
             "args": ["-jar", "/Users/asgupta/code/hlasm-analyser/hlasm-mcp-server/target/hlasm-mcp-server-1.0-SNAPSHOT.jar"],
             "transport": "stdio",
@@ -102,14 +102,13 @@ async def make_graph(client: MultiServerMCPClient) -> AsyncGenerator[CompiledSta
         workflow = StateGraph(MyState)
 
         workflow.add_node(step_1)
+
         workflow.add_node(step_2)
         workflow.add_node("agent_runner", agent_runner)
         workflow.add_node("before_tool", before_tool)
         workflow.add_node("tool", ToolNode(mcp_tools))
         workflow.add_node(tool_output)
         workflow.add_node(before_exit)
-
-        # workflow.add_node(tool_run_step)
 
         workflow.add_edge(START, "step_1")
         workflow.add_edge("step_1", "step_2")
