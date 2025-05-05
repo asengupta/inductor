@@ -113,6 +113,9 @@ def hypothesize(tool_llm):
         human_message = HumanMessage("""
             The previous steps have gathered some evidence of the codebase to gather hypotheses.
             Use the evidence to gather upto 5 hypotheses about the codebase. List down these hypotheses.
+            Each hypothesis should enumerate the subject, the object, and the relation between them, as
+            well as the confidence in this hypothesized relation.
+            After that, persist these hypotheses individually using the appropriate tool.
             """)
         response = tool_llm.invoke(messages + [human_message])
         print(response.content)
@@ -173,7 +176,7 @@ def step_4(state: MyState) -> dict[str, Any]:
 llm = ChatAnthropic(
     model="claude-3-5-sonnet-20240620",
     temperature=0,
-    max_tokens=1024,
+    max_tokens=1024
 )
 
 mcp_client = MultiServerMCPClient(
@@ -198,7 +201,7 @@ async def make_graph(client: MultiServerMCPClient) -> AsyncGenerator[CompiledSta
         mcp_tools = client.get_tools()
         print("SOMETHING")
         # print(mcp_tools)
-        llm_with_tool = llm.bind_tools(mcp_tools)
+        llm_with_tool = llm.bind_tools(mcp_tools, tool_choice="auto")
 
         agent_decider = reverse_engineering_step_decider(llm_with_tool)
         lead = reverse_engineering_lead(llm_with_tool)
