@@ -18,14 +18,25 @@ load_dotenv("./env/.env")
 def reverse_engineering_lead(tool_llm):
     def run_agent(state: MyState) -> dict[str, Any]:
         print(state)
-        user_input: str = input("What do you want to do? ")
-        return {"messages": [user_input, """
+        while True:
+            user_input: str = input("What do you want to do? ")
+            if user_input.lower() in ["quit", "exit", "q"]:
+                print("Goodbye!")
+                raise Exception("Goodbye!")
+            elif user_input.strip() == "":
+                print("No input provided. Please try again.")
+            else:
+                break
+
+        prompt = """
                               Based on the input,
-                              decide which agent you wish to activate: a hypothesis-gathering agent or a hypothesis-validating agent.
-                              Output either 'hypothesize' or 'validate_hypothesis' based on this decision
+                              decide which agent you wish to activate: a hypothesis-gathering agent, an exploration agent,
+                              or a hypothesis-validating agent.
+                              Output either 'explore', 'hypothesize' or 'validate_hypothesis' based on this decision
                               as a single string without any other text or whitespace.
                               """
-                             ]}
+        return MyState(input=user_input, current_request=user_input,
+                       messages=state["messages"] + [user_input, prompt])
 
     return run_agent
 
@@ -35,7 +46,8 @@ def explore_evidence(tool_llm):
         messages = state["messages"]
         response = tool_llm.invoke(messages)
         print(response)
-        return {"messages": [response]}
+        return MyState(input=state["input"], current_request=state["current_request"],
+                       messages=state["messages"] + [response])
 
     return run_agent
 
@@ -45,12 +57,22 @@ def reverse_engineering_step_decider(tool_llm):
         messages = state["messages"]
         print("Input\n----------\n")
         print(state)
+        # print(state["step_1_state"])
         response = tool_llm.invoke(messages)
         print("LLM Response\n----------\n")
         print(response.content)
-        print("Messages=============================")
-        return "hypothesize"
-        # return response.content
+        if "explore" in response.content:
+            print("Explore")
+            return "explore"
+        elif "hypothesize" in response.content:
+            print("Hypothesize")
+            return "hypothesize"
+        elif "validate_hypothesis" in response.content:
+            print("Validate Hypothesis")
+            return "validate_hypothesis"
+        else:
+            print("Couldn't determine a path. Please phrase your question more clearly.")
+            return "step_1"
 
     return run_agent
 
@@ -63,6 +85,7 @@ class MyState(TypedDict):
     step_4_state: str
     exiting_state: str
     messages: Annotated[list[BaseMessage], add_messages]
+    current_request: str
     tool_calls: list[str]
 
 
@@ -71,7 +94,8 @@ def step_1(state: MyState) -> dict[str, Any]:
     print(state)
     user_input: str = input("What do you want to do? ")
     print(state)
-    return {"step_1_state": "DONE", "messages": user_input}
+
+    return MyState(input=user_input, current_request=user_input, messages=state["messages"])
 
 
 def hypothesis_exec(state: MyState):
@@ -79,7 +103,8 @@ def hypothesis_exec(state: MyState):
         You have multiple tools to investigate the codebase. Use them to gather upto 5 hypotheses about the codebase.
         Use as many tools at once as needed. At the end of your investigations, list down these hypotheses.
         """)
-    return {"messages": [human_message]}
+    return MyState(input=state["input"], current_request=state["current_request"],
+                   messages=state["messages"] + [human_message])
 
 
 def hypothesize(tool_llm):
@@ -91,7 +116,23 @@ def hypothesize(tool_llm):
             """)
         response = tool_llm.invoke(messages + [human_message])
         print(response.content)
-        return {"messages": [response]}
+        # return {"messages": [response]}
+        return MyState(input=state["input"], current_request=state["current_request"],
+                       messages=state["messages"] + [response])
+
+    return run_agent
+
+
+def explore(tool_llm):
+    def run_agent(state: MyState) -> dict[str, Any]:
+        print("In explore")
+        print("=====================")
+        print(state)
+        response = tool_llm.invoke(state["current_request"])
+        print(response.content)
+        return MyState(input=state["input"], current_request=state["current_request"],
+                       messages=state["messages"] + [response])
+        # return {"messages": [response]}
 
     return run_agent
 
@@ -99,7 +140,10 @@ def hypothesize(tool_llm):
 def validate_hypothesis(state: MyState) -> dict[str, Any]:
     print("In validating hypothesis")
     print(state)
-    return {"step_3_state": "DONE"}
+    message = "Validation of hypothesis not yet implemented"
+    return MyState(input=state["input"], current_request=state["current_request"],
+                   messages=state["messages"] + [message])
+    # return {"step_3_state": "DONE", "messages": message}
 
 
 def step_4(state: MyState) -> dict[str, Any]:
@@ -167,6 +211,7 @@ async def make_graph(client: MultiServerMCPClient) -> AsyncGenerator[CompiledSta
         workflow.add_node("explore_evidence", evidence_gatherer)
         workflow.add_node(hypothesis_exec)
         workflow.add_node("hypothesize", hypothesizer)
+        workflow.add_node("explore", explore(llm_with_tool))
         workflow.add_node(validate_hypothesis)
         # workflow.add_node(step_4)
 
@@ -180,6 +225,7 @@ async def make_graph(client: MultiServerMCPClient) -> AsyncGenerator[CompiledSta
         workflow.add_conditional_edges("step_1", agent_decider, {
             "hypothesize": "hypothesis_exec",
             "validate_hypothesis": "validate_hypothesis",
+            "explore": "explore",
             "default": "step_1",
         })
         workflow.add_edge("hypothesis_exec", "explore_evidence")
