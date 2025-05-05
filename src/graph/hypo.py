@@ -6,38 +6,19 @@ from dotenv import load_dotenv
 from langchain_anthropic import ChatAnthropic
 from langchain_core.messages import HumanMessage, BaseMessage
 from langchain_mcp_adapters.client import MultiServerMCPClient
-from langgraph.constants import START
+from langgraph.constants import START, END
 from langgraph.graph import StateGraph
 from langgraph.graph.message import add_messages
 from langgraph.graph.state import CompiledStateGraph
+from langgraph.prebuilt import ToolNode, tools_condition
 
 load_dotenv("./env/.env")
 
-
-# def build_agent(tool_llm):
-#     def run_agent(state: MyState) -> dict[str, Any]:
-#         messages = state["messages"]
-#         print("Input\n----------\n")
-#         print(state)
-#         response = tool_llm.invoke(messages)
-#         print("LLM Response\n----------\n")
-#         print(response.content)
-#         print("Messages=============================")
-#         return {"messages": [response]}
-#
-#     return run_agent
 
 def reverse_engineering_lead(tool_llm):
     def run_agent(state: MyState) -> dict[str, Any]:
         print(state)
         user_input: str = input("What do you want to do? ")
-        # messages = state["messages"]
-        # print("Input\n----------\n")
-        # response = tool_llm.invoke(messages)
-        # print("LLM Response\n----------\n")
-        # print(response.content)
-        # print("Messages=============================")
-        # return {"messages": [response]}
         return {"messages": [user_input, """
                               Based on the input,
                               decide which agent you wish to activate: a hypothesis-gathering agent or a hypothesis-validating agent.
@@ -45,6 +26,16 @@ def reverse_engineering_lead(tool_llm):
                               as a single string without any other text or whitespace.
                               """
                              ]}
+
+    return run_agent
+
+
+def explore_evidence(tool_llm):
+    def run_agent(state: MyState) -> dict[str, Any]:
+        messages = state["messages"]
+        response = tool_llm.invoke(messages)
+        print(response)
+        return {"messages": [response]}
 
     return run_agent
 
@@ -58,7 +49,8 @@ def reverse_engineering_step_decider(tool_llm):
         print("LLM Response\n----------\n")
         print(response.content)
         print("Messages=============================")
-        return response.content
+        return "hypothesize"
+        # return response.content
 
     return run_agent
 
@@ -82,10 +74,26 @@ def step_1(state: MyState) -> dict[str, Any]:
     return {"step_1_state": "DONE", "messages": user_input}
 
 
-def hypothesize(state: MyState) -> dict[str, Any]:
-    print("In hypothesis gathering")
-    print(state)
-    return {"step_2_state": "DONE", "messages": "The hypothesis is that this program adds two numbers."}
+def hypothesis_exec(state: MyState):
+    human_message = HumanMessage("""
+        You have multiple tools to investigate the codebase. Use them to gather upto 5 hypotheses about the codebase.
+        Use as many tools at once as needed. At the end of your investigations, list down these hypotheses.
+        """)
+    return {"messages": [human_message]}
+
+
+def hypothesize(tool_llm):
+    def run_agent(state: MyState) -> dict[str, Any]:
+        messages = state["messages"]
+        human_message = HumanMessage("""
+            The previous steps have gathered some evidence of the codebase to gather hypotheses.
+            Use the evidence to gather upto 5 hypotheses about the codebase. List down these hypotheses.
+            """)
+        response = tool_llm.invoke(messages + [human_message])
+        print(response.content)
+        return {"messages": [response]}
+
+    return run_agent
 
 
 def validate_hypothesis(state: MyState) -> dict[str, Any]:
@@ -98,23 +106,6 @@ def step_4(state: MyState) -> dict[str, Any]:
     print("In step 4")
     print(state)
     return {"step_4_state": "DONE"}
-
-
-def build_decider(tool_llm):
-    def decision(state: MyState) -> str:
-        print("In decision")
-        # return "step_2"
-        messages = state["messages"]
-        print("Input\n----------\n")
-        print(state)
-        response = tool_llm.invoke(messages)
-        print("LLM Response\n----------\n")
-        print(f"--{response.content}--")
-        print("Messages=============================")
-        return response.content
-        # return "step_3"
-
-    return decision
 
 
 # def before_tool(state: MyState) -> dict[str, Any]:
@@ -165,44 +156,43 @@ async def make_graph(client: MultiServerMCPClient) -> AsyncGenerator[CompiledSta
         # print(mcp_tools)
         llm_with_tool = llm.bind_tools(mcp_tools)
 
-        # agent_runner = build_agent(llm_with_tool)
-        # agent_decider = build_decider(llm_with_tool)
         agent_decider = reverse_engineering_step_decider(llm_with_tool)
-        lead = reverse_engineering_lead(llm)
+        lead = reverse_engineering_lead(llm_with_tool)
+        evidence_gatherer = explore_evidence(llm_with_tool)
+        hypothesizer = hypothesize(llm_with_tool)
 
         workflow = StateGraph(MyState)
 
         workflow.add_node("step_1", lead)
-        workflow.add_node(hypothesize)
+        workflow.add_node("explore_evidence", evidence_gatherer)
+        workflow.add_node(hypothesis_exec)
+        workflow.add_node("hypothesize", hypothesizer)
         workflow.add_node(validate_hypothesis)
         # workflow.add_node(step_4)
 
         # workflow.add_node("agent_runner", agent_runner)
         # workflow.add_node("before_tool", before_tool)
-        # workflow.add_node("tool", ToolNode(mcp_tools))
+        workflow.add_node("tool", ToolNode(mcp_tools))
         # workflow.add_node(tool_output)
         # workflow.add_node(before_exit)
 
         workflow.add_edge(START, "step_1")
-        # workflow.add_edge("step_1", "step_2")
         workflow.add_conditional_edges("step_1", agent_decider, {
-            "hypothesize": "hypothesize",
+            "hypothesize": "hypothesis_exec",
             "validate_hypothesis": "validate_hypothesis",
             "default": "step_1",
         })
+        workflow.add_edge("hypothesis_exec", "explore_evidence")
+        workflow.add_conditional_edges("explore_evidence", tools_condition, {
+            # Translate the condition outputs to nodes in our graph
+            "tools": "tool",
+            END: "step_1"
+        })
+        workflow.add_edge("tool", "hypothesize")
         workflow.add_edge("hypothesize", "step_1")
+
         workflow.add_edge("validate_hypothesis", "step_1")
         # workflow.add_edge("step_4", END)
-
-        # workflow.add_edge("step_2", "agent_runner")
-        # workflow.add_conditional_edges("agent_runner", tools_condition, {
-        #     # Translate the condition outputs to nodes in our graph
-        #     "tools": "tool",
-        #     END: "before_exit"
-        # })
-        # workflow.add_edge("tool", "tool_output")
-        # workflow.add_edge("tool_output", "agent_runner")
-        # workflow.add_edge("before_exit", END)
 
         graph = workflow.compile()
         graph.name = "My Graph"
