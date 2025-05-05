@@ -161,10 +161,13 @@ def step_4(state: MyState) -> dict[str, Any]:
 #     return {}
 #
 #
-# def tool_output(state: MyState) -> dict[str, Any]:
-#     print("In tool_output...")
-#     print(state)
-#     return {"tool_output_state": "DONE"}
+def explore_output(state: MyState) -> dict[str, Any]:
+    print("In tool_output...")
+    print(state)
+    return MyState(input=state["input"], current_request=state["current_request"],
+                   messages=state["messages"])
+
+
 #
 #
 # def before_exit(state: MyState) -> dict[str, Any]:
@@ -220,8 +223,9 @@ async def make_graph(client: MultiServerMCPClient) -> AsyncGenerator[CompiledSta
 
         # workflow.add_node("agent_runner", agent_runner)
         # workflow.add_node("before_tool", before_tool)
-        workflow.add_node("tool", ToolNode(mcp_tools))
-        # workflow.add_node(tool_output)
+        workflow.add_node("explore_tool", ToolNode(mcp_tools, handle_tool_errors=True))
+        workflow.add_node("save_hypotheses_tool", ToolNode(mcp_tools, handle_tool_errors=True))
+        workflow.add_node(explore_output)
         # workflow.add_node(before_exit)
 
         workflow.add_edge(START, "step_1")
@@ -234,11 +238,17 @@ async def make_graph(client: MultiServerMCPClient) -> AsyncGenerator[CompiledSta
         workflow.add_edge("hypothesis_exec", "explore_evidence")
         workflow.add_conditional_edges("explore_evidence", tools_condition, {
             # Translate the condition outputs to nodes in our graph
-            "tools": "tool",
+            "tools": "explore_tool",
             END: "step_1"
         })
-        workflow.add_edge("tool", "hypothesize")
-        workflow.add_edge("hypothesize", "step_1")
+        workflow.add_conditional_edges("hypothesize", tools_condition, {
+            # Translate the condition outputs to nodes in our graph
+            "tools": "save_hypotheses_tool",
+            END: "step_1"
+        })
+        workflow.add_edge("explore_tool", "explore_output")
+        workflow.add_edge("explore_output", "hypothesize")
+        workflow.add_edge("save_hypotheses_tool", "step_1")
 
         workflow.add_edge("validate_hypothesis", "step_1")
         # workflow.add_edge("step_4", END)
