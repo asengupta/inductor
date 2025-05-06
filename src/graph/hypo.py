@@ -32,9 +32,9 @@ def reverse_engineering_lead(tool_llm):
                               Based on the input,
                               decide which agent you wish to activate: a hypothesis-gathering agent, an exploration agent,
                               or a hypothesis-validating agent.
-                              Output either 'explore', 'hypothesize' or 'validate_hypothesis' or 'fallback' based on this decision
+                              Output either 'explore', 'hypothesize' or 'validate_hypothesis' or 'dontknow' based on this decision
                               as a single string without any other text or whitespace. If you are not sure what to do,
-                              output 'fallback'.
+                              output 'dontknow'.
                               """
         return MyState(input=user_input, current_request=user_input,
                        messages=state["messages"] + [user_input, prompt])
@@ -73,7 +73,7 @@ def reverse_engineering_step_decider(tool_llm):
             return "validate_hypothesis"
         else:
             print("Couldn't determine a path. Please phrase your question more clearly.")
-            return "explore"
+            return response.content
 
     return run_agent
 
@@ -222,7 +222,7 @@ async def make_graph(client: MultiServerMCPClient) -> AsyncGenerator[CompiledSta
         workflow = StateGraph(MyState)
 
         workflow.add_node("step_1", lead)
-        workflow.add_node("fallback1", fallback)
+        workflow.add_node("dontknow", fallback)
         workflow.add_node("explore_evidence", evidence_gatherer)
         workflow.add_node(hypothesis_exec)
         workflow.add_node("hypothesize", hypothesizer)
@@ -239,13 +239,14 @@ async def make_graph(client: MultiServerMCPClient) -> AsyncGenerator[CompiledSta
         # workflow.add_node(before_exit)
 
         workflow.add_edge(START, "step_1")
-        workflow.add_edge("fallback1", "step_1")
+        workflow.add_edge("dontknow", "step_1")
 
         workflow.add_conditional_edges("step_1", agent_decider, {
             "hypothesize": "hypothesis_exec",
             "validate_hypothesis": "validate_hypothesis",
             "explore": "explore",
-            "default": "fallback1",
+            "dontknow": "dontknow",
+            "default": "dontknow",
         })
         workflow.add_edge("hypothesis_exec", "explore_evidence")
         workflow.add_conditional_edges("explore_evidence", tools_condition, {
