@@ -19,6 +19,7 @@ load_dotenv("./env/.env")
 
 def reverse_engineering_lead(tool_llm):
     def run_agent(state: MyState) -> dict[str, Any]:
+        print("============IN LEAD===============")
         print(state)
         while True:
             user_input: str = input("What do you want to do? ")
@@ -48,9 +49,15 @@ def reverse_engineering_lead(tool_llm):
 
 def explore_evidence(tool_llm):
     def run_agent(state: MyState) -> dict[str, Any]:
+        print("============IN EXPLORE EVIDENCE===============")
+        msg = """
+        You have multiple tools to investigate the codebase. Use them to gather upto 5 hypotheses about the codebase.
+        Use as many tools at once as needed. At the end of your investigations, list down these hypotheses.
+        """
         messages = state["messages"]
-        response = tool_llm.invoke(messages)
-        print(response)
+        print(f"Asking explorer to: {msg}")
+        response = tool_llm.invoke(msg)
+        print(response.content)
         return MyState(input=state["input"], current_request=state["current_request"],
                        messages=state["messages"] + [response])
 
@@ -60,15 +67,15 @@ def explore_evidence(tool_llm):
 def reverse_engineering_step_decider(tool_llm):
     def run_agent(state: MyState) -> str:
         messages = state["messages"]
-        print("Input\n----------\n")
+        print("In DECIDING WHICH STEP TO TAKE:\n----------\n")
         print(state)
         # print(state["step_1_state"])
         response = tool_llm.invoke(messages)
         print("LLM Response\n----------\n")
         print(response.content)
         if "explore" in response.content:
-            print("Explore")
-            return "explore"
+            print("Free Explore")
+            return "free_explore"
         elif "hypothesize" in response.content:
             print("Hypothesize")
             return "hypothesize"
@@ -110,12 +117,13 @@ def fallback(state: MyState) -> dict[str, Any]:
 
 
 def hypothesis_exec(state: MyState):
+    print("============IN HYPO EXEC=================")
     human_message = HumanMessage("""
         You have multiple tools to investigate the codebase. Use them to gather upto 5 hypotheses about the codebase.
         Use as many tools at once as needed. At the end of your investigations, list down these hypotheses.
         """)
     return MyState(input=state["input"], current_request=state["current_request"],
-                   messages=state["messages"] + [human_message])
+                   messages=state["messages"] + [])
 
 
 def hypothesize(tool_llm):
@@ -141,12 +149,14 @@ def hypothesize(tool_llm):
     return run_agent
 
 
-def explore(tool_llm):
+def free_explore(tool_llm):
     def run_agent(state: MyState) -> dict[str, Any]:
         print("In explore")
         print("=====================")
         print(state)
-        response = tool_llm.invoke(state["current_request"])
+        response = tool_llm.invoke(["""
+        You have multiple tools at your disposal to investigate this codebase. Use as many tools at once as needed. 
+        """, state["current_request"]])
         print(response.content)
         return MyState(input=state["input"], current_request=state["current_request"],
                        messages=state["messages"] + [response])
@@ -157,6 +167,7 @@ def explore(tool_llm):
 
 def validate_hypothesis(state: MyState) -> dict[str, Any]:
     print("In validating hypothesis")
+    print("=====================")
     print(state)
     message = "Validation of hypothesis not yet implemented"
     return MyState(input=state["input"], current_request=state["current_request"],
@@ -178,6 +189,7 @@ def step_4(state: MyState) -> dict[str, Any]:
 #
 def explore_output(state: MyState) -> dict[str, Any]:
     print("In tool_output...")
+    print("=====================")
     print(state)
     return MyState(input=state["input"], current_request=state["current_request"],
                    messages=state["messages"])
@@ -200,6 +212,7 @@ def anthropic_model():
     )
     return llm
 
+
 def bedrock_model():
     AWS_MODEL_ID = os.environ.get("AWS_MODEL_ID")
     AWS_REGION = os.environ.get("AWS_REGION")
@@ -209,10 +222,12 @@ def bedrock_model():
     #     region_name=AWS_REGION
     # )
     bedrock_model = ChatBedrockConverse(
-        model_id="eu.anthropic.bedrock_model-3-7-sonnet-20250219-v1:0",  # or "anthropic.bedrock_model-3-sonnet-20240229-v1:0"
+        model_id="eu.anthropic.bedrock_model-3-7-sonnet-20250219-v1:0",
+        # or "anthropic.bedrock_model-3-sonnet-20240229-v1:0"
         region_name="eu-central-1"
     )
     return bedrock_model
+
 
 mcp_client = MultiServerMCPClient(
     {
@@ -250,7 +265,7 @@ async def make_graph(client: MultiServerMCPClient) -> AsyncGenerator[CompiledSta
         workflow.add_node("explore_evidence", evidence_gatherer)
         workflow.add_node(hypothesis_exec)
         workflow.add_node("hypothesize", hypothesizer)
-        workflow.add_node("explore", explore(llm_with_tool))
+        workflow.add_node("free_explore", free_explore(llm_with_tool))
         workflow.add_node(validate_hypothesis)
         # workflow.add_node(step_4)
 
@@ -268,7 +283,7 @@ async def make_graph(client: MultiServerMCPClient) -> AsyncGenerator[CompiledSta
         workflow.add_conditional_edges("step_1", agent_decider, {
             "hypothesize": "hypothesis_exec",
             "validate_hypothesis": "validate_hypothesis",
-            "explore": "explore",
+            "free_explore": "free_explore",
             "dontknow": "dontknow",
             "default": "dontknow",
         })
@@ -281,8 +296,12 @@ async def make_graph(client: MultiServerMCPClient) -> AsyncGenerator[CompiledSta
             "tools": "save_hypotheses_tool",
             END: "step_1"
         })
+        workflow.add_conditional_edges("free_explore", tools_condition, {
+            "tools": "free_explore_tool",
+            END: "step_1"
+        })
 
-        workflow.add_edge("explore", "free_explore_tool")
+        # workflow.add_edge("free_explore", "free_explore_tool")
         workflow.add_edge("free_explore_tool", "step_1")
         workflow.add_edge("explore_tool", "explore_output")
         workflow.add_edge("explore_output", "hypothesize")

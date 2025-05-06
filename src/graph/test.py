@@ -2,6 +2,7 @@ import boto3
 import json
 
 from dotenv import load_dotenv
+from langchain_aws import ChatBedrockConverse
 
 
 class ClaudeBedrock:
@@ -18,11 +19,11 @@ class ClaudeBedrock:
                      - anthropic.claude-2:1
                      - anthropic.claude-instant-v1
         """
-        self.bedrock_runtime = boto3.client(
-            service_name='bedrock-runtime',
-            region_name='eu-central-1'  # Change to your region
-        )
-        self.model_id = model_id
+        # self.bedrock_runtime = boto3.client(
+        #     service_name='bedrock-runtime',
+        #     region_name='eu-central-1'  # Change to your region
+        # )
+        # self.model_id = model_id
 
     def generate_text(self, prompt, max_tokens=1000, temperature=0.7):
         """
@@ -49,15 +50,23 @@ class ClaudeBedrock:
             ]
         }
 
-        # Invoke the model
-        response = self.bedrock_runtime.invoke_model(
-            modelId=self.model_id,
-            body=json.dumps(request_body)
-        )
+        bedrock_model = ChatBedrockConverse(
+            model_id="eu.anthropic.bedrock_model-3-7-sonnet-20250219-v1:0",  # or "anthropic.bedrock_model-3-sonnet-20240229-v1:0"
+            region_name="eu-central-1")
 
-        # Parse and return the response
-        response_body = json.loads(response['body'].read())
-        return response_body['content'][0]['text']
+        result = bedrock_model.invoke("Explain quantum computing in simple terms.")
+        print("================RESULT=================")
+        print(result)
+        exit(0)
+        # Invoke the model
+        # response = self.bedrock_runtime.invoke_model(
+        #     modelId=self.model_id,
+        #     body=json.dumps(request_body)
+        # )
+        #
+        # # Parse and return the response
+        # response_body = json.loads(response['body'].read())
+        # return response_body['content'][0]['text']
 
     def chat(self, messages, max_tokens=1000, temperature=0.7):
         """
