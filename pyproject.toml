@@ -17,7 +17,9 @@ dependencies = [
     "langchain-mcp-adapters",
     "langchain-anthropic",
     "openai",
-    "mypy"
+    "mypy",
+    "boto3",
+    "awscli"
 ]
 
 [tool.poetry.dependencies]
