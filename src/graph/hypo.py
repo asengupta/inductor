@@ -32,6 +32,8 @@ def reverse_engineering_lead(tool_llm):
                               Based on the input,
                               decide which agent you wish to activate: a hypothesis-gathering agent, an exploration agent,
                               or a hypothesis-validating agent.
+                              Use the hypothesis agents only for creating or validating hypotheses. For other hypothesis-related
+                              operations, just use the exploration agent.
                               Output either 'explore', 'hypothesize' or 'validate_hypothesis' or 'dontknow' based on this decision
                               as a single string without any other text or whitespace. If you are not sure what to do,
                               output 'dontknow'.
@@ -250,12 +252,10 @@ async def make_graph(client: MultiServerMCPClient) -> AsyncGenerator[CompiledSta
         })
         workflow.add_edge("hypothesis_exec", "explore_evidence")
         workflow.add_conditional_edges("explore_evidence", tools_condition, {
-            # Translate the condition outputs to nodes in our graph
             "tools": "explore_tool",
             END: "step_1"
         })
         workflow.add_conditional_edges("hypothesize", tools_condition, {
-            # Translate the condition outputs to nodes in our graph
             "tools": "save_hypotheses_tool",
             END: "step_1"
         })
