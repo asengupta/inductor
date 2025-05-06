@@ -1,9 +1,11 @@
 import asyncio
+import os
 from contextlib import asynccontextmanager
 from typing import TypedDict, Any, AsyncGenerator, Annotated
 
 from dotenv import load_dotenv
 from langchain_anthropic import ChatAnthropic
+from langchain_aws.chat_models.bedrock import ChatBedrockConverse
 from langchain_core.messages import HumanMessage, BaseMessage
 from langchain_mcp_adapters.client import MultiServerMCPClient
 from langgraph.constants import START, END
@@ -118,14 +120,17 @@ def hypothesis_exec(state: MyState):
 
 def hypothesize(tool_llm):
     def run_agent(state: MyState) -> dict[str, Any]:
+        print("IN HYPOTHESIZER....================================================================")
         messages = state["messages"]
         human_message = HumanMessage("""
             The previous steps have gathered some evidence of the codebase to gather hypotheses.
-            Use the evidence to gather upto 5 hypotheses about the codebase. List down these hypotheses.
+            Use the evidence to gather upto 5 hypotheses about the codebase. Do not start gathering any
+            other evidence at this point, only use the information already available.
+            List down these hypotheses.
             Each hypothesis should enumerate the subject, the object, and the relation between them, as
             well as the confidence in this hypothesized relation. Each hypothesis should be specific and
             testable using the available tools.
-            After that, persist these hypotheses individually using the appropriate tool.
+            After that, create/persist these hypotheses individually using the appropriate tool.
             """)
         response = tool_llm.invoke(messages + [human_message])
         print(response.content)
@@ -186,11 +191,28 @@ def explore_output(state: MyState) -> dict[str, Any]:
 #     return {"exiting_state": "DONE"}
 
 
-llm = ChatAnthropic(
-    model="claude-3-5-sonnet-20240620",
-    temperature=0,
-    max_tokens=1024
-)
+def anthropic_model():
+    ANTHROPIC_MODEL_ID = os.environ.get("ANTHROPIC_MODEL_ID")
+    llm = ChatAnthropic(
+        model=ANTHROPIC_MODEL_ID,
+        temperature=0,
+        max_tokens=1024
+    )
+    return llm
+
+def bedrock_model():
+    AWS_MODEL_ID = os.environ.get("AWS_MODEL_ID")
+    AWS_REGION = os.environ.get("AWS_REGION")
+    print(f"MODEL_ID={AWS_MODEL_ID}")
+    # bedrock_model = ChatBedrockConverse(
+    #     model_id=AWS_MODEL_ID,  # or "anthropic.bedrock_model-3-sonnet-20240229-v1:0"
+    #     region_name=AWS_REGION
+    # )
+    bedrock_model = ChatBedrockConverse(
+        model_id="eu.anthropic.bedrock_model-3-7-sonnet-20250219-v1:0",  # or "anthropic.bedrock_model-3-sonnet-20240229-v1:0"
+        region_name="eu-central-1"
+    )
+    return bedrock_model
 
 mcp_client = MultiServerMCPClient(
     {
@@ -214,9 +236,9 @@ async def make_graph(client: MultiServerMCPClient) -> AsyncGenerator[CompiledSta
         mcp_tools = client.get_tools()
         print("SOMETHING")
         # print(mcp_tools)
-        llm_with_tool = llm.bind_tools(mcp_tools, tool_choice="auto")
-
-        agent_decider = reverse_engineering_step_decider(llm)
+        llm_with_tool = anthropic_model().bind_tools(mcp_tools, tool_choice="auto")
+        # llm_with_tool = bedrock_model().bind_tools(mcp_tools)
+        agent_decider = reverse_engineering_step_decider(llm_with_tool)
         lead = reverse_engineering_lead(llm_with_tool)
         evidence_gatherer = explore_evidence(llm_with_tool)
         hypothesizer = hypothesize(llm_with_tool)

@@ -19,7 +19,10 @@ dependencies = [
     "openai",
     "mypy",
     "boto3",
-    "awscli"
+    "awscli",
+    "langchain",
+    "anthropic",
+    "langchain-aws"
 ]
 
 [tool.poetry.dependencies]
