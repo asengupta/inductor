@@ -32,8 +32,9 @@ def reverse_engineering_lead(tool_llm):
                               Based on the input,
                               decide which agent you wish to activate: a hypothesis-gathering agent, an exploration agent,
                               or a hypothesis-validating agent.
-                              Output either 'explore', 'hypothesize' or 'validate_hypothesis' based on this decision
-                              as a single string without any other text or whitespace.
+                              Output either 'explore', 'hypothesize' or 'validate_hypothesis' or 'fallback' based on this decision
+                              as a single string without any other text or whitespace. If you are not sure what to do,
+                              output 'fallback'.
                               """
         return MyState(input=user_input, current_request=user_input,
                        messages=state["messages"] + [user_input, prompt])
@@ -72,7 +73,7 @@ def reverse_engineering_step_decider(tool_llm):
             return "validate_hypothesis"
         else:
             print("Couldn't determine a path. Please phrase your question more clearly.")
-            return "step_1"
+            return "explore"
 
     return run_agent
 
@@ -98,6 +99,12 @@ def step_1(state: MyState) -> dict[str, Any]:
     return MyState(input=user_input, current_request=user_input, messages=state["messages"])
 
 
+def fallback(state: MyState) -> dict[str, Any]:
+    print("THIS IS A FALLBACK NODE, GOING BACK TO ROOT==============")
+    return MyState(input=state["input"], current_request=state["current_request"],
+                   messages=state["messages"])
+
+
 def hypothesis_exec(state: MyState):
     human_message = HumanMessage("""
         You have multiple tools to investigate the codebase. Use them to gather upto 5 hypotheses about the codebase.
@@ -114,7 +121,8 @@ def hypothesize(tool_llm):
             The previous steps have gathered some evidence of the codebase to gather hypotheses.
             Use the evidence to gather upto 5 hypotheses about the codebase. List down these hypotheses.
             Each hypothesis should enumerate the subject, the object, and the relation between them, as
-            well as the confidence in this hypothesized relation.
+            well as the confidence in this hypothesized relation. Each hypothesis should be specific and
+            testable using the available tools.
             After that, persist these hypotheses individually using the appropriate tool.
             """)
         response = tool_llm.invoke(messages + [human_message])
@@ -206,7 +214,7 @@ async def make_graph(client: MultiServerMCPClient) -> AsyncGenerator[CompiledSta
         # print(mcp_tools)
         llm_with_tool = llm.bind_tools(mcp_tools, tool_choice="auto")
 
-        agent_decider = reverse_engineering_step_decider(llm_with_tool)
+        agent_decider = reverse_engineering_step_decider(llm)
         lead = reverse_engineering_lead(llm_with_tool)
         evidence_gatherer = explore_evidence(llm_with_tool)
         hypothesizer = hypothesize(llm_with_tool)
@@ -214,6 +222,7 @@ async def make_graph(client: MultiServerMCPClient) -> AsyncGenerator[CompiledSta
         workflow = StateGraph(MyState)
 
         workflow.add_node("step_1", lead)
+        workflow.add_node("fallback1", fallback)
         workflow.add_node("explore_evidence", evidence_gatherer)
         workflow.add_node(hypothesis_exec)
         workflow.add_node("hypothesize", hypothesizer)
@@ -225,15 +234,18 @@ async def make_graph(client: MultiServerMCPClient) -> AsyncGenerator[CompiledSta
         # workflow.add_node("before_tool", before_tool)
         workflow.add_node("explore_tool", ToolNode(mcp_tools, handle_tool_errors=True))
         workflow.add_node("save_hypotheses_tool", ToolNode(mcp_tools, handle_tool_errors=True))
+        workflow.add_node("free_explore_tool", ToolNode(mcp_tools, handle_tool_errors=True))
         workflow.add_node(explore_output)
         # workflow.add_node(before_exit)
 
         workflow.add_edge(START, "step_1")
+        workflow.add_edge("fallback1", "step_1")
+
         workflow.add_conditional_edges("step_1", agent_decider, {
             "hypothesize": "hypothesis_exec",
             "validate_hypothesis": "validate_hypothesis",
             "explore": "explore",
-            "default": "step_1",
+            "default": "fallback1",
         })
         workflow.add_edge("hypothesis_exec", "explore_evidence")
         workflow.add_conditional_edges("explore_evidence", tools_condition, {
@@ -246,6 +258,9 @@ async def make_graph(client: MultiServerMCPClient) -> AsyncGenerator[CompiledSta
             "tools": "save_hypotheses_tool",
             END: "step_1"
         })
+
+        workflow.add_edge("explore", "free_explore_tool")
+        workflow.add_edge("free_explore_tool", "step_1")
         workflow.add_edge("explore_tool", "explore_output")
         workflow.add_edge("explore_output", "hypothesize")
         workflow.add_edge("save_hypotheses_tool", "step_1")
