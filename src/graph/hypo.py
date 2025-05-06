@@ -198,14 +198,9 @@ def bedrock_model():
     AWS_MODEL_ID = os.environ.get("AWS_MODEL_ID")
     AWS_REGION = os.environ.get("AWS_REGION")
     print(f"MODEL_ID={AWS_MODEL_ID}")
-    # bedrock_model = ChatBedrockConverse(
-    #     model_id=AWS_MODEL_ID,  # or "anthropic.bedrock_model-3-sonnet-20240229-v1:0"
-    #     region_name=AWS_REGION
-    # )
     bedrock_model = ChatBedrockConverse(
-        model_id="eu.anthropic.bedrock_model-3-7-sonnet-20250219-v1:0",
-        # or "anthropic.bedrock_model-3-sonnet-20240229-v1:0"
-        region_name="eu-central-1"
+        model_id=AWS_MODEL_ID,  # or "anthropic.bedrock_model-3-sonnet-20240229-v1:0"
+        region_name=AWS_REGION
     )
     return bedrock_model
 
