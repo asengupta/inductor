@@ -91,11 +91,6 @@ def reverse_engineering_step_decider(tool_llm):
 
 class MyState(TypedDict):
     input: str
-    step_1_state: str
-    step_2_state: str
-    step_3_state: str
-    step_4_state: str
-    exiting_state: str
     messages: Annotated[list[BaseMessage], add_messages]
     current_request: str
     tool_calls: list[str]
@@ -181,26 +176,12 @@ def step_4(state: MyState) -> dict[str, Any]:
     return {"step_4_state": "DONE"}
 
 
-# def before_tool(state: MyState) -> dict[str, Any]:
-#     print("In before tool")
-#     print(state)
-#     return {}
-#
-#
 def explore_output(state: MyState) -> dict[str, Any]:
     print("In tool_output...")
     print("=====================")
     print(state)
     return MyState(input=state["input"], current_request=state["current_request"],
                    messages=state["messages"])
-
-
-#
-#
-# def before_exit(state: MyState) -> dict[str, Any]:
-#     print("Before exit...")
-#     print(state)
-#     return {"exiting_state": "DONE"}
 
 
 def anthropic_model():
