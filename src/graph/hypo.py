@@ -18,7 +18,7 @@ from graph.node_names import COLLECT_DATA_FOR_HYPOTHESIS, HYPOTHESIZE, EXPLORE_F
     DATA_FOR_HYPOTHESIS_TOOL, SAVE_HYPOTHESES_TOOL, FREE_EXPLORE_TOOL, SYSTEM_QUERY_TOOL, \
     COLLECT_DATA_FOR_HYPOTHESIS_TOOL_OUTPUT, HYPOTHESIS_GATHER_START, VALIDATE_HYPOTHESIS, DONT_KNOW, EXECUTIVE_AGENT
 from graph.router_constants import DONT_KNOW_DECISION, SYSTEM_QUERY_DECISION, FREEFORM_EXPLORATION_DECISION, \
-    VALIDATE_HYPOTHESIS_DECISION, HYPOTHESIZE_DECISION
+    VALIDATE_HYPOTHESIS_DECISION, HYPOTHESIZE_DECISION, EXIT_DECISION
 
 load_dotenv("./env/.env")
 
@@ -34,6 +34,8 @@ def reverse_engineering_lead(tool_llm):
         while True:
             user_input: str = input("What do you want to do? ")
             if user_input.lower() in ["quit", "exit", "q"]:
+                return MyState(input=user_input, current_request=user_input,
+                               messages=[EXIT_DECISION])
                 print("Goodbye!")
                 raise Exception("Goodbye!")
             elif user_input.strip() == "":
@@ -68,6 +70,8 @@ def collect_data_for_hypothesis(tool_llm):
 def reverse_engineering_step_decider(tool_llm):
     def run_agent(state: MyState) -> str:
         messages = state["messages"]
+        if messages[-1].content == EXIT_DECISION:
+            return EXIT_DECISION
 
         prompt = f"""         The user request is: "{state['current_request']}".
                               Based on the request, decide which agent you wish to activate. Your choices are:
@@ -309,6 +313,7 @@ async def make_graph(client: MultiServerMCPClient) -> AsyncGenerator[CompiledSta
             FREEFORM_EXPLORATION_DECISION: EXPLORE_FREELY,
             SYSTEM_QUERY_DECISION: SYSTEM_QUERY,
             DONT_KNOW_DECISION: DONT_KNOW,
+            EXIT_DECISION: END,
             "default": DONT_KNOW,
         })
         workflow.add_edge(HYPOTHESIS_GATHER_START, COLLECT_DATA_FOR_HYPOTHESIS)
