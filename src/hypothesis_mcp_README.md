@@ -53,11 +53,11 @@ from hypothesis_mcp_test import HypothesisMCPClient
 
 async def main():
     client = HypothesisMCPClient()
-    
+
     try:
         # Start the server
         await client.start_server()
-        
+
         # Call a tool
         result = await client.call_tool(
             "create_subject",
@@ -68,7 +68,7 @@ async def main():
             }
         )
         print(f"Created subject: {result}")
-        
+
     finally:
         # Stop the server
         await client.stop_server()
@@ -105,6 +105,7 @@ The MCP server provides the following tools:
 - `update_hypothesis`: Update a hypothesis by its ID
 - `delete_hypothesis`: Delete a hypothesis by its ID
 - `find_hypotheses`: Find hypotheses matching the given criteria
+- `get_all_hypotheses`: Retrieve all available Hypothesis instances from the database
 
 ### Examples
 
@@ -226,6 +227,14 @@ result = await client.call_tool(
     max_confidence=1.0
 )
 hypotheses = result["hypotheses"]
+
+# Get all hypotheses
+result = await client.call_tool(
+    "get_all_hypotheses"
+)
+all_hypotheses = result["hypotheses"]
+count = result["count"]
+print(f"Found {count} hypotheses in the database")
 ```
 
 #### Deleting a Hypothesis

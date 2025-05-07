@@ -35,11 +35,17 @@ def reverse_engineering_lead(tool_llm):
                               Based on the input,
                               decide which agent you wish to activate: a hypothesis-gathering agent, an exploration agent,
                               or a hypothesis-validating agent.
-                              Use the hypothesis agents only for creating or validating hypotheses. For other hypothesis-related
+                              Output either 'explore', 'hypothesize' or 'validate_hypothesis', 'system_query', or 'dontknow' based on this decision
+                              as a single string without any other text or whitespace.
+                              The rules are:
+                              1) Use the hypothesis gathering agent only for creating hypotheses.
+                              2) Use the hypothesis validating agent only for validating hypotheses.
+                              3) Use 'explore' when answering general questions about the codebase not related to hypotheses or MCP tools.
+                              4) Use 'system_query' when answering questions about the MCP tools themselves.
                               operations, just use the exploration agent.
-                              Output either 'explore', 'hypothesize' or 'validate_hypothesis' or 'dontknow' based on this decision
-                              as a single string without any other text or whitespace. If you are not sure what to do,
-                              output 'dontknow'.
+                              5) If you are not sure what to do, output 'dontknow'.
+                              
+                              REMEMBER: Do not output any other extraneous text or whitespace.
                               """
         return MyState(input=user_input, current_request=user_input,
                        messages=state["messages"] + [user_input, prompt])
@@ -82,9 +88,12 @@ def reverse_engineering_step_decider(tool_llm):
         elif "validate_hypothesis" in response.content:
             print("Validate Hypothesis")
             return "validate_hypothesis"
+        elif "system_query" in response.content:
+            print("System Query")
+            return "system_query"
         else:
-            print("Couldn't determine a path. Please phrase your question more clearly.")
-            return response.content
+            print("Couldn't determine a path. Directing your question to the Free Exploration Agent.")
+            return "free_explore"
 
     return run_agent
 
@@ -146,8 +155,8 @@ def hypothesize(tool_llm):
 
 def free_explore(tool_llm):
     def run_agent(state: MyState) -> dict[str, Any]:
-        print("In explore")
-        print("=====================")
+        print("In Free Exploration Mode")
+        print("=============================")
         print(state)
         response = tool_llm.invoke(["""
         You have multiple tools at your disposal to investigate this codebase. Use as many tools at once as needed. 
@@ -156,6 +165,18 @@ def free_explore(tool_llm):
         return MyState(input=state["input"], current_request=state["current_request"],
                        messages=state["messages"] + [response])
         # return {"messages": [response]}
+
+    return run_agent
+
+def system_query(tool_llm, tools):
+    def run_agent(state: MyState) -> dict[str, Any]:
+        print("In System Query Mode")
+        print("=============================")
+        print(state)
+        response = tool_llm.invoke([f"The list of Model Context Protocol tools are: {tools}. Answer the following request without using any tools: {state["current_request"]}"])
+        print(response.content)
+        return MyState(input=state["input"], current_request=state["current_request"],
+                       messages=state["messages"] + [response])
 
     return run_agent
 
@@ -247,6 +268,7 @@ async def make_graph(client: MultiServerMCPClient) -> AsyncGenerator[CompiledSta
         workflow.add_node(hypothesis_exec)
         workflow.add_node("hypothesize", hypothesizer)
         workflow.add_node("free_explore", free_explore(llm_with_tool))
+        workflow.add_node("system_query", system_query(llm_with_tool, mcp_tools))
         workflow.add_node(validate_hypothesis)
         # workflow.add_node(step_4)
 
@@ -255,6 +277,7 @@ async def make_graph(client: MultiServerMCPClient) -> AsyncGenerator[CompiledSta
         workflow.add_node("explore_tool", ToolNode(mcp_tools, handle_tool_errors=True))
         workflow.add_node("save_hypotheses_tool", ToolNode(mcp_tools, handle_tool_errors=True))
         workflow.add_node("free_explore_tool", ToolNode(mcp_tools, handle_tool_errors=True))
+        workflow.add_node("system_query_tool", ToolNode(mcp_tools, handle_tool_errors=True))
         workflow.add_node(explore_output)
         # workflow.add_node(before_exit)
 
@@ -265,6 +288,7 @@ async def make_graph(client: MultiServerMCPClient) -> AsyncGenerator[CompiledSta
             "hypothesize": "hypothesis_exec",
             "validate_hypothesis": "validate_hypothesis",
             "free_explore": "free_explore",
+            "system_query": "system_query",
             "dontknow": "dontknow",
             "default": "dontknow",
         })
@@ -282,11 +306,17 @@ async def make_graph(client: MultiServerMCPClient) -> AsyncGenerator[CompiledSta
             END: "step_1"
         })
 
+        workflow.add_conditional_edges("system_query", tools_condition, {
+            "tools": "system_query_tool",
+            END: "step_1"
+        })
+
         # workflow.add_edge("free_explore", "free_explore_tool")
         workflow.add_edge("free_explore_tool", "step_1")
         workflow.add_edge("explore_tool", "explore_output")
         workflow.add_edge("explore_output", "hypothesize")
         workflow.add_edge("save_hypotheses_tool", "step_1")
+        workflow.add_edge("system_query_tool", "step_1")
 
         workflow.add_edge("validate_hypothesis", "step_1")
         # workflow.add_edge("step_4", END)

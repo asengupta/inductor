@@ -957,6 +957,48 @@ async def create_multiple_hypotheses_with_objects(hypotheses_data: List[Dict[str
             "error": f"An error occurred: {str(e)}"
         }
 
+@mcp.tool()
+async def get_all_hypotheses() -> Dict[str, Any]:
+    """
+    Retrieve all available Hypothesis instances from the database.
+
+    Returns:
+        A dictionary containing all hypotheses
+    """
+    try:
+        # Call find_hypotheses without any parameters to get all hypotheses
+        hypotheses = hypothesis_ops.find_hypotheses()
+
+        result = []
+        for h in hypotheses:
+            result.append({
+                "id": h.id,
+                "subject": {
+                    "id": h.subject.id,
+                    "name": h.subject.name,
+                    "additional_properties": h.subject.additional_properties
+                },
+                "relation": h.relation,
+                "object": {
+                    "id": h.object.id,
+                    "name": h.object.name,
+                    "additional_properties": h.object.additional_properties
+                },
+                "confidence": h.confidence,
+                "additional_properties": h.additional_properties
+            })
+
+        return {
+            "success": True,
+            "count": len(result),
+            "hypotheses": result
+        }
+    except Exception as e:
+        return {
+            "success": False,
+            "error": f"An error occurred: {str(e)}"
+        }
+
 if __name__ == "__main__":
     # Initialize and run the server
     print("Starting Hypothesis MCP server...")
