@@ -49,8 +49,7 @@ class HypothesisOperations:
             # Create subject node with the provided ID
             subject_id = self.neo4j_ops.create_node(node_type="Subject", properties={
                 "name": hypothesis.subject.name,
-                "id": hypothesis.subject.id,
-                **hypothesis.subject.additional_properties
+                "id": hypothesis.subject.id
             })
 
         # Check if object node already exists
@@ -62,8 +61,7 @@ class HypothesisOperations:
             # Create object node with the provided ID
             object_id = self.neo4j_ops.create_node(node_type="Object", properties={
                 "name": hypothesis.object.name,
-                "id": hypothesis.object.id,
-                **hypothesis.object.additional_properties
+                "id": hypothesis.object.id
             })
 
         # Create relation node with confidence
@@ -73,8 +71,7 @@ class HypothesisOperations:
             "id": hypothesis.id,  # Use the hypothesis ID for the relation node
             "hypothesisId": hypothesis.id,  # Store the hypothesis ID for reference
             "subject_id": subject_id,  # Store the subject ID for reference
-            "object_id": object_id,  # Store the object ID for reference
-            **hypothesis.additional_properties
+            "object_id": object_id  # Store the object ID for reference
         })
 
         # Create relationships between nodes
@@ -106,17 +103,13 @@ class HypothesisOperations:
         # Create HypothesisSubject
         subject = HypothesisSubject(
             name=subject_node.get("name", ""),
-            id=subject_node.get("id", ""),
-            additional_properties={k: v for k, v in subject_node.items()
-                                   if k not in {"name", "id", "nodeType"}}
+            id=subject_node.get("id", "")
         )
 
         # Create HypothesisObject
         object_ = HypothesisObject(
             name=object_node.get("name", ""),
-            id=object_node.get("id", ""),
-            additional_properties={k: v for k, v in object_node.items()
-                                   if k not in {"name", "id", "nodeType"}}
+            id=object_node.get("id", "")
         )
 
         # Create a Hypothesis object
@@ -125,10 +118,7 @@ class HypothesisOperations:
             relation=relation_node.get("name", ""),
             object=object_,
             confidence=relation_node.get("confidence", 0.0),
-            id=hypothesis_id,
-            additional_properties={k: v for k, v in relation_node.items()
-                                   if k not in {"name", "confidence", "id", "nodeType", "hypothesisId",
-                                                "subject_id", "object_id"}}
+            id=hypothesis_id
         )
 
     def update_hypothesis(self, hypothesis: Hypothesis) -> bool:
@@ -155,8 +145,7 @@ class HypothesisOperations:
             subject_updated = self.neo4j_ops.update_node(
                 node_id=subject_node["id"],
                 properties={
-                    "name": hypothesis.subject.name,
-                    **hypothesis.subject.additional_properties
+                    "name": hypothesis.subject.name
                 }
             )
         else:
@@ -170,8 +159,7 @@ class HypothesisOperations:
                 # Create new subject node
                 subject_id = self.neo4j_ops.create_node(node_type="Subject", properties={
                     "name": hypothesis.subject.name,
-                    "id": hypothesis.subject.id,
-                    **hypothesis.subject.additional_properties
+                    "id": hypothesis.subject.id
                 })
                 subject_updated = subject_id is not None
 
@@ -189,8 +177,7 @@ class HypothesisOperations:
             object_updated = self.neo4j_ops.update_node(
                 node_id=object_node["id"],
                 properties={
-                    "name": hypothesis.object.name,
-                    **hypothesis.object.additional_properties
+                    "name": hypothesis.object.name
                 }
             )
         else:
@@ -204,8 +191,7 @@ class HypothesisOperations:
                 # Create new object node
                 object_id = self.neo4j_ops.create_node(node_type="Object", properties={
                     "name": hypothesis.object.name,
-                    "id": hypothesis.object.id,
-                    **hypothesis.object.additional_properties
+                    "id": hypothesis.object.id
                 })
                 object_updated = object_id is not None
 
@@ -225,9 +211,6 @@ class HypothesisOperations:
             "object_id": hypothesis.object.id
         }
 
-        # Add additional properties
-        if hypothesis.additional_properties:
-            relation_properties.update(hypothesis.additional_properties)
 
         relation_updated = self.neo4j_ops.update_node(
             node_id=hypothesis.id,
@@ -368,18 +351,14 @@ class HypothesisOperations:
                 subject_node = dict(record["s"].items())
                 subject = HypothesisSubject(
                     name=subject_node.get("name", ""),
-                    id=subject_node.get("id", ""),
-                    additional_properties={k: v for k, v in subject_node.items()
-                                           if k not in {"name", "id", "nodeType"}}
+                    id=subject_node.get("id", "")
                 )
 
                 # Create HypothesisObject
                 object_node = dict(record["o"].items())
                 object_ = HypothesisObject(
                     name=object_node.get("name", ""),
-                    id=object_node.get("id", ""),
-                    additional_properties={k: v for k, v in object_node.items()
-                                           if k not in {"name", "id", "nodeType"}}
+                    id=object_node.get("id", "")
                 )
 
                 # Create Hypothesis
@@ -389,10 +368,7 @@ class HypothesisOperations:
                     relation=relation_node.get("name", ""),
                     object=object_,
                     confidence=relation_node.get("confidence", 0.0),
-                    id=relation_node.get("id", ""),
-                    additional_properties={k: v for k, v in relation_node.items()
-                                           if k not in {"name", "confidence", "id", "nodeType", "hypothesisId",
-                                                        "subject_id", "object_id"}}
+                    id=relation_node.get("id", "")
                 )
 
                 hypotheses.append(hypothesis)

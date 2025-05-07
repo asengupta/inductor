@@ -57,8 +57,9 @@ def explore_evidence(tool_llm):
     def run_agent(state: MyState) -> dict[str, Any]:
         print("============IN EXPLORE EVIDENCE===============")
         msg = """
-        You have multiple tools to investigate the codebase. Use them to gather upto 5 hypotheses about the codebase.
-        Use as many tools at once as needed. At the end of your investigations, list down these hypotheses.
+        You have multiple tools to investigate the codebase. Use as many of them as needed to get some initial
+        info about the codebase. This info will be ultimately used to hypothesize about the large-scale purpose
+        of the codebase and the small-scale purpose of its various sections.
         """
         messages = state["messages"]
         print(f"Asking explorer to: {msg}")

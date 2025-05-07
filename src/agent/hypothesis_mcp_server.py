@@ -34,8 +34,7 @@ hypothesis_ops = HypothesisOperations(neo4j_ops)
 mcp = FastMCP("Hypothesis Operations")
 
 @mcp.tool()
-async def create_hypothesis(subject: str, relation: str, object_: str, confidence: float,
-                           additional_properties: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+async def create_hypothesis(subject: str, relation: str, object_: str, confidence: float) -> Dict[str, Any]:
     """
     Create a new Hypothesis in Neo4j.
 
@@ -44,7 +43,6 @@ async def create_hypothesis(subject: str, relation: str, object_: str, confidenc
         relation: The relation between subject and object
         object_: The name of the object
         confidence: The confidence level (between 0 and 1)
-        additional_properties: Additional properties for the hypothesis
 
     Returns:
         A dictionary containing the ID of the created hypothesis
@@ -55,8 +53,7 @@ async def create_hypothesis(subject: str, relation: str, object_: str, confidenc
             subject=subject,
             relation=relation,
             object_=object_,
-            confidence=confidence,
-            additional_properties=additional_properties or {}
+            confidence=confidence
         )
 
         # Save the hypothesis to Neo4J
@@ -80,9 +77,7 @@ async def create_hypothesis(subject: str, relation: str, object_: str, confidenc
 
 @mcp.tool()
 async def create_hypothesis_with_objects(subject_name: str, relation: str, object_name: str,
-                                        confidence: float, subject_properties: Optional[Dict[str, Any]] = None,
-                                        object_properties: Optional[Dict[str, Any]] = None,
-                                        hypothesis_properties: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+                                        confidence: float) -> Dict[str, Any]:
     """
     Create a new Hypothesis in Neo4j with detailed subject and object properties.
 
@@ -91,9 +86,6 @@ async def create_hypothesis_with_objects(subject_name: str, relation: str, objec
         relation: The relation between subject and object
         object_name: The name of the object
         confidence: The confidence level (between 0 and 1)
-        subject_properties: Additional properties for the subject
-        object_properties: Additional properties for the object
-        hypothesis_properties: Additional properties for the hypothesis
 
     Returns:
         A dictionary containing the ID of the created hypothesis
@@ -101,14 +93,12 @@ async def create_hypothesis_with_objects(subject_name: str, relation: str, objec
     try:
         # Create subject
         subject = HypothesisSubject(
-            name=subject_name,
-            additional_properties=subject_properties or {}
+            name=subject_name
         )
 
         # Create object
         object_ = HypothesisObject(
-            name=object_name,
-            additional_properties=object_properties or {}
+            name=object_name
         )
 
         # Create hypothesis
@@ -116,8 +106,7 @@ async def create_hypothesis_with_objects(subject_name: str, relation: str, objec
             subject=subject,
             relation=relation,
             object=object_,
-            confidence=confidence,
-            additional_properties=hypothesis_properties or {}
+            confidence=confidence
         )
 
         # Save the hypothesis to Neo4J
@@ -162,17 +151,14 @@ async def get_hypothesis(hypothesis_id: str) -> Dict[str, Any]:
                     "id": hypothesis.id,
                     "subject": {
                         "id": hypothesis.subject.id,
-                        "name": hypothesis.subject.name,
-                        "additional_properties": hypothesis.subject.additional_properties
+                        "name": hypothesis.subject.name
                     },
                     "relation": hypothesis.relation,
                     "object": {
                         "id": hypothesis.object.id,
-                        "name": hypothesis.object.name,
-                        "additional_properties": hypothesis.object.additional_properties
+                        "name": hypothesis.object.name
                     },
-                    "confidence": hypothesis.confidence,
-                    "additional_properties": hypothesis.additional_properties
+                    "confidence": hypothesis.confidence
                 }
             }
         else:
@@ -188,8 +174,7 @@ async def get_hypothesis(hypothesis_id: str) -> Dict[str, Any]:
 
 @mcp.tool()
 async def update_hypothesis(hypothesis_id: str, relation: Optional[str] = None,
-                           confidence: Optional[float] = None,
-                           additional_properties: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+                           confidence: Optional[float] = None) -> Dict[str, Any]:
     """
     Update a hypothesis by its ID.
 
@@ -197,7 +182,6 @@ async def update_hypothesis(hypothesis_id: str, relation: Optional[str] = None,
         hypothesis_id: The ID of the hypothesis to update
         relation: The new relation (optional)
         confidence: The new confidence level (optional)
-        additional_properties: New additional properties (optional)
 
     Returns:
         A dictionary indicating success or failure
@@ -218,9 +202,6 @@ async def update_hypothesis(hypothesis_id: str, relation: Optional[str] = None,
 
         if confidence is not None:
             hypothesis.confidence = confidence
-
-        if additional_properties is not None:
-            hypothesis.additional_properties.update(additional_properties)
 
         # Save the updates
         updated = hypothesis_ops.update_hypothesis(hypothesis)
@@ -336,15 +317,13 @@ async def find_hypotheses(subject: Optional[str] = None, relation: Optional[str]
         }
 
 @mcp.tool()
-async def update_subject(subject_id: str, name: Optional[str] = None,
-                        additional_properties: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+async def update_subject(subject_id: str, name: Optional[str] = None) -> Dict[str, Any]:
     """
     Update a HypothesisSubject by its ID.
 
     Args:
         subject_id: The ID of the subject to update
         name: The new name (optional)
-        additional_properties: New additional properties (optional)
 
     Returns:
         A dictionary indicating success or failure
@@ -364,9 +343,6 @@ async def update_subject(subject_id: str, name: Optional[str] = None,
 
         if name is not None:
             properties["name"] = name
-
-        if additional_properties is not None:
-            properties.update(additional_properties)
 
         if not properties:
             return {
@@ -434,15 +410,13 @@ async def delete_subject(subject_id: str) -> Dict[str, Any]:
         }
 
 @mcp.tool()
-async def update_object(object_id: str, name: Optional[str] = None,
-                       additional_properties: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+async def update_object(object_id: str, name: Optional[str] = None) -> Dict[str, Any]:
     """
     Update a HypothesisObject by its ID.
 
     Args:
         object_id: The ID of the object to update
         name: The new name (optional)
-        additional_properties: New additional properties (optional)
 
     Returns:
         A dictionary indicating success or failure
@@ -462,9 +436,6 @@ async def update_object(object_id: str, name: Optional[str] = None,
 
         if name is not None:
             properties["name"] = name
-
-        if additional_properties is not None:
-            properties.update(additional_properties)
 
         if not properties:
             return {
@@ -532,13 +503,12 @@ async def delete_object(object_id: str) -> Dict[str, Any]:
         }
 
 @mcp.tool()
-async def create_subject(name: str, additional_properties: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+async def create_subject(name: str) -> Dict[str, Any]:
     """
     Create a new HypothesisSubject in Neo4j.
 
     Args:
         name: The name of the subject
-        additional_properties: Additional properties for the subject
 
     Returns:
         A dictionary containing the ID of the created subject
@@ -546,8 +516,7 @@ async def create_subject(name: str, additional_properties: Optional[Dict[str, An
     try:
         # Create a subject
         subject = HypothesisSubject(
-            name=name,
-            additional_properties=additional_properties or {}
+            name=name
         )
 
         # Create the subject node in Neo4j
@@ -574,13 +543,12 @@ async def create_subject(name: str, additional_properties: Optional[Dict[str, An
         }
 
 @mcp.tool()
-async def create_object(name: str, additional_properties: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+async def create_object(name: str) -> Dict[str, Any]:
     """
     Create a new HypothesisObject in Neo4j.
 
     Args:
         name: The name of the object
-        additional_properties: Additional properties for the object
 
     Returns:
         A dictionary containing the ID of the created object
@@ -588,8 +556,7 @@ async def create_object(name: str, additional_properties: Optional[Dict[str, Any
     try:
         # Create an object
         object_ = HypothesisObject(
-            name=name,
-            additional_properties=additional_properties or {}
+            name=name
         )
 
         # Create the object node in Neo4j
@@ -637,8 +604,7 @@ async def get_subject(subject_id: str) -> Dict[str, Any]:
                 "success": True,
                 "subject": {
                     "id": subject.id,
-                    "name": subject.name,
-                    "additional_properties": subject.additional_properties
+                    "name": subject.name
                 }
             }
         else:
@@ -674,8 +640,7 @@ async def get_object(object_id: str) -> Dict[str, Any]:
                 "success": True,
                 "object": {
                     "id": object_.id,
-                    "name": object_.name,
-                    "additional_properties": object_.additional_properties
+                    "name": object_.name
                 }
             }
         else:
@@ -722,8 +687,7 @@ async def find_subjects(name: Optional[str] = None,
 
             result.append({
                 "id": subject.id,
-                "name": subject.name,
-                "additional_properties": subject.additional_properties
+                "name": subject.name
             })
 
         return {
@@ -770,8 +734,7 @@ async def find_objects(name: Optional[str] = None,
 
             result.append({
                 "id": object_.id,
-                "name": object_.name,
-                "additional_properties": object_.additional_properties
+                "name": object_.name
             })
 
         return {
@@ -812,7 +775,6 @@ async def create_multiple_hypotheses(hypotheses_data: List[Dict[str, Any]]) -> D
                 relation = hypo_data.get("relation")
                 object_ = hypo_data.get("object")
                 confidence = hypo_data.get("confidence")
-                additional_properties = hypo_data.get("additional_properties", {})
 
                 # Validate required fields
                 if not subject or not relation or not object_ or confidence is None:
@@ -827,8 +789,7 @@ async def create_multiple_hypotheses(hypotheses_data: List[Dict[str, Any]]) -> D
                     subject=subject,
                     relation=relation,
                     object_=object_,
-                    confidence=confidence,
-                    additional_properties=additional_properties
+                    confidence=confidence
                 )
 
                 # Save the hypothesis to Neo4J
@@ -891,9 +852,6 @@ async def create_multiple_hypotheses_with_objects(hypotheses_data: List[Dict[str
                 relation = hypo_data.get("relation")
                 object_name = hypo_data.get("object_name")
                 confidence = hypo_data.get("confidence")
-                subject_properties = hypo_data.get("subject_properties", {})
-                object_properties = hypo_data.get("object_properties", {})
-                hypothesis_properties = hypo_data.get("hypothesis_properties", {})
 
                 # Validate required fields
                 if not subject_name or not relation or not object_name or confidence is None:
@@ -905,14 +863,12 @@ async def create_multiple_hypotheses_with_objects(hypotheses_data: List[Dict[str
 
                 # Create subject
                 subject = HypothesisSubject(
-                    name=subject_name,
-                    additional_properties=subject_properties or {}
+                    name=subject_name
                 )
 
                 # Create object
                 object_ = HypothesisObject(
-                    name=object_name,
-                    additional_properties=object_properties or {}
+                    name=object_name
                 )
 
                 # Create hypothesis
@@ -920,8 +876,7 @@ async def create_multiple_hypotheses_with_objects(hypotheses_data: List[Dict[str
                     subject=subject,
                     relation=relation,
                     object=object_,
-                    confidence=confidence,
-                    additional_properties=hypothesis_properties or {}
+                    confidence=confidence
                 )
 
                 # Save the hypothesis to Neo4J
@@ -975,17 +930,14 @@ async def get_all_hypotheses() -> Dict[str, Any]:
                 "id": h.id,
                 "subject": {
                     "id": h.subject.id,
-                    "name": h.subject.name,
-                    "additional_properties": h.subject.additional_properties
+                    "name": h.subject.name
                 },
                 "relation": h.relation,
                 "object": {
                     "id": h.object.id,
-                    "name": h.object.name,
-                    "additional_properties": h.object.additional_properties
+                    "name": h.object.name
                 },
-                "confidence": h.confidence,
-                "additional_properties": h.additional_properties
+                "confidence": h.confidence
             })
 
         return {

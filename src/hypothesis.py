@@ -18,11 +18,9 @@ class HypothesisSubject:
     Attributes:
         name: The name of the subject
         id: The unique identifier (auto-generated if not explicitly provided)
-        additional_properties: Any additional properties for the subject
     """
     name: str
     id: str = field(default_factory=lambda: str(uuid.uuid4()))
-    additional_properties: Dict[str, Any] = field(default_factory=dict)
 
     def __post_init__(self):
         """Validate the subject data after initialization."""
@@ -36,9 +34,6 @@ class HypothesisSubject:
             'id': self.id
         }
 
-        if self.additional_properties:
-            result.update(self.additional_properties)
-
         return result
 
     @classmethod
@@ -51,14 +46,9 @@ class HypothesisSubject:
         name = data.get('name', '')
         id_ = data.get('id', str(uuid.uuid4()))
 
-        # Extract additional properties (excluding the main attributes and Neo4j internal attributes)
-        excluded_keys = {'name', 'id', 'nodeType'}
-        additional_properties = {k: v for k, v in data.items() if k not in excluded_keys}
-
         return cls(
             name=name,
-            id=id_,
-            additional_properties=additional_properties
+            id=id_
         )
 
 
@@ -70,11 +60,9 @@ class HypothesisObject:
     Attributes:
         name: The name of the object
         id: The unique identifier (auto-generated if not explicitly provided)
-        additional_properties: Any additional properties for the object
     """
     name: str
     id: str = field(default_factory=lambda: str(uuid.uuid4()))
-    additional_properties: Dict[str, Any] = field(default_factory=dict)
 
     def __post_init__(self):
         """Validate the object data after initialization."""
@@ -88,9 +76,6 @@ class HypothesisObject:
             'id': self.id
         }
 
-        if self.additional_properties:
-            result.update(self.additional_properties)
-
         return result
 
     @classmethod
@@ -103,14 +88,9 @@ class HypothesisObject:
         name = data.get('name', '')
         id_ = data.get('id', str(uuid.uuid4()))
 
-        # Extract additional properties (excluding the main attributes and Neo4j internal attributes)
-        excluded_keys = {'name', 'id', 'nodeType'}
-        additional_properties = {k: v for k, v in data.items() if k not in excluded_keys}
-
         return cls(
             name=name,
-            id=id_,
-            additional_properties=additional_properties
+            id=id_
         )
 
 
@@ -125,14 +105,12 @@ class Hypothesis:
         object: The object of the hypothesis (HypothesisObject)
         confidence: The confidence level (between 0 and 1)
         id: The unique identifier (auto-generated if not explicitly provided)
-        additional_properties: Any additional properties for the hypothesis
     """
     subject: HypothesisSubject
     relation: str
     object: HypothesisObject
     confidence: float
     id: str = field(default_factory=lambda: str(uuid.uuid4()))
-    additional_properties: Dict[str, Any] = field(default_factory=dict)
 
     def __post_init__(self):
         """Validate the hypothesis data after initialization."""
@@ -162,9 +140,6 @@ class Hypothesis:
             'subject_id': self.subject.id,
             'object_id': self.object.id
         }
-
-        if self.additional_properties:
-            result.update(self.additional_properties)
 
         return result
 
@@ -210,24 +185,17 @@ class Hypothesis:
                 id=data.get('object_id', str(uuid.uuid4()))
             )
 
-        # Extract additional properties (excluding the main attributes and Neo4j internal attributes)
-        excluded_keys = {'subject', 'relation', 'object', 'confidence', 'id', 'nodeType',
-                         'subject_id', 'object_id'}
-        additional_properties = {k: v for k, v in data.items() if k not in excluded_keys}
-
         return cls(
             subject=subject,
             relation=relation,
             object=object_,
             confidence=confidence,
-            id=id_,
-            additional_properties=additional_properties
+            id=id_
         )
 
     @classmethod
     def create_from_strings(cls, subject: str, relation: str, object_: str,
-                            confidence: float, id_: str = None,
-                            additional_properties: Dict[str, Any] = None) -> 'Hypothesis':
+                            confidence: float, id_: str = None) -> 'Hypothesis':
         """
         Create a Hypothesis instance from string values for backward compatibility.
 
@@ -237,16 +205,12 @@ class Hypothesis:
             object_: The object name
             confidence: The confidence level
             id_: The hypothesis ID (optional)
-            additional_properties: Additional properties (optional)
 
         Returns:
             A Hypothesis instance
         """
         if id_ is None:
             id_ = str(uuid.uuid4())
-
-        if additional_properties is None:
-            additional_properties = {}
 
         subject_obj = HypothesisSubject(name=subject)
         object_obj = HypothesisObject(name=object_)
@@ -256,6 +220,5 @@ class Hypothesis:
             relation=relation,
             object=object_obj,
             confidence=confidence,
-            id=id_,
-            additional_properties=additional_properties
+            id=id_
         )
