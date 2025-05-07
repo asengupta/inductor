@@ -1,0 +1,167 @@
+import asyncio
+from contextlib import asynccontextmanager
+from typing import Any, AsyncGenerator
+
+from dotenv import load_dotenv
+from langchain_core.messages import HumanMessage
+from langchain_mcp_adapters.client import MultiServerMCPClient
+from langgraph.constants import START, END
+from langgraph.graph import StateGraph
+from langgraph.graph.state import CompiledStateGraph
+from langgraph.prebuilt import ToolNode, tools_condition
+
+from graph.models import anthropic_model
+from graph.node_names import (
+    COLLECT_DATA_FOR_HYPOTHESIS, HYPOTHESIZE, EXPLORE_FREELY, SYSTEM_QUERY,
+    DATA_FOR_HYPOTHESIS_TOOL, SAVE_HYPOTHESES_TOOL, FREE_EXPLORE_TOOL, SYSTEM_QUERY_TOOL,
+    COLLECT_DATA_FOR_HYPOTHESIS_TOOL_OUTPUT, HYPOTHESIS_GATHER_START, VALIDATE_HYPOTHESIS, DONT_KNOW, EXECUTIVE_AGENT
+)
+from graph.nodes import (
+    collect_data_for_hypothesis, reverse_engineering_step_decider, free_explore,
+    hypothesize, hypothesis_exec, reverse_engineering_lead, system_query,
+    generic_tool_output, fallback, validate_hypothesis
+)
+from graph.router_constants import (
+    DONT_KNOW_DECISION, SYSTEM_QUERY_DECISION, FREEFORM_EXPLORATION_DECISION,
+    VALIDATE_HYPOTHESIS_DECISION, HYPOTHESIZE_DECISION, EXIT_DECISION
+)
+from graph.state import MyState
+
+load_dotenv("./env/.env")
+
+mcp_client = MultiServerMCPClient(
+    {
+        "say_hello": {
+            "command": "python",
+            "args": ["/Users/asgupta/code/inductor-langgraph-mcp/src/agent/simple_mcp_server.py"],
+            "transport": "stdio",
+        },
+        "analyseHLASM": {
+            "command": "java",
+            "args": ["-jar",
+                     "/Users/asgupta/code/hlasm-analyser/hlasm-mcp-server/target/hlasm-mcp-server-1.0-SNAPSHOT.jar"],
+            "transport": "stdio",
+        },
+        "hypothesis": {
+            "command": "python",
+            "args": ["/Users/asgupta/code/inductor-langgraph-mcp/src/agent/hypothesis_mcp_server.py"],
+            "transport": "stdio",
+        }
+    })
+
+
+@asynccontextmanager
+async def make_graph(client: MultiServerMCPClient) -> AsyncGenerator[CompiledStateGraph, Any]:
+    async with client:
+        mcp_tools = client.get_tools()
+        print("SOMETHING")
+        # print(mcp_tools)
+        llm_with_tool = anthropic_model().bind_tools(mcp_tools, tool_choice="auto")
+        # llm_with_tool = bedrock_model().bind_tools(mcp_tools)
+        agent_decider = reverse_engineering_step_decider(llm_with_tool)
+        lead = reverse_engineering_lead(llm_with_tool)
+        evidence_gatherer = collect_data_for_hypothesis(llm_with_tool)
+        hypothesizer = hypothesize(llm_with_tool)
+
+        workflow = StateGraph(MyState)
+
+        workflow.add_node(EXECUTIVE_AGENT, lead)
+        workflow.add_node(DONT_KNOW, fallback)
+        workflow.add_node(COLLECT_DATA_FOR_HYPOTHESIS, evidence_gatherer)
+        workflow.add_node(HYPOTHESIS_GATHER_START, hypothesis_exec)
+        workflow.add_node(HYPOTHESIZE, hypothesizer)
+        workflow.add_node(EXPLORE_FREELY, free_explore(llm_with_tool))
+        workflow.add_node(SYSTEM_QUERY, system_query(llm_with_tool, mcp_tools))
+        workflow.add_node(VALIDATE_HYPOTHESIS, validate_hypothesis)
+        # workflow.add_node(step_4)
+
+        # workflow.add_node("agent_runner", agent_runner)
+        # workflow.add_node("before_tool", before_tool)
+        workflow.add_node(DATA_FOR_HYPOTHESIS_TOOL, ToolNode(mcp_tools, handle_tool_errors=True))
+        workflow.add_node(SAVE_HYPOTHESES_TOOL, ToolNode(mcp_tools, handle_tool_errors=True))
+        workflow.add_node(FREE_EXPLORE_TOOL, ToolNode(mcp_tools, handle_tool_errors=True))
+        workflow.add_node(SYSTEM_QUERY_TOOL, ToolNode(mcp_tools, handle_tool_errors=True))
+        workflow.add_node(COLLECT_DATA_FOR_HYPOTHESIS_TOOL_OUTPUT, generic_tool_output(DATA_FOR_HYPOTHESIS_TOOL))
+        # workflow.add_node(before_exit)
+
+        workflow.add_edge(START, EXECUTIVE_AGENT)
+        workflow.add_edge(DONT_KNOW, EXECUTIVE_AGENT)
+
+        workflow.add_conditional_edges(EXECUTIVE_AGENT, agent_decider, {
+            HYPOTHESIZE_DECISION: HYPOTHESIS_GATHER_START,
+            VALIDATE_HYPOTHESIS_DECISION: VALIDATE_HYPOTHESIS,
+            FREEFORM_EXPLORATION_DECISION: EXPLORE_FREELY,
+            SYSTEM_QUERY_DECISION: SYSTEM_QUERY,
+            DONT_KNOW_DECISION: DONT_KNOW,
+            EXIT_DECISION: END,
+            "default": DONT_KNOW,
+        })
+        workflow.add_edge(HYPOTHESIS_GATHER_START, COLLECT_DATA_FOR_HYPOTHESIS)
+        workflow.add_conditional_edges(COLLECT_DATA_FOR_HYPOTHESIS, tools_condition, {
+            "tools": DATA_FOR_HYPOTHESIS_TOOL,
+            END: EXECUTIVE_AGENT
+        })
+        workflow.add_conditional_edges(HYPOTHESIZE, tools_condition, {
+            "tools": SAVE_HYPOTHESES_TOOL,
+            END: EXECUTIVE_AGENT
+        })
+        workflow.add_conditional_edges(EXPLORE_FREELY, tools_condition, {
+            "tools": FREE_EXPLORE_TOOL,
+            END: EXECUTIVE_AGENT
+        })
+
+        workflow.add_conditional_edges(SYSTEM_QUERY, tools_condition, {
+            "tools": SYSTEM_QUERY_TOOL,
+            END: EXECUTIVE_AGENT
+        })
+
+        # workflow.add_edge("free_explore", "FREE_EXPLORE_TOOL")
+        workflow.add_edge(EXPLORE_FREELY, EXECUTIVE_AGENT)
+        workflow.add_edge(DATA_FOR_HYPOTHESIS_TOOL, COLLECT_DATA_FOR_HYPOTHESIS_TOOL_OUTPUT)
+        workflow.add_edge(COLLECT_DATA_FOR_HYPOTHESIS_TOOL_OUTPUT, HYPOTHESIZE)
+        workflow.add_edge(SAVE_HYPOTHESES_TOOL, EXECUTIVE_AGENT)
+        workflow.add_edge(SYSTEM_QUERY_TOOL, EXECUTIVE_AGENT)
+
+        workflow.add_edge(VALIDATE_HYPOTHESIS, EXECUTIVE_AGENT)
+        # workflow.add_edge("step_4", END)
+
+        graph = workflow.compile()
+        graph.name = "My Graph"
+        yield graph
+
+
+async def update(user_input: str, graph: CompiledStateGraph):
+    result = await graph.ainvoke({"messages":
+        [
+            """
+            You are part of a reverse engineering pipeline looking at a HLASM codebase. Help navigate the user in understanding this code.
+            """,
+            HumanMessage(content=user_input)]})
+    print("Results")
+    for event in result:
+        print(event)
+
+
+async def run_thing():
+    async with make_graph(mcp_client) as graph:
+        # user_input: str = input("What do you want to do? ")
+        await update("", graph)
+        # while True:
+        #     try:
+        #         user_input: str = input("What do you want to do? ")
+        #         if user_input.lower() in ["quit", "exit", "q"]:
+        #             print("Goodbye!")
+        #             break
+        #         elif user_input.strip() == "":
+        #             print("No input provided. Please try again.")
+        #             continue
+        #         await update(user_input, graph)
+        #         continue
+        #     except:
+        #         print("Closing graph")
+        #         break
+
+
+if __name__ == "__main__":
+    asyncio.run(run_thing())
+    print("EXITING...")
