@@ -27,3 +27,7 @@ fileignoreconfig:
   checksum: dfd84f4734c408e248d7cae99fd33ef5c1a8a03d458e8f18b0c99102ab3cb625
 - filename: src/hypothesis_README.md
   checksum: 8458a6db4cc78800d7bf6f50d5854f80efb6e0db9aba08d900b07173f645dfc9
+- filename: src/hypothesis_mcp_README.md
+  checksum: a19bd3c5eb803736a7c29d0f4f5270b4231a0f26a9ba8fca687fc8030ef83957
+- filename: src/agent/hypothesis_mcp_server.py
+  checksum: a6721dc913e0aca0b752059caf56038ae8881ba919ff0ddafa7fbdc1d99d5b10

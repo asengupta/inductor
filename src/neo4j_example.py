@@ -7,6 +7,7 @@ This script demonstrates how to use the Neo4jOperations class to perform CRUD op
 import os
 from dotenv import load_dotenv
 from neo4j_operations import Neo4jOperations
+from id_provider import UuidProvider
 
 # Load environment variables from .env file
 load_dotenv("./env/.env")
@@ -18,8 +19,12 @@ NEO4J_PASSWORD = os.getenv("NEO4J_PASSWORD", "password")
 
 def main():
     """Run the example."""
-    # Initialize the Neo4j operations
-    neo4j_ops = Neo4jOperations(NEO4J_URI, NEO4J_USER, NEO4J_PASSWORD)
+    # Initialize the Neo4j operations with a custom ID provider
+    id_provider = UuidProvider()  # You can use your own implementation of IdProvider here
+    neo4j_ops = Neo4jOperations(NEO4J_URI, NEO4J_USER, NEO4J_PASSWORD, id_provider=id_provider)
+
+    # Alternatively, you can use the default ID provider (UuidProvider)
+    # neo4j_ops = Neo4jOperations(NEO4J_URI, NEO4J_USER, NEO4J_PASSWORD)
 
     try:
         # Example 1: Create a node

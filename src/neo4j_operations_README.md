@@ -27,6 +27,7 @@ NEO4J_PASSWORD=your_password
 
 ```python
 from neo4j_operations import Neo4jOperations
+from id_provider import UuidProvider
 import os
 from dotenv import load_dotenv
 
@@ -38,8 +39,31 @@ NEO4J_URI = os.getenv("NEO4J_URI", "bolt://localhost:7687")
 NEO4J_USER = os.getenv("NEO4J_USER", "neo4j")
 NEO4J_PASSWORD = os.getenv("NEO4J_PASSWORD", "password")
 
-# Initialize the Neo4j operations
-neo4j_ops = Neo4jOperations(NEO4J_URI, NEO4J_USER, NEO4J_PASSWORD)
+# Initialize with a custom ID provider
+id_provider = UuidProvider()  # You can use your own implementation of IdProvider
+neo4j_ops = Neo4jOperations(NEO4J_URI, NEO4J_USER, NEO4J_PASSWORD, id_provider=id_provider)
+
+# Alternatively, you can use the default ID provider (UuidProvider)
+# neo4j_ops = Neo4jOperations(NEO4J_URI, NEO4J_USER, NEO4J_PASSWORD)
+```
+
+### Using a Custom ID Provider
+
+The Neo4jOperations class can be initialized with a custom ID provider that implements the IdProvider interface. This allows you to control how IDs are generated for new nodes.
+
+```python
+from id_provider import IdProvider
+
+class CustomIdProvider:
+    """A custom implementation of IdProvider."""
+
+    def generate_id(self) -> str:
+        """Generate a custom ID."""
+        return f"custom-{int(time.time())}"  # Example: time-based ID
+
+# Use the custom ID provider
+custom_id_provider = CustomIdProvider()
+neo4j_ops = Neo4jOperations(NEO4J_URI, NEO4J_USER, NEO4J_PASSWORD, id_provider=custom_id_provider)
 ```
 
 ### Creating a Node

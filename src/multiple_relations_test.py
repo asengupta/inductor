@@ -11,6 +11,7 @@ from dotenv import load_dotenv
 from neo4j_operations import Neo4jOperations
 from hypothesis import Hypothesis, HypothesisSubject, HypothesisObject
 from hypothesis_operations import HypothesisOperations
+from id_provider import UuidProvider
 
 # Load environment variables from .env file
 load_dotenv("./env/.env")
@@ -22,8 +23,9 @@ NEO4J_PASSWORD = os.getenv("NEO4J_PASSWORD", "password")
 
 def main():
     """Run the test."""
-    # Initialize the Neo4j operations
-    neo4j_ops = Neo4jOperations(NEO4J_URI, NEO4J_USER, NEO4J_PASSWORD)
+    # Initialize the Neo4j operations with a custom ID provider
+    id_provider = UuidProvider()
+    neo4j_ops = Neo4jOperations(NEO4J_URI, NEO4J_USER, NEO4J_PASSWORD, id_provider=id_provider)
 
     # Initialize the Hypothesis operations
     hypothesis_ops = HypothesisOperations(neo4j_ops)

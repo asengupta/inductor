@@ -5,9 +5,12 @@ This module provides CRUD operations for Neo4J nodes.
 Each node will have an ID and a nodeType property.
 """
 
-from typing import Dict, List, Optional, Any, Union
-import uuid
+from typing import Dict, List, Optional, Any
+
 from neo4j import GraphDatabase, Driver, Session
+
+from id_provider import IdProvider, UuidProvider
+
 
 class Neo4jOperations:
     """
@@ -16,7 +19,7 @@ class Neo4jOperations:
     Each node will have an ID and a nodeType property.
     """
 
-    def __init__(self, uri: str, username: str, password: str):
+    def __init__(self, uri: str, username: str, password: str, id_provider: IdProvider):
         """
         Initialize the Neo4jOperations with connection details.
 
@@ -24,8 +27,10 @@ class Neo4jOperations:
             uri: The URI for the Neo4j instance
             username: The username for authentication
             password: The password for authentication
+            id_provider: Provider for generating unique IDs (defaults to UuidProvider)
         """
         self.driver: Driver = GraphDatabase.driver(uri, auth=(username, password))
+        self.id_provider = id_provider
 
     def close(self):
         """Close the driver connection."""
@@ -57,7 +62,7 @@ class Neo4jOperations:
 
         # Generate a unique ID if not provided
         if 'id' not in properties:
-            properties['id'] = str(uuid.uuid4())
+            properties['id'] = self.id_provider.generate_id()
 
         # Prepare labels string for Cypher query
         all_labels = [node_type] + labels

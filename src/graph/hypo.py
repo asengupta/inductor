@@ -217,6 +217,11 @@ mcp_client = MultiServerMCPClient(
             "args": ["-jar",
                      "/Users/asgupta/code/hlasm-analyser/hlasm-mcp-server/target/hlasm-mcp-server-1.0-SNAPSHOT.jar"],
             "transport": "stdio",
+        },
+        "hypothesis": {
+            "command": "python",
+            "args": ["/Users/asgupta/code/inductor-langgraph-mcp/src/agent/hypothesis_mcp_server.py"],
+            "transport": "stdio",
         }
     })
 

@@ -41,6 +41,7 @@ NEO4J_PASSWORD=your_password
 ```python
 from neo4j_operations import Neo4jOperations
 from hypothesis import HypothesisOperations, Hypothesis
+from id_provider import UuidProvider
 import os
 from dotenv import load_dotenv
 
@@ -52,12 +53,18 @@ NEO4J_URI = os.getenv("NEO4J_URI", "bolt://localhost:7687")
 NEO4J_USER = os.getenv("NEO4J_USER", "neo4j")
 NEO4J_PASSWORD = os.getenv("NEO4J_PASSWORD", "password")
 
-# Initialize the Neo4j operations
-neo4j_ops = Neo4jOperations(NEO4J_URI, NEO4J_USER, NEO4J_PASSWORD)
+# Initialize the Neo4j operations with a custom ID provider
+id_provider = UuidProvider()  # You can use your own implementation of IdProvider
+neo4j_ops = Neo4jOperations(NEO4J_URI, NEO4J_USER, NEO4J_PASSWORD, id_provider=id_provider)
+
+# Alternatively, you can use the default ID provider (UuidProvider)
+# neo4j_ops = Neo4jOperations(NEO4J_URI, NEO4J_USER, NEO4J_PASSWORD)
 
 # Initialize the Hypothesis operations
 hypothesis_ops = HypothesisOperations(neo4j_ops)
 ```
+
+For more information about using custom ID providers, see the [Neo4J Operations README](neo4j_operations_README.md#using-a-custom-id-provider).
 
 ### Using the HypothesisSubject and HypothesisObject Dataclasses
 

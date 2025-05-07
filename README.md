@@ -88,4 +88,6 @@ Also to resolve dependencies, use:
 
 ```python -m pip install -e .```
 
+To install development dependencies (for testing, linting, etc.), use:
 
+```python -m pip install -e ".[dev]"```
