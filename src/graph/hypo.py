@@ -14,7 +14,17 @@ from langgraph.graph.message import add_messages
 from langgraph.graph.state import CompiledStateGraph
 from langgraph.prebuilt import ToolNode, tools_condition
 
+from graph.node_names import COLLECT_DATA_FOR_HYPOTHESIS, HYPOTHESIZE, EXPLORE_FREELY, SYSTEM_QUERY, \
+    DATA_FOR_HYPOTHESIS_TOOL, SAVE_HYPOTHESES_TOOL, FREE_EXPLORE_TOOL, SYSTEM_QUERY_TOOL, \
+    COLLECT_DATA_FOR_HYPOTHESIS_TOOL_OUTPUT, HYPOTHESIS_GATHER_START, VALIDATE_HYPOTHESIS, DONT_KNOW
+from graph.router_constants import DONT_KNOW_DECISION, SYSTEM_QUERY_DECISION, FREEFORM_EXPLORATION_DECISION, \
+    VALIDATE_HYPOTHESIS_DECISION, HYPOTHESIZE_DECISION
+
 load_dotenv("./env/.env")
+
+EXECUTIVE_AGENT = "step_1"
+AWS_MODEL_ID = "AWS_MODEL_ID"
+AWS_REGION = "AWS_REGION"
 
 
 def reverse_engineering_lead(tool_llm):
@@ -31,24 +41,8 @@ def reverse_engineering_lead(tool_llm):
             else:
                 break
 
-        prompt = """
-                              Based on the input,
-                              decide which agent you wish to activate: a hypothesis-gathering agent, an exploration agent,
-                              or a hypothesis-validating agent.
-                              Output either 'explore', 'hypothesize' or 'validate_hypothesis', 'system_query', or 'dontknow' based on this decision
-                              as a single string without any other text or whitespace.
-                              The rules are:
-                              1) Use the hypothesis gathering agent only for creating hypotheses.
-                              2) Use the hypothesis validating agent only for validating hypotheses.
-                              3) Use 'explore' when answering general questions about the codebase not related to hypotheses or MCP tools.
-                              4) Use 'system_query' when answering questions about the MCP tools themselves.
-                              operations, just use the exploration agent.
-                              5) If you are not sure what to do, output 'dontknow'.
-                              
-                              REMEMBER: Do not output any other extraneous text or whitespace.
-                              """
         return MyState(input=user_input, current_request=user_input,
-                       messages=state["messages"] + [user_input, prompt])
+                       messages=state["messages"] + [user_input])
 
     return run_agent
 
@@ -74,27 +68,51 @@ def collect_data_for_hypothesis(tool_llm):
 def reverse_engineering_step_decider(tool_llm):
     def run_agent(state: MyState) -> str:
         messages = state["messages"]
+
+        prompt = f"""         The user request is: "{state['current_request']}".
+                              Based on the request, decide which agent you wish to activate. Your choices are:
+                              1) Hypothesis-gathering agent
+                              2) Hypothesis-validating agent
+                              3) Exploration agent,
+                              4) System Query agent
+                              
+                              Do not use any tools at this point.
+                              Output either '{FREEFORM_EXPLORATION_DECISION}', '{HYPOTHESIZE_DECISION}' or '{VALIDATE_HYPOTHESIS_DECISION}', '{SYSTEM_QUERY_DECISION}', or '{DONT_KNOW_DECISION}' based on this decision
+                              as a single string without any other text or whitespace.
+                              The rules are:
+                              1) Use '{HYPOTHESIZE_DECISION}' only for creating hypotheses.
+                              2) Use '{VALIDATE_HYPOTHESIS_DECISION}' only for validating hypotheses.
+                              3) Use '{FREEFORM_EXPLORATION_DECISION}' when answering general questions about the codebase not related to hypotheses or MCP tools.
+                              4) Use '{SYSTEM_QUERY_DECISION}' when answering questions about the MCP tools themselves.
+                              operations, just use the exploration agent.
+                              5) If you are not sure what to do, output '{DONT_KNOW_DECISION}'.
+                              
+                              REMEMBER: Do not output any other extraneous text or whitespace.
+                              """
+
         print("In DECIDING WHICH STEP TO TAKE:\n----------\n")
         print(state)
         # print(state["step_1_state"])
-        response = tool_llm.invoke(messages)
+        response = tool_llm.invoke(prompt)
         print("LLM Response\n----------\n")
         print(response.content)
-        if "explore" in response.content:
+        if FREEFORM_EXPLORATION_DECISION in response.content:
             print("Free Explore")
-            return "free_explore"
-        elif "hypothesize" in response.content:
-            print("Hypothesize")
-            return "hypothesize"
-        elif "validate_hypothesis" in response.content:
+            return FREEFORM_EXPLORATION_DECISION
+        elif (HYPOTHESIZE_DECISION in response.content
+              or "hypothesis" in response.content.lower()
+              or "hypotheses" in response.content.lower()):
+            print(HYPOTHESIZE_DECISION)
+            return HYPOTHESIZE_DECISION
+        elif VALIDATE_HYPOTHESIS_DECISION in response.content:
             print("Validate Hypothesis")
-            return "validate_hypothesis"
-        elif "system_query" in response.content:
+            return VALIDATE_HYPOTHESIS_DECISION
+        elif SYSTEM_QUERY_DECISION in response.content:
             print("System Query")
-            return "system_query"
+            return SYSTEM_QUERY_DECISION
         else:
             print("Couldn't determine a path. Directing your question to the Free Exploration Agent.")
-            return "free_explore"
+            return FREEFORM_EXPLORATION_DECISION
 
     return run_agent
 
@@ -170,12 +188,14 @@ def free_explore(tool_llm):
 
     return run_agent
 
+
 def system_query(tool_llm, tools):
     def run_agent(state: MyState) -> dict[str, Any]:
         print("In System Query Mode")
         print("=============================")
         print(state)
-        response = tool_llm.invoke([f"The list of Model Context Protocol tools are: {tools}. Answer the following request without using any tools: {state["current_request"]}"])
+        response = tool_llm.invoke([
+            f"The list of Model Context Protocol tools are: {tools}. Answer the following request without using any tools: {state["current_request"]}"])
         print(response.content)
         return MyState(input=state["input"], current_request=state["current_request"],
                        messages=state["messages"] + [response])
@@ -206,6 +226,7 @@ def generic_tool_output(tool_name: str):
         print(state)
         return MyState(input=state["input"], current_request=state["current_request"],
                        messages=state["messages"])
+
     return show_output
 
 
@@ -220,12 +241,12 @@ def anthropic_model():
 
 
 def bedrock_model():
-    AWS_MODEL_ID = os.environ.get("AWS_MODEL_ID")
-    AWS_REGION = os.environ.get("AWS_REGION")
-    print(f"MODEL_ID={AWS_MODEL_ID}")
+    aws_model_id = os.environ.get(AWS_MODEL_ID)
+    aws_region = os.environ.get(AWS_REGION)
+    print(f"MODEL_ID={aws_model_id}")
     bedrock_model = ChatBedrockConverse(
-        model_id=AWS_MODEL_ID,  # or "anthropic.bedrock_model-3-sonnet-20240229-v1:0"
-        region_name=AWS_REGION
+        model_id=aws_model_id,  # or "anthropic.bedrock_model-3-sonnet-20240229-v1:0"
+        region_name=aws_region
     )
     return bedrock_model
 
@@ -266,63 +287,63 @@ async def make_graph(client: MultiServerMCPClient) -> AsyncGenerator[CompiledSta
 
         workflow = StateGraph(MyState)
 
-        workflow.add_node("step_1", lead)
-        workflow.add_node("dontknow", fallback)
-        workflow.add_node("collect_data_for_hypothesis", evidence_gatherer)
-        workflow.add_node(hypothesis_exec)
-        workflow.add_node("hypothesize", hypothesizer)
-        workflow.add_node("free_explore", free_explore(llm_with_tool))
-        workflow.add_node("system_query", system_query(llm_with_tool, mcp_tools))
-        workflow.add_node(validate_hypothesis)
+        workflow.add_node(EXECUTIVE_AGENT, lead)
+        workflow.add_node(DONT_KNOW, fallback)
+        workflow.add_node(COLLECT_DATA_FOR_HYPOTHESIS, evidence_gatherer)
+        workflow.add_node(HYPOTHESIS_GATHER_START, hypothesis_exec)
+        workflow.add_node(HYPOTHESIZE, hypothesizer)
+        workflow.add_node(EXPLORE_FREELY, free_explore(llm_with_tool))
+        workflow.add_node(SYSTEM_QUERY, system_query(llm_with_tool, mcp_tools))
+        workflow.add_node(VALIDATE_HYPOTHESIS, validate_hypothesis)
         # workflow.add_node(step_4)
 
         # workflow.add_node("agent_runner", agent_runner)
         # workflow.add_node("before_tool", before_tool)
-        workflow.add_node("collect_data_for_hypothesis_tool", ToolNode(mcp_tools, handle_tool_errors=True))
-        workflow.add_node("save_hypotheses_tool", ToolNode(mcp_tools, handle_tool_errors=True))
-        workflow.add_node("free_explore_tool", ToolNode(mcp_tools, handle_tool_errors=True))
-        workflow.add_node("system_query_tool", ToolNode(mcp_tools, handle_tool_errors=True))
-        workflow.add_node("collect_data_for_hypothesis_tool_output", generic_tool_output("collect_data_for_hypothesis_tool"))
+        workflow.add_node(DATA_FOR_HYPOTHESIS_TOOL, ToolNode(mcp_tools, handle_tool_errors=True))
+        workflow.add_node(SAVE_HYPOTHESES_TOOL, ToolNode(mcp_tools, handle_tool_errors=True))
+        workflow.add_node(FREE_EXPLORE_TOOL, ToolNode(mcp_tools, handle_tool_errors=True))
+        workflow.add_node(SYSTEM_QUERY_TOOL, ToolNode(mcp_tools, handle_tool_errors=True))
+        workflow.add_node(COLLECT_DATA_FOR_HYPOTHESIS_TOOL_OUTPUT, generic_tool_output(DATA_FOR_HYPOTHESIS_TOOL))
         # workflow.add_node(before_exit)
 
-        workflow.add_edge(START, "step_1")
-        workflow.add_edge("dontknow", "step_1")
+        workflow.add_edge(START, EXECUTIVE_AGENT)
+        workflow.add_edge(DONT_KNOW, EXECUTIVE_AGENT)
 
-        workflow.add_conditional_edges("step_1", agent_decider, {
-            "hypothesize": "hypothesis_exec",
-            "validate_hypothesis": "validate_hypothesis",
-            "free_explore": "free_explore",
-            "system_query": "system_query",
-            "dontknow": "dontknow",
-            "default": "dontknow",
+        workflow.add_conditional_edges(EXECUTIVE_AGENT, agent_decider, {
+            HYPOTHESIZE_DECISION: HYPOTHESIS_GATHER_START,
+            VALIDATE_HYPOTHESIS_DECISION: VALIDATE_HYPOTHESIS,
+            FREEFORM_EXPLORATION_DECISION: EXPLORE_FREELY,
+            SYSTEM_QUERY_DECISION: SYSTEM_QUERY,
+            DONT_KNOW_DECISION: DONT_KNOW,
+            "default": DONT_KNOW,
         })
-        workflow.add_edge("hypothesis_exec", "collect_data_for_hypothesis")
-        workflow.add_conditional_edges("collect_data_for_hypothesis", tools_condition, {
-            "tools": "collect_data_for_hypothesis_tool",
-            END: "step_1"
+        workflow.add_edge(HYPOTHESIS_GATHER_START, COLLECT_DATA_FOR_HYPOTHESIS)
+        workflow.add_conditional_edges(COLLECT_DATA_FOR_HYPOTHESIS, tools_condition, {
+            "tools": DATA_FOR_HYPOTHESIS_TOOL,
+            END: EXECUTIVE_AGENT
         })
-        workflow.add_conditional_edges("hypothesize", tools_condition, {
-            "tools": "save_hypotheses_tool",
-            END: "step_1"
+        workflow.add_conditional_edges(HYPOTHESIZE, tools_condition, {
+            "tools": SAVE_HYPOTHESES_TOOL,
+            END: EXECUTIVE_AGENT
         })
-        workflow.add_conditional_edges("free_explore", tools_condition, {
-            "tools": "free_explore_tool",
-            END: "step_1"
-        })
-
-        workflow.add_conditional_edges("system_query", tools_condition, {
-            "tools": "system_query_tool",
-            END: "step_1"
+        workflow.add_conditional_edges(EXPLORE_FREELY, tools_condition, {
+            "tools": FREE_EXPLORE_TOOL,
+            END: EXECUTIVE_AGENT
         })
 
-        # workflow.add_edge("free_explore", "free_explore_tool")
-        workflow.add_edge("free_explore_tool", "step_1")
-        workflow.add_edge("collect_data_for_hypothesis_tool", "collect_data_for_hypothesis_tool_output")
-        workflow.add_edge("collect_data_for_hypothesis_tool_output", "hypothesize")
-        workflow.add_edge("save_hypotheses_tool", "step_1")
-        workflow.add_edge("system_query_tool", "step_1")
+        workflow.add_conditional_edges(SYSTEM_QUERY, tools_condition, {
+            "tools": SYSTEM_QUERY_TOOL,
+            END: EXECUTIVE_AGENT
+        })
 
-        workflow.add_edge("validate_hypothesis", "step_1")
+        # workflow.add_edge("free_explore", "FREE_EXPLORE_TOOL")
+        workflow.add_edge(EXPLORE_FREELY, EXECUTIVE_AGENT)
+        workflow.add_edge(DATA_FOR_HYPOTHESIS_TOOL, COLLECT_DATA_FOR_HYPOTHESIS_TOOL_OUTPUT)
+        workflow.add_edge(COLLECT_DATA_FOR_HYPOTHESIS_TOOL_OUTPUT, HYPOTHESIZE)
+        workflow.add_edge(SAVE_HYPOTHESES_TOOL, EXECUTIVE_AGENT)
+        workflow.add_edge(SYSTEM_QUERY_TOOL, EXECUTIVE_AGENT)
+
+        workflow.add_edge(VALIDATE_HYPOTHESIS, EXECUTIVE_AGENT)
         # workflow.add_edge("step_4", END)
 
         graph = workflow.compile()

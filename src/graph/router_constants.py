@@ -1,0 +1,5 @@
+FREEFORM_EXPLORATION_DECISION = "free_explore"
+HYPOTHESIZE_DECISION = "hypothesize"
+VALIDATE_HYPOTHESIS_DECISION = "validate_hypothesis"
+SYSTEM_QUERY_DECISION = "system_query"
+DONT_KNOW_DECISION = "dontknow"
