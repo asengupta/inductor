@@ -16,15 +16,15 @@ from langgraph.prebuilt import ToolNode, tools_condition
 
 from graph.node_names import COLLECT_DATA_FOR_HYPOTHESIS, HYPOTHESIZE, EXPLORE_FREELY, SYSTEM_QUERY, \
     DATA_FOR_HYPOTHESIS_TOOL, SAVE_HYPOTHESES_TOOL, FREE_EXPLORE_TOOL, SYSTEM_QUERY_TOOL, \
-    COLLECT_DATA_FOR_HYPOTHESIS_TOOL_OUTPUT, HYPOTHESIS_GATHER_START, VALIDATE_HYPOTHESIS, DONT_KNOW
+    COLLECT_DATA_FOR_HYPOTHESIS_TOOL_OUTPUT, HYPOTHESIS_GATHER_START, VALIDATE_HYPOTHESIS, DONT_KNOW, EXECUTIVE_AGENT
 from graph.router_constants import DONT_KNOW_DECISION, SYSTEM_QUERY_DECISION, FREEFORM_EXPLORATION_DECISION, \
     VALIDATE_HYPOTHESIS_DECISION, HYPOTHESIZE_DECISION
 
 load_dotenv("./env/.env")
 
-EXECUTIVE_AGENT = "step_1"
 AWS_MODEL_ID = "AWS_MODEL_ID"
 AWS_REGION = "AWS_REGION"
+ANTHROPIC_MODEL_ID = "ANTHROPIC_MODEL_ID"
 
 
 def reverse_engineering_lead(tool_llm):
@@ -125,7 +125,7 @@ class MyState(TypedDict):
     llm_response: list[BaseMessage]
 
 
-def step_1(state: MyState) -> dict[str, Any]:
+def executive_init(state: MyState) -> dict[str, Any]:
     print("In step 1")
     print(state)
     user_input: str = input("What do you want to do? ")
@@ -142,10 +142,6 @@ def fallback(state: MyState) -> dict[str, Any]:
 
 def hypothesis_exec(state: MyState):
     print("============IN HYPO EXEC=================")
-    human_message = HumanMessage("""
-        You have multiple tools to investigate the codebase. Use them to gather upto 5 hypotheses about the codebase.
-        Use as many tools at once as needed. At the end of your investigations, list down these hypotheses.
-        """)
     return MyState(input=state["input"], current_request=state["current_request"],
                    messages=state["messages"] + [])
 
@@ -184,7 +180,6 @@ def free_explore(tool_llm):
         print(response.content)
         return MyState(input=state["input"], current_request=state["current_request"],
                        messages=state["messages"] + [response])
-        # return {"messages": [response]}
 
     return run_agent
 
@@ -210,7 +205,6 @@ def validate_hypothesis(state: MyState) -> dict[str, Any]:
     message = "Validation of hypothesis not yet implemented"
     return MyState(input=state["input"], current_request=state["current_request"],
                    messages=state["messages"] + [message])
-    # return {"step_3_state": "DONE", "messages": message}
 
 
 def step_4(state: MyState) -> dict[str, Any]:
@@ -231,9 +225,9 @@ def generic_tool_output(tool_name: str):
 
 
 def anthropic_model():
-    ANTHROPIC_MODEL_ID = os.environ.get("ANTHROPIC_MODEL_ID")
+    anthropic_model_id = os.environ.get(ANTHROPIC_MODEL_ID)
     llm = ChatAnthropic(
-        model=ANTHROPIC_MODEL_ID,
+        model=anthropic_model_id,
         temperature=0,
         max_tokens=1024
     )
@@ -244,11 +238,11 @@ def bedrock_model():
     aws_model_id = os.environ.get(AWS_MODEL_ID)
     aws_region = os.environ.get(AWS_REGION)
     print(f"MODEL_ID={aws_model_id}")
-    bedrock_model = ChatBedrockConverse(
+    bedrock = ChatBedrockConverse(
         model_id=aws_model_id,  # or "anthropic.bedrock_model-3-sonnet-20240229-v1:0"
         region_name=aws_region
     )
-    return bedrock_model
+    return bedrock
 
 
 mcp_client = MultiServerMCPClient(
