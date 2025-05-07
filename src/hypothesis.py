@@ -5,10 +5,10 @@ This module provides CRUD operations for Hypothesis nodes in Neo4J.
 Each Hypothesis consists of a HypothesisSubject, a relation, a HypothesisObject, and a confidence value.
 """
 
-from typing import Dict, List, Optional, Any, Union
 import uuid
 from dataclasses import dataclass, field
-from neo4j_operations import Neo4jOperations
+from typing import Dict, Any
+
 
 @dataclass
 class HypothesisSubject:
@@ -61,6 +61,7 @@ class HypothesisSubject:
             additional_properties=additional_properties
         )
 
+
 @dataclass
 class HypothesisObject:
     """
@@ -111,6 +112,7 @@ class HypothesisObject:
             id=id_,
             additional_properties=additional_properties
         )
+
 
 @dataclass
 class Hypothesis:
@@ -168,7 +170,7 @@ class Hypothesis:
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any], subject_data: Dict[str, Any] = None,
-                 object_data: Dict[str, Any] = None) -> 'Hypothesis':
+                  object_data: Dict[str, Any] = None) -> 'Hypothesis':
         """
         Create a Hypothesis instance from dictionaries.
 
@@ -210,7 +212,7 @@ class Hypothesis:
 
         # Extract additional properties (excluding the main attributes and Neo4j internal attributes)
         excluded_keys = {'subject', 'relation', 'object', 'confidence', 'id', 'nodeType',
-                        'subject_id', 'object_id'}
+                         'subject_id', 'object_id'}
         additional_properties = {k: v for k, v in data.items() if k not in excluded_keys}
 
         return cls(
@@ -224,8 +226,8 @@ class Hypothesis:
 
     @classmethod
     def create_from_strings(cls, subject: str, relation: str, object_: str,
-                           confidence: float, id_: str = None,
-                           additional_properties: Dict[str, Any] = None) -> 'Hypothesis':
+                            confidence: float, id_: str = None,
+                            additional_properties: Dict[str, Any] = None) -> 'Hypothesis':
         """
         Create a Hypothesis instance from string values for backward compatibility.
 

@@ -1,76 +1,129 @@
-# New LangGraph Project
+# Inductor LangGraph MCP
 
-[![CI](https://github.com/langchain-ai/new-langgraph-project/actions/workflows/unit-tests.yml/badge.svg)](https://github.com/langchain-ai/new-langgraph-project/actions/workflows/unit-tests.yml)
-[![Integration Tests](https://github.com/langchain-ai/new-langgraph-project/actions/workflows/integration-tests.yml/badge.svg)](https://github.com/langchain-ai/new-langgraph-project/actions/workflows/integration-tests.yml)
-[![Open in - LangGraph Studio](https://img.shields.io/badge/Open_in-LangGraph_Studio-00324d.svg?logo=data:image/svg%2bxml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4NS4zMzMiIGhlaWdodD0iODUuMzMzIiB2ZXJzaW9uPSIxLjAiIHZpZXdCb3g9IjAgMCA2NCA2NCI+PHBhdGggZD0iTTEzIDcuOGMtNi4zIDMuMS03LjEgNi4zLTYuOCAyNS43LjQgMjQuNi4zIDI0LjUgMjUuOSAyNC41QzU3LjUgNTggNTggNTcuNSA1OCAzMi4zIDU4IDcuMyA1Ni43IDYgMzIgNmMtMTIuOCAwLTE2LjEuMy0xOSAxLjhtMzcuNiAxNi42YzIuOCAyLjggMy40IDQuMiAzLjQgNy42cy0uNiA0LjgtMy40IDcuNkw0Ny4yIDQzSDE2LjhsLTMuNC0zLjRjLTQuOC00LjgtNC44LTEwLjQgMC0xNS4ybDMuNC0zLjRoMzAuNHoiLz48cGF0aCBkPSJNMTguOSAyNS42Yy0xLjEgMS4zLTEgMS43LjQgMi41LjkuNiAxLjcgMS44IDEuNyAyLjcgMCAxIC43IDIuOCAxLjYgNC4xIDEuNCAxLjkgMS40IDIuNS4zIDMuMi0xIC42LS42LjkgMS40LjkgMS41IDAgMi43LS41IDIuNy0xIDAtLjYgMS4xLS44IDIuNi0uNGwyLjYuNy0xLjgtMi45Yy01LjktOS4zLTkuNC0xMi4zLTExLjUtOS44TTM5IDI2YzAgMS4xLS45IDIuNS0yIDMuMi0yLjQgMS41LTIuNiAzLjQtLjUgNC4yLjguMyAyIDEuNyAyLjUgMy4xLjYgMS41IDEuNCAyLjMgMiAyIDEuNS0uOSAxLjItMy41LS40LTMuNS0yLjEgMC0yLjgtMi44LS44LTMuMyAxLjYtLjQgMS42LS41IDAtLjYtMS4xLS4xLTEuNS0uNi0xLjItMS42LjctMS43IDMuMy0yLjEgMy41LS41LjEuNS4yIDEuNi4zIDIuMiAwIC43LjkgMS40IDEuOSAxLjYgMi4xLjQgMi4zLTIuMy4yLTMuMi0uOC0uMy0yLTEuNy0yLjUtMy4xLTEuMS0zLTMtMy4zLTMtLjUiLz48L3N2Zz4=)](https://langgraph-studio.vercel.app/templates/open?githubUrl=https://github.com/langchain-ai/new-langgraph-project)
-
-This template demonstrates a simple chatbot implemented using [LangGraph](https://github.com/langchain-ai/langgraph), designed for [LangGraph Studio](https://github.com/langchain-ai/langgraph-studio). The chatbot maintains persistent chat memory, allowing for coherent conversations across multiple interactions.
+A LangGraph-based system for reverse engineering HLASM (High Level Assembler) code using hypothesis generation, validation, and Neo4j for knowledge storage.
 
 ![Graph view in LangGraph studio UI](./static/studio_ui.png)
 
-The core logic, defined in `src/agent/graph.py`, showcases a straightforward chatbot that responds to user queries while maintaining context from previous messages.
+## Overview
 
-## What it does
+This project implements a reverse engineering pipeline for HLASM codebases using LangGraph. It combines:
 
-The simple chatbot:
+1. **Neo4j Operations** - Basic CRUD operations for Neo4j nodes
+2. **Hypothesis Management** - Creating, validating, and managing hypotheses about code functionality
+3. **MCP (Model-Control-Persistence) Servers** - JSON-RPC interfaces for interacting with Neo4j and hypothesis operations
+4. **LangGraph Workflow** - A graph-based workflow for reverse engineering that uses LLMs to guide the process
 
-1. Takes a user **message** as input
-2. Maintains a history of the conversation
-3. Generates a response based on the current message and conversation history
-4. Updates the conversation history with the new interaction
+The system allows you to:
+- Generate hypotheses about HLASM code functionality
+- Explore evidence to validate or refute hypotheses
+- Store and manage hypotheses in a Neo4j database
+- Navigate through a guided reverse engineering process
 
-This template provides a foundation that can be easily customized and extended to create more complex conversational agents.
+## Components
+
+### Neo4j Operations
+
+The Neo4j Operations module provides basic CRUD operations for Neo4j nodes, ensuring that each node has an ID and a nodeType property. See [Neo4j Operations README](src/neo4j_operations_README.md) for details.
+
+### Hypothesis Management
+
+The Hypothesis module provides CRUD operations for Hypothesis nodes in Neo4j, with specialized functionality for handling hypotheses. It includes:
+
+- HypothesisSubject and HypothesisObject dataclasses
+- Operations for creating, reading, updating, and deleting hypotheses
+- Validation of hypothesis data
+
+See [Hypothesis README](src/hypothesis_README.md) for details.
+
+### MCP Servers
+
+The project includes MCP servers that provide JSON-RPC interfaces for:
+
+- Neo4j operations
+- Hypothesis management
+- HLASM analysis
+
+These servers can be integrated with LangGraph using the `langchain_mcp_adapters` package. See [Hypothesis MCP README](src/hypothesis_mcp_README.md) for details.
+
+### LangGraph Workflow
+
+The core of the project is a LangGraph workflow that guides the reverse engineering process:
+
+1. **Lead Agent** - Guides the overall reverse engineering process
+2. **Evidence Gatherer** - Explores evidence related to hypotheses
+3. **Hypothesizer** - Generates hypotheses about code functionality
+4. **Validator** - Validates generated hypotheses
+5. **Free Explorer** - Allows for free exploration of the codebase
 
 ## Getting Started
 
-Assuming you have already [installed LangGraph Studio](https://github.com/langchain-ai/langgraph-studio?tab=readme-ov-file#download), to set up:
+### Prerequisites
 
-1. Create a `.env` file.
+1. Neo4j installed and running
+2. Python 3.8+
+3. LangGraph Studio (optional, for visualization)
+
+### Installation
+
+1. Clone the repository:
 
 ```bash
-cp .env.example .env
+git clone https://github.com/yourusername/inductor-langgraph-mcp.git
+cd inductor-langgraph-mcp
 ```
 
-2. Define required API keys in your `.env` file.
+2. Install dependencies:
 
-<!--
-Setup instruction auto-generated by `langgraph template lock`. DO NOT EDIT MANUALLY.
--->
+```bash
+poetry install
+```
 
+For development dependencies:
 
+```bash
+poetry install --with dev
+```
 
-<!--
-End setup instructions
--->
+3. Create a `.env` file with Neo4j connection details:
 
-3. Customize the code as needed.
-4. Open the folder in LangGraph Studio!
+```
+NEO4J_URI=bolt://localhost:7687
+NEO4J_USER=neo4j
+NEO4J_PASSWORD=your_password
+```
 
-## How to customize
+### Running the System
 
-1. **Modify the system prompt**: The default system prompt is defined in [configuration.py](src/graph/configuration.py). You can easily update this via configuration in the studio to change the chatbot's personality or behavior.
-2. **Select a different model**: We default to Anthropic's Claude 3 Sonnet. You can select a compatible chat model using `provider/model-name` via configuration. Example: `openai/gpt-4-turbo-preview`.
-3. **Extend the graph**: The core logic of the chatbot is defined in [graph.py](src/graph/graph.py). You can modify this file to add new nodes, edges, or change the flow of the conversation.
+1. Start the MCP servers:
 
-You can also quickly extend this template by:
+```bash
+poetry run python src/agent/hypothesis_mcp_server.py
+```
 
-- Adding custom tools or functions to enhance the chatbot's capabilities.
-- Implementing additional logic for handling specific types of user queries or tasks.
-- Integrating external APIs or databases to provide more dynamic responses.
+2. Run the LangGraph workflow:
+
+```bash
+poetry run python src/graph/hypo.py
+```
+
+## Usage
+
+The system provides a conversational interface for reverse engineering HLASM code:
+
+1. **Generate Hypotheses** - Ask the system to generate hypotheses about specific parts of the code
+2. **Explore Evidence** - Request the system to gather evidence to support or refute hypotheses
+3. **Validate Hypotheses** - Ask the system to validate existing hypotheses
+4. **Free Exploration** - Freely explore the codebase with the help of the system
 
 ## Development
 
-While iterating on your graph, you can edit past state and rerun your app from previous states to debug specific nodes. Local changes will be automatically applied via hot reload. Try experimenting with:
+### Adding New Tools
 
-- Modifying the system prompt to give your chatbot a unique personality.
-- Adding new nodes to the graph for more complex conversation flows.
-- Implementing conditional logic to handle different types of user inputs.
+You can extend the system by adding new tools to the MCP servers or by modifying the LangGraph workflow in `src/graph/hypo.py`.
 
-Follow-up requests will be appended to the same thread. You can create an entirely new thread, clearing previous history, using the `+` button in the top right.
+### Customizing the Workflow
 
-For more advanced features and examples, refer to the [LangGraph documentation](https://github.com/langchain-ai/langgraph). These resources can help you adapt this template for your specific use case and build more sophisticated conversational agents.
-
-LangGraph Studio also integrates with [LangSmith](https://smith.langchain.com/) for more in-depth tracing and collaboration with teammates, allowing you to analyze and optimize your chatbot's performance.
+The LangGraph workflow can be customized by modifying the `make_graph` function in `src/graph/hypo.py`. You can add new nodes, edges, or change the flow of the conversation.
 
 <!--
 Configuration auto-generated by `langgraph template lock`. DO NOT EDIT MANUALLY.
@@ -84,10 +137,19 @@ Configuration auto-generated by `langgraph template lock`. DO NOT EDIT MANUALLY.
 }
 -->
 
-Also to resolve dependencies, use:
+## Examples
 
-```python -m pip install -e .```
+See the following files for examples:
+- `src/hypothesis_example.py` - Example of using the Hypothesis operations
+- `src/neo4j_example.py` - Example of using the Neo4j operations
+- `src/hypothesis_mcp_test.py` - Example of using the Hypothesis MCP server
 
-To install development dependencies (for testing, linting, etc.), use:
+## License
 
-```python -m pip install -e ".[dev]"```
+[License information]
+
+## Acknowledgments
+
+- [LangGraph](https://github.com/langchain-ai/langgraph) - For the graph-based workflow framework
+- [Neo4j](https://neo4j.com/) - For the graph database
+- [LangChain](https://github.com/langchain-ai/langchain) - For LLM integration

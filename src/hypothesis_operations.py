@@ -6,10 +6,11 @@ Each Hypothesis consists of three nodes: subject, relation, and object,
 with relationships between them.
 """
 
-from typing import Dict, List, Optional, Any, Union, Tuple, cast
-import uuid
-from neo4j_operations import Neo4jOperations
+from typing import Dict, List, Optional, Any, Tuple
+
 from hypothesis import Hypothesis, HypothesisSubject, HypothesisObject
+from neo4j_operations import Neo4jOperations
+
 
 class HypothesisOperations:
     """
@@ -107,7 +108,7 @@ class HypothesisOperations:
             name=subject_node.get("name", ""),
             id=subject_node.get("id", ""),
             additional_properties={k: v for k, v in subject_node.items()
-                                  if k not in {"name", "id", "nodeType"}}
+                                   if k not in {"name", "id", "nodeType"}}
         )
 
         # Create HypothesisObject
@@ -115,7 +116,7 @@ class HypothesisOperations:
             name=object_node.get("name", ""),
             id=object_node.get("id", ""),
             additional_properties={k: v for k, v in object_node.items()
-                                  if k not in {"name", "id", "nodeType"}}
+                                   if k not in {"name", "id", "nodeType"}}
         )
 
         # Create a Hypothesis object
@@ -126,8 +127,8 @@ class HypothesisOperations:
             confidence=relation_node.get("confidence", 0.0),
             id=hypothesis_id,
             additional_properties={k: v for k, v in relation_node.items()
-                                  if k not in {"name", "confidence", "id", "nodeType", "hypothesisId",
-                                              "subject_id", "object_id"}}
+                                   if k not in {"name", "confidence", "id", "nodeType", "hypothesisId",
+                                                "subject_id", "object_id"}}
         )
 
     def update_hypothesis(self, hypothesis: Hypothesis) -> bool:
@@ -301,9 +302,9 @@ class HypothesisOperations:
             return total_count > 0
 
     def find_hypotheses(self, subject: str = None, relation: str = None,
-                       object_: str = None, min_confidence: float = None,
-                       max_confidence: float = None, subject_id: str = None,
-                       object_id: str = None) -> List[Hypothesis]:
+                        object_: str = None, min_confidence: float = None,
+                        max_confidence: float = None, subject_id: str = None,
+                        object_id: str = None) -> List[Hypothesis]:
         """
         Find hypotheses matching the given criteria.
 
@@ -369,7 +370,7 @@ class HypothesisOperations:
                     name=subject_node.get("name", ""),
                     id=subject_node.get("id", ""),
                     additional_properties={k: v for k, v in subject_node.items()
-                                          if k not in {"name", "id", "nodeType"}}
+                                           if k not in {"name", "id", "nodeType"}}
                 )
 
                 # Create HypothesisObject
@@ -378,7 +379,7 @@ class HypothesisOperations:
                     name=object_node.get("name", ""),
                     id=object_node.get("id", ""),
                     additional_properties={k: v for k, v in object_node.items()
-                                          if k not in {"name", "id", "nodeType"}}
+                                           if k not in {"name", "id", "nodeType"}}
                 )
 
                 # Create Hypothesis
@@ -390,8 +391,8 @@ class HypothesisOperations:
                     confidence=relation_node.get("confidence", 0.0),
                     id=relation_node.get("id", ""),
                     additional_properties={k: v for k, v in relation_node.items()
-                                          if k not in {"name", "confidence", "id", "nodeType", "hypothesisId",
-                                                      "subject_id", "object_id"}}
+                                           if k not in {"name", "confidence", "id", "nodeType", "hypothesisId",
+                                                        "subject_id", "object_id"}}
                 )
 
                 hypotheses.append(hypothesis)

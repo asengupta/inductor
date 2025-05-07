@@ -4,11 +4,13 @@ and that the relation node uses the hypothesis ID.
 """
 
 import os
+
 from dotenv import load_dotenv
-from neo4j_operations import Neo4jOperations
+
 from hypothesis import Hypothesis
 from hypothesis_operations import HypothesisOperations
 from id_provider import UuidProvider
+from neo4j_operations import Neo4jOperations
 
 # Load environment variables from .env file
 load_dotenv("./env/.env")
@@ -17,6 +19,7 @@ load_dotenv("./env/.env")
 NEO4J_URI = os.getenv("NEO4J_URI", "bolt://localhost:7687")
 NEO4J_USER = os.getenv("NEO4J_USER", "neo4j")
 NEO4J_PASSWORD = os.getenv("NEO4J_PASSWORD", "password")
+
 
 def main():
     """Run the test."""
@@ -73,6 +76,7 @@ def main():
         # Close the connection
         neo4j_ops.close()
         print("\nConnection closed.")
+
 
 if __name__ == "__main__":
     main()

@@ -58,7 +58,7 @@ class Neo4jOperations:
 
         # Generate a unique ID if not provided
         if 'id' not in properties:
-            properties['id'] = self.id_provider.generate_id()
+            properties['id'] = self.id_provider.id()
 
         # Prepare labels string for Cypher query
         all_labels = [node_type] + labels

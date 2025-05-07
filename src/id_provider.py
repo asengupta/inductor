@@ -4,15 +4,16 @@ ID Provider Module
 This module provides an interface for generating unique IDs.
 """
 
-from typing import Protocol
 import uuid
+from typing import Protocol
+
 
 class IdProvider(Protocol):
     """
     Protocol defining the interface for ID providers.
     """
 
-    def generate_id(self) -> str:
+    def id(self) -> str:
         """
         Generate a unique ID.
 
@@ -21,12 +22,13 @@ class IdProvider(Protocol):
         """
         ...
 
-class UuidProvider:
+
+class UuidProvider(IdProvider):
     """
     An implementation of IdProvider that generates UUIDs.
     """
 
-    def generate_id(self) -> str:
+    def id(self) -> str:
         """
         Generate a unique UUID.
 

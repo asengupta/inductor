@@ -5,9 +5,11 @@ This script demonstrates how to use the Neo4jOperations class to perform CRUD op
 """
 
 import os
+
 from dotenv import load_dotenv
-from neo4j_operations import Neo4jOperations
+
 from id_provider import UuidProvider
+from neo4j_operations import Neo4jOperations
 
 # Load environment variables from .env file
 load_dotenv("./env/.env")

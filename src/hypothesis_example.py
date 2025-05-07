@@ -7,11 +7,13 @@ subject, relation, and object.
 """
 
 import os
+
 from dotenv import load_dotenv
-from neo4j_operations import Neo4jOperations
+
 from hypothesis import Hypothesis, HypothesisSubject, HypothesisObject
 from hypothesis_operations import HypothesisOperations
 from id_provider import UuidProvider
+from neo4j_operations import Neo4jOperations
 
 # Load environment variables from .env file
 load_dotenv("./env/.env")

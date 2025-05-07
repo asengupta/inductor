@@ -5,11 +5,12 @@ This script demonstrates how to use the Hypothesis MCP server to perform CRUD op
 on Hypothesis objects, HypothesisSubject, and HypothesisObject in Neo4J.
 """
 
-import os
 import asyncio
 import json
+import os
 import subprocess
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any
+
 from dotenv import load_dotenv
 
 # Load environment variables from .env file
@@ -17,6 +18,7 @@ load_dotenv("./env/.env")
 
 # Path to the MCP server script
 MCP_SERVER_PATH = os.path.join(os.path.dirname(__file__), "agent", "hypothesis_mcp_server.py")
+
 
 class HypothesisMCPClient:
     """A client for interacting with the Hypothesis MCP server."""
@@ -83,6 +85,7 @@ class HypothesisMCPClient:
             raise RuntimeError(f"Error calling tool: {response['error']}")
 
         return response["result"]
+
 
 async def run_test():
     """Run the test."""
@@ -318,6 +321,7 @@ async def run_test():
     finally:
         print("\nStopping Hypothesis MCP server...")
         await client.stop_server()
+
 
 if __name__ == "__main__":
     asyncio.run(run_test())
