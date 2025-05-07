@@ -53,7 +53,7 @@ def reverse_engineering_lead(tool_llm):
     return run_agent
 
 
-def explore_evidence(tool_llm):
+def collect_data_for_hypothesis(tool_llm):
     def run_agent(state: MyState) -> dict[str, Any]:
         print("============IN EXPLORE EVIDENCE===============")
         msg = """
@@ -258,7 +258,7 @@ async def make_graph(client: MultiServerMCPClient) -> AsyncGenerator[CompiledSta
         # llm_with_tool = bedrock_model().bind_tools(mcp_tools)
         agent_decider = reverse_engineering_step_decider(llm_with_tool)
         lead = reverse_engineering_lead(llm_with_tool)
-        evidence_gatherer = explore_evidence(llm_with_tool)
+        evidence_gatherer = collect_data_for_hypothesis(llm_with_tool)
         hypothesizer = hypothesize(llm_with_tool)
 
         workflow = StateGraph(MyState)
