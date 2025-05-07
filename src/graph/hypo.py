@@ -55,7 +55,7 @@ def reverse_engineering_lead(tool_llm):
 
 def collect_data_for_hypothesis(tool_llm):
     def run_agent(state: MyState) -> dict[str, Any]:
-        print("============IN EXPLORE EVIDENCE===============")
+        print("============IN COLLECT DATA TO BUILD HYPOTHESIS===============")
         msg = """
         You have multiple tools to investigate the codebase. Use as many of them as needed to get some initial
         info about the codebase. This info will be ultimately used to hypothesize about the large-scale purpose
@@ -66,7 +66,7 @@ def collect_data_for_hypothesis(tool_llm):
         response = tool_llm.invoke(msg)
         print(response.content)
         return MyState(input=state["input"], current_request=state["current_request"],
-                       messages=state["messages"] + [response])
+                       messages=state["messages"] + [response], llm_response=response)
 
     return run_agent
 
@@ -104,6 +104,7 @@ class MyState(TypedDict):
     messages: Annotated[list[BaseMessage], add_messages]
     current_request: str
     tool_calls: list[str]
+    llm_response: list[BaseMessage]
 
 
 def step_1(state: MyState) -> dict[str, Any]:
@@ -198,12 +199,14 @@ def step_4(state: MyState) -> dict[str, Any]:
     return {"step_4_state": "DONE"}
 
 
-def explore_output(state: MyState) -> dict[str, Any]:
-    print("In tool_output...")
-    print("=====================")
-    print(state)
-    return MyState(input=state["input"], current_request=state["current_request"],
-                   messages=state["messages"])
+def generic_tool_output(tool_name: str):
+    def show_output(state: MyState) -> dict[str, Any]:
+        print(f"In tool_output of {tool_name}...")
+        print("=====================")
+        print(state)
+        return MyState(input=state["input"], current_request=state["current_request"],
+                       messages=state["messages"])
+    return show_output
 
 
 def anthropic_model():
@@ -265,7 +268,7 @@ async def make_graph(client: MultiServerMCPClient) -> AsyncGenerator[CompiledSta
 
         workflow.add_node("step_1", lead)
         workflow.add_node("dontknow", fallback)
-        workflow.add_node("explore_evidence", evidence_gatherer)
+        workflow.add_node("collect_data_for_hypothesis", evidence_gatherer)
         workflow.add_node(hypothesis_exec)
         workflow.add_node("hypothesize", hypothesizer)
         workflow.add_node("free_explore", free_explore(llm_with_tool))
@@ -275,11 +278,11 @@ async def make_graph(client: MultiServerMCPClient) -> AsyncGenerator[CompiledSta
 
         # workflow.add_node("agent_runner", agent_runner)
         # workflow.add_node("before_tool", before_tool)
-        workflow.add_node("explore_tool", ToolNode(mcp_tools, handle_tool_errors=True))
+        workflow.add_node("collect_data_for_hypothesis_tool", ToolNode(mcp_tools, handle_tool_errors=True))
         workflow.add_node("save_hypotheses_tool", ToolNode(mcp_tools, handle_tool_errors=True))
         workflow.add_node("free_explore_tool", ToolNode(mcp_tools, handle_tool_errors=True))
         workflow.add_node("system_query_tool", ToolNode(mcp_tools, handle_tool_errors=True))
-        workflow.add_node(explore_output)
+        workflow.add_node("collect_data_for_hypothesis_tool_output", generic_tool_output("collect_data_for_hypothesis_tool"))
         # workflow.add_node(before_exit)
 
         workflow.add_edge(START, "step_1")
@@ -293,9 +296,9 @@ async def make_graph(client: MultiServerMCPClient) -> AsyncGenerator[CompiledSta
             "dontknow": "dontknow",
             "default": "dontknow",
         })
-        workflow.add_edge("hypothesis_exec", "explore_evidence")
-        workflow.add_conditional_edges("explore_evidence", tools_condition, {
-            "tools": "explore_tool",
+        workflow.add_edge("hypothesis_exec", "collect_data_for_hypothesis")
+        workflow.add_conditional_edges("collect_data_for_hypothesis", tools_condition, {
+            "tools": "collect_data_for_hypothesis_tool",
             END: "step_1"
         })
         workflow.add_conditional_edges("hypothesize", tools_condition, {
@@ -314,8 +317,8 @@ async def make_graph(client: MultiServerMCPClient) -> AsyncGenerator[CompiledSta
 
         # workflow.add_edge("free_explore", "free_explore_tool")
         workflow.add_edge("free_explore_tool", "step_1")
-        workflow.add_edge("explore_tool", "explore_output")
-        workflow.add_edge("explore_output", "hypothesize")
+        workflow.add_edge("collect_data_for_hypothesis_tool", "collect_data_for_hypothesis_tool_output")
+        workflow.add_edge("collect_data_for_hypothesis_tool_output", "hypothesize")
         workflow.add_edge("save_hypotheses_tool", "step_1")
         workflow.add_edge("system_query_tool", "step_1")
 
