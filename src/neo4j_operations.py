@@ -40,7 +40,7 @@ class Neo4jOperations:
         """Get a new session from the driver."""
         return self.driver.session()
 
-    def create_node(self, node_type: str, properties: Dict[str, Any] = None, labels: List[str] = None) -> str:
+    def create_node(self, node_type: str, properties: Dict[str, Any] = {}, labels: List[str] = []) -> str:
         """
         Create a new node in Neo4j.
 
@@ -52,10 +52,6 @@ class Neo4jOperations:
         Returns:
             The ID of the created node
         """
-        if properties is None:
-            properties = {}
-        if labels is None:
-            labels = []
 
         # Ensure node_type is included in properties
         properties['nodeType'] = node_type
@@ -141,8 +137,8 @@ class Neo4jOperations:
             record = result.single()
             return record and record["count"] > 0
 
-    def find_nodes(self, node_type: Optional[str] = None, properties: Dict[str, Any] = None,
-                  labels: List[str] = None) -> List[Dict[str, Any]]:
+    def find_nodes(self, node_type: Optional[str] = None, properties: Dict[str, Any] = {},
+                  labels: List[str] = []) -> List[Dict[str, Any]]:
         """
         Find nodes matching the given criteria.
 
@@ -154,10 +150,6 @@ class Neo4jOperations:
         Returns:
             A list of dictionaries containing the node properties
         """
-        if properties is None:
-            properties = {}
-        if labels is None:
-            labels = []
 
         # Build the match clause
         match_parts = []

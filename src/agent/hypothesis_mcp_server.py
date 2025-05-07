@@ -551,14 +551,11 @@ async def create_subject(name: str, additional_properties: Optional[Dict[str, An
         )
 
         # Create the subject node in Neo4j
-        subject_id = neo4j_ops.create_node(
-            node_type="Subject",
-            properties={
-                "name": subject.name,
-                "id": subject.id,
-                **subject.additional_properties
-            }
-        )
+        subject_id = neo4j_ops.create_node(node_type="Subject", properties={
+            "name": subject.name,
+            "id": subject.id,
+            **subject.additional_properties
+        })
 
         return {
             "success": True,
@@ -596,14 +593,11 @@ async def create_object(name: str, additional_properties: Optional[Dict[str, Any
         )
 
         # Create the object node in Neo4j
-        object_id = neo4j_ops.create_node(
-            node_type="Object",
-            properties={
-                "name": object_.name,
-                "id": object_.id,
-                **object_.additional_properties
-            }
-        )
+        object_id = neo4j_ops.create_node(node_type="Object", properties={
+            "name": object_.name,
+            "id": object_.id,
+            **object_.additional_properties
+        })
 
         return {
             "success": True,
@@ -784,6 +778,178 @@ async def find_objects(name: Optional[str] = None,
             "success": True,
             "count": len(result),
             "objects": result
+        }
+    except Exception as e:
+        return {
+            "success": False,
+            "error": f"An error occurred: {str(e)}"
+        }
+
+@mcp.tool()
+async def create_multiple_hypotheses(hypotheses_data: List[Dict[str, Any]]) -> Dict[str, Any]:
+    """
+    Create multiple Hypothesis objects at once.
+
+    Args:
+        hypotheses_data: A list of dictionaries, each containing data for a hypothesis:
+            - subject: The name of the subject
+            - relation: The relation between subject and object
+            - object: The name of the object
+            - confidence: The confidence level (between 0 and 1)
+            - additional_properties: Additional properties for the hypothesis (optional)
+
+    Returns:
+        A dictionary containing the IDs of the created hypotheses
+    """
+    try:
+        created_hypotheses = []
+        failed_hypotheses = []
+
+        for idx, hypo_data in enumerate(hypotheses_data):
+            try:
+                # Extract required fields
+                subject = hypo_data.get("subject")
+                relation = hypo_data.get("relation")
+                object_ = hypo_data.get("object")
+                confidence = hypo_data.get("confidence")
+                additional_properties = hypo_data.get("additional_properties", {})
+
+                # Validate required fields
+                if not subject or not relation or not object_ or confidence is None:
+                    failed_hypotheses.append({
+                        "index": idx,
+                        "error": "Missing required fields (subject, relation, object, confidence)"
+                    })
+                    continue
+
+                # Create a hypothesis using the create_from_strings method
+                hypothesis = Hypothesis.create_from_strings(
+                    subject=subject,
+                    relation=relation,
+                    object_=object_,
+                    confidence=confidence,
+                    additional_properties=additional_properties
+                )
+
+                # Save the hypothesis to Neo4J
+                hypothesis_id = hypothesis_ops.create_hypothesis(hypothesis)
+
+                created_hypotheses.append({
+                    "index": idx,
+                    "hypothesis_id": hypothesis_id,
+                    "subject": subject,
+                    "relation": relation,
+                    "object": object_,
+                    "confidence": confidence
+                })
+
+            except Exception as e:
+                failed_hypotheses.append({
+                    "index": idx,
+                    "error": str(e)
+                })
+
+        return {
+            "success": True,
+            "created_count": len(created_hypotheses),
+            "failed_count": len(failed_hypotheses),
+            "created_hypotheses": created_hypotheses,
+            "failed_hypotheses": failed_hypotheses
+        }
+    except Exception as e:
+        return {
+            "success": False,
+            "error": f"An error occurred: {str(e)}"
+        }
+
+@mcp.tool()
+async def create_multiple_hypotheses_with_objects(hypotheses_data: List[Dict[str, Any]]) -> Dict[str, Any]:
+    """
+    Create multiple Hypothesis objects at once with detailed subject and object properties.
+
+    Args:
+        hypotheses_data: A list of dictionaries, each containing data for a hypothesis:
+            - subject_name: The name of the subject
+            - relation: The relation between subject and object
+            - object_name: The name of the object
+            - confidence: The confidence level (between 0 and 1)
+            - subject_properties: Additional properties for the subject (optional)
+            - object_properties: Additional properties for the object (optional)
+            - hypothesis_properties: Additional properties for the hypothesis (optional)
+
+    Returns:
+        A dictionary containing the IDs of the created hypotheses
+    """
+    try:
+        created_hypotheses = []
+        failed_hypotheses = []
+
+        for idx, hypo_data in enumerate(hypotheses_data):
+            try:
+                # Extract required fields
+                subject_name = hypo_data.get("subject_name")
+                relation = hypo_data.get("relation")
+                object_name = hypo_data.get("object_name")
+                confidence = hypo_data.get("confidence")
+                subject_properties = hypo_data.get("subject_properties", {})
+                object_properties = hypo_data.get("object_properties", {})
+                hypothesis_properties = hypo_data.get("hypothesis_properties", {})
+
+                # Validate required fields
+                if not subject_name or not relation or not object_name or confidence is None:
+                    failed_hypotheses.append({
+                        "index": idx,
+                        "error": "Missing required fields (subject_name, relation, object_name, confidence)"
+                    })
+                    continue
+
+                # Create subject
+                subject = HypothesisSubject(
+                    name=subject_name,
+                    additional_properties=subject_properties or {}
+                )
+
+                # Create object
+                object_ = HypothesisObject(
+                    name=object_name,
+                    additional_properties=object_properties or {}
+                )
+
+                # Create hypothesis
+                hypothesis = Hypothesis(
+                    subject=subject,
+                    relation=relation,
+                    object=object_,
+                    confidence=confidence,
+                    additional_properties=hypothesis_properties or {}
+                )
+
+                # Save the hypothesis to Neo4J
+                hypothesis_id = hypothesis_ops.create_hypothesis(hypothesis)
+
+                created_hypotheses.append({
+                    "index": idx,
+                    "hypothesis_id": hypothesis_id,
+                    "subject_id": subject.id,
+                    "object_id": object_.id,
+                    "subject_name": subject_name,
+                    "relation": relation,
+                    "object_name": object_name,
+                    "confidence": confidence
+                })
+
+            except Exception as e:
+                failed_hypotheses.append({
+                    "index": idx,
+                    "error": str(e)
+                })
+
+        return {
+            "success": True,
+            "created_count": len(created_hypotheses),
+            "failed_count": len(failed_hypotheses),
+            "created_hypotheses": created_hypotheses,
+            "failed_hypotheses": failed_hypotheses
         }
     except Exception as e:
         return {

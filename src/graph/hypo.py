@@ -133,7 +133,7 @@ def hypothesize(tool_llm):
             Each hypothesis should enumerate the subject, the object, and the relation between them, as
             well as the confidence in this hypothesized relation. Each hypothesis should be specific and
             testable using the available tools.
-            After that, create/persist these hypotheses individually using the appropriate tool.
+            After that, create/persist these multiple hypotheses at once using the appropriate tool.
             """)
         response = tool_llm.invoke(messages + [human_message])
         print(response.content)

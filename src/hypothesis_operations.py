@@ -46,14 +46,11 @@ class HypothesisOperations:
             subject_id = hypothesis.subject.id
         else:
             # Create subject node with the provided ID
-            subject_id = self.neo4j_ops.create_node(
-                node_type="Subject",
-                properties={
-                    "name": hypothesis.subject.name,
-                    "id": hypothesis.subject.id,
-                    **hypothesis.subject.additional_properties
-                }
-            )
+            subject_id = self.neo4j_ops.create_node(node_type="Subject", properties={
+                "name": hypothesis.subject.name,
+                "id": hypothesis.subject.id,
+                **hypothesis.subject.additional_properties
+            })
 
         # Check if object node already exists
         existing_object = self.neo4j_ops.read_node(hypothesis.object.id)
@@ -62,28 +59,22 @@ class HypothesisOperations:
             object_id = hypothesis.object.id
         else:
             # Create object node with the provided ID
-            object_id = self.neo4j_ops.create_node(
-                node_type="Object",
-                properties={
-                    "name": hypothesis.object.name,
-                    "id": hypothesis.object.id,
-                    **hypothesis.object.additional_properties
-                }
-            )
+            object_id = self.neo4j_ops.create_node(node_type="Object", properties={
+                "name": hypothesis.object.name,
+                "id": hypothesis.object.id,
+                **hypothesis.object.additional_properties
+            })
 
         # Create relation node with confidence
-        relation_id = self.neo4j_ops.create_node(
-            node_type="Relation",
-            properties={
-                "name": hypothesis.relation,
-                "confidence": hypothesis.confidence,
-                "id": hypothesis.id,  # Use the hypothesis ID for the relation node
-                "hypothesisId": hypothesis.id,  # Store the hypothesis ID for reference
-                "subject_id": subject_id,  # Store the subject ID for reference
-                "object_id": object_id,  # Store the object ID for reference
-                **hypothesis.additional_properties
-            }
-        )
+        relation_id = self.neo4j_ops.create_node(node_type="Relation", properties={
+            "name": hypothesis.relation,
+            "confidence": hypothesis.confidence,
+            "id": hypothesis.id,  # Use the hypothesis ID for the relation node
+            "hypothesisId": hypothesis.id,  # Store the hypothesis ID for reference
+            "subject_id": subject_id,  # Store the subject ID for reference
+            "object_id": object_id,  # Store the object ID for reference
+            **hypothesis.additional_properties
+        })
 
         # Create relationships between nodes
         self._create_relationship(subject_id, relation_id, "FLOWS_TO")
@@ -176,14 +167,11 @@ class HypothesisOperations:
                 subject_updated = True
             else:
                 # Create new subject node
-                subject_id = self.neo4j_ops.create_node(
-                    node_type="Subject",
-                    properties={
-                        "name": hypothesis.subject.name,
-                        "id": hypothesis.subject.id,
-                        **hypothesis.subject.additional_properties
-                    }
-                )
+                subject_id = self.neo4j_ops.create_node(node_type="Subject", properties={
+                    "name": hypothesis.subject.name,
+                    "id": hypothesis.subject.id,
+                    **hypothesis.subject.additional_properties
+                })
                 subject_updated = subject_id is not None
 
             # Update the relationship
@@ -213,14 +201,11 @@ class HypothesisOperations:
                 object_updated = True
             else:
                 # Create new object node
-                object_id = self.neo4j_ops.create_node(
-                    node_type="Object",
-                    properties={
-                        "name": hypothesis.object.name,
-                        "id": hypothesis.object.id,
-                        **hypothesis.object.additional_properties
-                    }
-                )
+                object_id = self.neo4j_ops.create_node(node_type="Object", properties={
+                    "name": hypothesis.object.name,
+                    "id": hypothesis.object.id,
+                    **hypothesis.object.additional_properties
+                })
                 object_updated = object_id is not None
 
             # Update the relationship

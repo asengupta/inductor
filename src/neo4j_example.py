@@ -29,15 +29,11 @@ def main():
     try:
         # Example 1: Create a node
         print("Creating a node...")
-        person_id = neo4j_ops.create_node(
-            node_type="Person",
-            properties={
-                "name": "John Doe",
-                "age": 30,
-                "email": "john.doe@example.com"
-            },
-            labels=["Employee", "Developer"]
-        )
+        person_id = neo4j_ops.create_node(node_type="Person", properties={
+            "name": "John Doe",
+            "age": 30,
+            "email": "john.doe@example.com"
+        }, labels=["Employee", "Developer"])
         print(f"Created node with ID: {person_id}")
 
         # Example 2: Read a node

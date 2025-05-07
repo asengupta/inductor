@@ -70,16 +70,12 @@ neo4j_ops = Neo4jOperations(NEO4J_URI, NEO4J_USER, NEO4J_PASSWORD, id_provider=c
 
 ```python
 # Create a node with type, properties, and labels
-node_id = neo4j_ops.create_node(
-    node_type="Person",  # Required - will be set as nodeType property and used as a label
-    properties={
-        "name": "John Doe",
-        "age": 30,
-        "email": "john.doe@example.com"
-        # id will be auto-generated if not provided
-    },
-    labels=["Employee", "Developer"]  # Optional additional labels
-)
+node_id = neo4j_ops.create_node(node_type="Person", properties={
+    "name": "John Doe",
+    "age": 30,
+    "email": "john.doe@example.com"
+    # id will be auto-generated if not provided
+}, labels=["Employee", "Developer"])
 ```
 
 ### Reading a Node
