@@ -9,6 +9,8 @@ def reverse_engineering_step_decider(tool_llm):
         messages = state["messages"]
         if messages[-1].content == EXIT_DECISION:
             return EXIT_DECISION
+        elif messages[-1].content == "hyp":
+            return "test_inductive"
 
         prompt = f"""         The user request is: "{state['current_request']}".
                               Based on the request, decide which agent you wish to activate. Your choices are:
