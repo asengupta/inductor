@@ -15,7 +15,7 @@ from langgraph.graph.state import CompiledStateGraph
 from langgraph.prebuilt import ToolNode, tools_condition
 
 from graph.node_names import COLLECT_DATA_FOR_HYPOTHESIS, HYPOTHESIZE, EXPLORE_FREELY, SYSTEM_QUERY, \
-    DATA_FOR_HYPOTHESIS_TOOL, SAVE_HYPOTHESES_TOOL, FREE_EXPLORE_TOOL, SYSTEM_QUERY_TOOL, \
+    DATA_FOR_HYPOTHESIS_TOOL, SAVE_HYPOTHESES_TOOL, EXPLORE_FREELY_TOOL, SYSTEM_QUERY_TOOL, \
     COLLECT_DATA_FOR_HYPOTHESIS_TOOL_OUTPUT, HYPOTHESIS_GATHER_START, VALIDATE_HYPOTHESIS, DONT_KNOW, EXECUTIVE_AGENT
 from graph.router_constants import DONT_KNOW_DECISION, SYSTEM_QUERY_DECISION, FREEFORM_EXPLORATION_DECISION, \
     VALIDATE_HYPOTHESIS_DECISION, HYPOTHESIZE_DECISION, EXIT_DECISION
@@ -299,7 +299,7 @@ async def make_graph(client: MultiServerMCPClient) -> AsyncGenerator[CompiledSta
         # workflow.add_node("before_tool", before_tool)
         workflow.add_node(DATA_FOR_HYPOTHESIS_TOOL, ToolNode(mcp_tools, handle_tool_errors=True))
         workflow.add_node(SAVE_HYPOTHESES_TOOL, ToolNode(mcp_tools, handle_tool_errors=True))
-        workflow.add_node(FREE_EXPLORE_TOOL, ToolNode(mcp_tools, handle_tool_errors=True))
+        workflow.add_node(EXPLORE_FREELY_TOOL, ToolNode(mcp_tools, handle_tool_errors=True))
         workflow.add_node(SYSTEM_QUERY_TOOL, ToolNode(mcp_tools, handle_tool_errors=True))
         workflow.add_node(COLLECT_DATA_FOR_HYPOTHESIS_TOOL_OUTPUT, generic_tool_output(DATA_FOR_HYPOTHESIS_TOOL))
         # workflow.add_node(before_exit)
@@ -326,7 +326,7 @@ async def make_graph(client: MultiServerMCPClient) -> AsyncGenerator[CompiledSta
             END: EXECUTIVE_AGENT
         })
         workflow.add_conditional_edges(EXPLORE_FREELY, tools_condition, {
-            "tools": FREE_EXPLORE_TOOL,
+            "tools": EXPLORE_FREELY_TOOL,
             END: EXECUTIVE_AGENT
         })
 

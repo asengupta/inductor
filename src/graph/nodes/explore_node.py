@@ -12,6 +12,6 @@ def free_explore(tool_llm):
         """, state["current_request"]])
         print(response.content)
         return MyState(input=state["input"], current_request=state["current_request"],
-                       messages=state["messages"] + [response])
+                       messages=[response])
 
     return run_agent
