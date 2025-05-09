@@ -1,4 +1,5 @@
 import asyncio
+import json
 from contextlib import asynccontextmanager
 from typing import Any, AsyncGenerator
 
@@ -56,6 +57,13 @@ mcp_client = MultiServerMCPClient(
     })
 
 
+def as_json(state: MyState) -> str:
+    if not state["messages"]:
+        return str(state)
+    tool_result = state["messages"][-1]
+    return json.loads(tool_result.content)
+
+
 @asynccontextmanager
 async def make_graph(client: MultiServerMCPClient) -> AsyncGenerator[CompiledStateGraph, Any]:
     async with client:
@@ -68,7 +76,7 @@ async def make_graph(client: MultiServerMCPClient) -> AsyncGenerator[CompiledSta
         lead = reverse_engineering_lead(llm_with_tool)
         evidence_gatherer = collect_data_for_hypothesis(llm_with_tool)
         hypothesizer = hypothesize(llm_with_tool)
-        breakdown_hypothesis_tool_output = generic_tool_output(BREAKDOWN_HYPOTHESIS_TOOL)
+        breakdown_hypothesis_tool_output = generic_tool_output(BREAKDOWN_HYPOTHESIS_TOOL, formatter=as_json)
 
         workflow = StateGraph(MyState)
 
