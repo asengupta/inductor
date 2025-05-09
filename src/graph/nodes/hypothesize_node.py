@@ -1,9 +1,10 @@
 from typing import Any, Dict
 from langchain_core.messages import HumanMessage
 
+from graph.nodes.types import LLM
 from graph.state import MyState
 
-def hypothesize(tool_llm):
+def hypothesize(tool_llm: LLM):
     def run_agent(state: MyState) -> Dict[str, Any]:
         print("IN HYPOTHESIZER....================================================================")
         messages = state["messages"]

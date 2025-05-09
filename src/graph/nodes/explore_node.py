@@ -1,8 +1,9 @@
 from typing import Any, Dict
 
+from graph.nodes.types import LLM
 from graph.state import MyState
 
-def free_explore(tool_llm):
+def free_explore(tool_llm: LLM):
     def run_agent(state: MyState) -> Dict[str, Any]:
         print("In Free Exploration Mode")
         print("=============================")

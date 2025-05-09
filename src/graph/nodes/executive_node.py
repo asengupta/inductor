@@ -17,9 +17,6 @@ def reverse_engineering_lead(tool_llm):
                 raise Exception("Goodbye!")
             elif user_input.strip() == "":
                 print("No input provided. Please try again.")
-            elif user_input.lower() == "hyp":
-                return MyState(input=user_input, current_request=user_input,
-                               messages=["hyp"])
             else:
                 break
 

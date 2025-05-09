@@ -33,6 +33,12 @@ hypothesis_ops = HypothesisOperations(neo4j_ops)
 # Create the MCP server
 mcp = FastMCP("Hypothesis Operations")
 
+
+@mcp.tool()
+async def create_evidence_strategy(evidence_components: list[str]) -> list[str]:
+    return evidence_components
+
+
 @mcp.tool()
 async def create_hypothesis(subject: str, relation: str, object_: str, confidence: float) -> Dict[str, Any]:
     """
@@ -75,9 +81,10 @@ async def create_hypothesis(subject: str, relation: str, object_: str, confidenc
             "error": f"An error occurred: {str(e)}"
         }
 
+
 @mcp.tool()
 async def create_hypothesis_with_objects(subject_name: str, relation: str, object_name: str,
-                                        confidence: float) -> Dict[str, Any]:
+                                         confidence: float) -> Dict[str, Any]:
     """
     Create a new Hypothesis in Neo4j with detailed subject and object properties.
 
@@ -130,6 +137,7 @@ async def create_hypothesis_with_objects(subject_name: str, relation: str, objec
             "error": f"An error occurred: {str(e)}"
         }
 
+
 @mcp.tool()
 async def get_hypothesis(hypothesis_id: str) -> Dict[str, Any]:
     """
@@ -172,9 +180,10 @@ async def get_hypothesis(hypothesis_id: str) -> Dict[str, Any]:
             "error": f"An error occurred: {str(e)}"
         }
 
+
 @mcp.tool()
 async def update_hypothesis(hypothesis_id: str, relation: Optional[str] = None,
-                           confidence: Optional[float] = None) -> Dict[str, Any]:
+                            confidence: Optional[float] = None) -> Dict[str, Any]:
     """
     Update a hypothesis by its ID.
 
@@ -227,6 +236,7 @@ async def update_hypothesis(hypothesis_id: str, relation: Optional[str] = None,
             "error": f"An error occurred: {str(e)}"
         }
 
+
 @mcp.tool()
 async def delete_hypothesis(hypothesis_id: str, keep_subject_object: bool = False) -> Dict[str, Any]:
     """
@@ -258,11 +268,12 @@ async def delete_hypothesis(hypothesis_id: str, keep_subject_object: bool = Fals
             "error": f"An error occurred: {str(e)}"
         }
 
+
 @mcp.tool()
 async def find_hypotheses(subject: Optional[str] = None, relation: Optional[str] = None,
-                         object_: Optional[str] = None, min_confidence: Optional[float] = None,
-                         max_confidence: Optional[float] = None, subject_id: Optional[str] = None,
-                         object_id: Optional[str] = None) -> Dict[str, Any]:
+                          object_: Optional[str] = None, min_confidence: Optional[float] = None,
+                          max_confidence: Optional[float] = None, subject_id: Optional[str] = None,
+                          object_id: Optional[str] = None) -> Dict[str, Any]:
     """
     Find hypotheses matching the given criteria.
 
@@ -315,6 +326,7 @@ async def find_hypotheses(subject: Optional[str] = None, relation: Optional[str]
             "success": False,
             "error": f"An error occurred: {str(e)}"
         }
+
 
 @mcp.tool()
 async def update_subject(subject_id: str, name: Optional[str] = None) -> Dict[str, Any]:
@@ -369,6 +381,7 @@ async def update_subject(subject_id: str, name: Optional[str] = None) -> Dict[st
             "error": f"An error occurred: {str(e)}"
         }
 
+
 @mcp.tool()
 async def delete_subject(subject_id: str) -> Dict[str, Any]:
     """
@@ -408,6 +421,7 @@ async def delete_subject(subject_id: str) -> Dict[str, Any]:
             "success": False,
             "error": f"An error occurred: {str(e)}"
         }
+
 
 @mcp.tool()
 async def update_object(object_id: str, name: Optional[str] = None) -> Dict[str, Any]:
@@ -462,6 +476,7 @@ async def update_object(object_id: str, name: Optional[str] = None) -> Dict[str,
             "error": f"An error occurred: {str(e)}"
         }
 
+
 @mcp.tool()
 async def delete_object(object_id: str) -> Dict[str, Any]:
     """
@@ -501,6 +516,7 @@ async def delete_object(object_id: str) -> Dict[str, Any]:
             "success": False,
             "error": f"An error occurred: {str(e)}"
         }
+
 
 @mcp.tool()
 async def create_subject(name: str) -> Dict[str, Any]:
@@ -542,6 +558,7 @@ async def create_subject(name: str) -> Dict[str, Any]:
             "error": f"An error occurred: {str(e)}"
         }
 
+
 @mcp.tool()
 async def create_object(name: str) -> Dict[str, Any]:
     """
@@ -582,6 +599,7 @@ async def create_object(name: str) -> Dict[str, Any]:
             "error": f"An error occurred: {str(e)}"
         }
 
+
 @mcp.tool()
 async def get_subject(subject_id: str) -> Dict[str, Any]:
     """
@@ -617,6 +635,7 @@ async def get_subject(subject_id: str) -> Dict[str, Any]:
             "success": False,
             "error": f"An error occurred: {str(e)}"
         }
+
 
 @mcp.tool()
 async def get_object(object_id: str) -> Dict[str, Any]:
@@ -654,9 +673,10 @@ async def get_object(object_id: str) -> Dict[str, Any]:
             "error": f"An error occurred: {str(e)}"
         }
 
+
 @mcp.tool()
 async def find_subjects(name: Optional[str] = None,
-                       properties: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+                        properties: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
     """
     Find subjects matching the given criteria.
 
@@ -701,9 +721,10 @@ async def find_subjects(name: Optional[str] = None,
             "error": f"An error occurred: {str(e)}"
         }
 
+
 @mcp.tool()
 async def find_objects(name: Optional[str] = None,
-                      properties: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+                       properties: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
     """
     Find objects matching the given criteria.
 
@@ -747,6 +768,7 @@ async def find_objects(name: Optional[str] = None,
             "success": False,
             "error": f"An error occurred: {str(e)}"
         }
+
 
 @mcp.tool()
 async def create_multiple_hypotheses(hypotheses_data: List[Dict[str, Any]]) -> Dict[str, Any]:
@@ -822,6 +844,7 @@ async def create_multiple_hypotheses(hypotheses_data: List[Dict[str, Any]]) -> D
             "success": False,
             "error": f"An error occurred: {str(e)}"
         }
+
 
 @mcp.tool()
 async def create_multiple_hypotheses_with_objects(hypotheses_data: List[Dict[str, Any]]) -> Dict[str, Any]:
@@ -912,6 +935,7 @@ async def create_multiple_hypotheses_with_objects(hypotheses_data: List[Dict[str
             "error": f"An error occurred: {str(e)}"
         }
 
+
 @mcp.tool()
 async def get_all_hypotheses() -> Dict[str, Any]:
     """
@@ -950,6 +974,46 @@ async def get_all_hypotheses() -> Dict[str, Any]:
             "success": False,
             "error": f"An error occurred: {str(e)}"
         }
+
+
+@mcp.tool()
+async def breakdown_hypothesis(hypotheses: List[Hypothesis]) -> List[Hypothesis]:
+    """
+    Process a list of Hypothesis objects and return the same list.
+
+    This tool is a simple pass-through that accepts Hypothesis objects and returns them.
+    It can be used as a building block for more complex hypothesis processing pipelines.
+
+    Args:
+        hypotheses: A list of Hypothesis objects to process
+
+    Returns:
+        A dictionary containing the processed hypotheses (same as input)
+    """
+    try:
+        result = []
+        for h in hypotheses:
+            result.append({
+                "id": h.id,
+                "subject": {
+                    "id": h.subject.id,
+                    "name": h.subject.name
+                },
+                "relation": h.relation,
+                "object": {
+                    "id": h.object.id,
+                    "name": h.object.name
+                },
+                "confidence": h.confidence
+            })
+
+        return result
+    except Exception as e:
+        return {
+            "success": False,
+            "error": f"An error occurred: {str(e)}"
+        }
+
 
 if __name__ == "__main__":
     # Initialize and run the server

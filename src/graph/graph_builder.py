@@ -4,6 +4,7 @@ from typing import Any, AsyncGenerator
 
 from dotenv import load_dotenv
 from langchain_core.messages import HumanMessage
+from langchain_core.tools import BaseTool
 from langchain_mcp_adapters.client import MultiServerMCPClient
 from langgraph.constants import START, END
 from langgraph.graph import StateGraph
@@ -14,13 +15,18 @@ from graph.models import anthropic_model
 from graph.node_names import (
     COLLECT_DATA_FOR_HYPOTHESIS, HYPOTHESIZE, EXPLORE_FREELY, SYSTEM_QUERY,
     DATA_FOR_HYPOTHESIS_TOOL, SAVE_HYPOTHESES_TOOL, EXPLORE_FREELY_TOOL, SYSTEM_QUERY_TOOL,
-    COLLECT_DATA_FOR_HYPOTHESIS_TOOL_OUTPUT, HYPOTHESIS_GATHER_START, VALIDATE_HYPOTHESIS, DONT_KNOW, EXECUTIVE_AGENT
+    COLLECT_DATA_FOR_HYPOTHESIS_TOOL_OUTPUT, HYPOTHESIS_GATHER_START, VALIDATE_HYPOTHESIS_EXEC, DONT_KNOW,
+    EXECUTIVE_AGENT, BREAKDOWN_HYPOTHESIS_TOOL
 )
-from graph.nodes import (
-    collect_data_for_hypothesis, reverse_engineering_step_decider, free_explore,
-    hypothesize, hypothesis_exec, reverse_engineering_lead, system_query,
-    generic_tool_output, fallback, validate_hypothesis
-)
+from graph.nodes.collect_data_node import collect_data_for_hypothesis
+from graph.nodes.decider_node import reverse_engineering_step_decider
+from graph.nodes.executive_node import reverse_engineering_lead
+from graph.nodes.explore_node import free_explore
+from graph.nodes.hypothesize_node import hypothesize, hypothesis_exec
+from graph.nodes.system_query_node import system_query
+from graph.nodes.tool_output_node import generic_tool_output
+from graph.nodes.utility_nodes import fallback
+from graph.nodes.validate_node import validate_hypothesis
 from graph.router_constants import (
     DONT_KNOW_DECISION, SYSTEM_QUERY_DECISION, FREEFORM_EXPLORATION_DECISION,
     VALIDATE_HYPOTHESIS_DECISION, HYPOTHESIZE_DECISION, EXIT_DECISION
@@ -53,7 +59,7 @@ mcp_client = MultiServerMCPClient(
 @asynccontextmanager
 async def make_graph(client: MultiServerMCPClient) -> AsyncGenerator[CompiledStateGraph, Any]:
     async with client:
-        mcp_tools = client.get_tools()
+        mcp_tools: list[BaseTool] = client.get_tools()
         print("SOMETHING")
         # print(mcp_tools)
         llm_with_tool = anthropic_model().bind_tools(mcp_tools, tool_choice="auto")
@@ -72,7 +78,7 @@ async def make_graph(client: MultiServerMCPClient) -> AsyncGenerator[CompiledSta
         workflow.add_node(HYPOTHESIZE, hypothesizer)
         workflow.add_node(EXPLORE_FREELY, free_explore(llm_with_tool))
         workflow.add_node(SYSTEM_QUERY, system_query(llm_with_tool, mcp_tools))
-        workflow.add_node(VALIDATE_HYPOTHESIS, validate_hypothesis)
+        workflow.add_node(VALIDATE_HYPOTHESIS_EXEC, validate_hypothesis(llm_with_tool, mcp_tools))
         # workflow.add_node(step_4)
 
         # workflow.add_node("agent_runner", agent_runner)
@@ -82,6 +88,7 @@ async def make_graph(client: MultiServerMCPClient) -> AsyncGenerator[CompiledSta
         workflow.add_node(EXPLORE_FREELY_TOOL, ToolNode(mcp_tools, handle_tool_errors=True))
         workflow.add_node(SYSTEM_QUERY_TOOL, ToolNode(mcp_tools, handle_tool_errors=True))
         workflow.add_node(COLLECT_DATA_FOR_HYPOTHESIS_TOOL_OUTPUT, generic_tool_output(DATA_FOR_HYPOTHESIS_TOOL))
+        workflow.add_node(BREAKDOWN_HYPOTHESIS_TOOL, ToolNode(mcp_tools, handle_tool_errors=True))
         # workflow.add_node(before_exit)
 
         workflow.add_edge(START, EXECUTIVE_AGENT)
@@ -89,7 +96,7 @@ async def make_graph(client: MultiServerMCPClient) -> AsyncGenerator[CompiledSta
 
         workflow.add_conditional_edges(EXECUTIVE_AGENT, agent_decider, {
             HYPOTHESIZE_DECISION: HYPOTHESIS_GATHER_START,
-            VALIDATE_HYPOTHESIS_DECISION: VALIDATE_HYPOTHESIS,
+            VALIDATE_HYPOTHESIS_DECISION: VALIDATE_HYPOTHESIS_EXEC,
             FREEFORM_EXPLORATION_DECISION: EXPLORE_FREELY,
             SYSTEM_QUERY_DECISION: SYSTEM_QUERY,
             DONT_KNOW_DECISION: DONT_KNOW,
@@ -115,6 +122,11 @@ async def make_graph(client: MultiServerMCPClient) -> AsyncGenerator[CompiledSta
             END: EXECUTIVE_AGENT
         })
 
+        workflow.add_conditional_edges(VALIDATE_HYPOTHESIS_EXEC, tools_condition, {
+            "tools": BREAKDOWN_HYPOTHESIS_TOOL,
+            END: EXECUTIVE_AGENT
+        })
+
         # workflow.add_edge("free_explore", "FREE_EXPLORE_TOOL")
         workflow.add_edge(EXPLORE_FREELY, EXPLORE_FREELY_TOOL)
         workflow.add_edge(EXPLORE_FREELY_TOOL, EXECUTIVE_AGENT)
@@ -122,8 +134,9 @@ async def make_graph(client: MultiServerMCPClient) -> AsyncGenerator[CompiledSta
         workflow.add_edge(COLLECT_DATA_FOR_HYPOTHESIS_TOOL_OUTPUT, HYPOTHESIZE)
         workflow.add_edge(SAVE_HYPOTHESES_TOOL, EXECUTIVE_AGENT)
         workflow.add_edge(SYSTEM_QUERY_TOOL, EXECUTIVE_AGENT)
+        workflow.add_edge(BREAKDOWN_HYPOTHESIS_TOOL, EXECUTIVE_AGENT)
 
-        workflow.add_edge(VALIDATE_HYPOTHESIS, EXECUTIVE_AGENT)
+        workflow.add_edge(VALIDATE_HYPOTHESIS_EXEC, EXECUTIVE_AGENT)
         # workflow.add_edge("step_4", END)
 
         graph = workflow.compile()

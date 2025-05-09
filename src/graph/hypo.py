@@ -16,7 +16,7 @@ from langgraph.prebuilt import ToolNode, tools_condition
 
 from graph.node_names import COLLECT_DATA_FOR_HYPOTHESIS, HYPOTHESIZE, EXPLORE_FREELY, SYSTEM_QUERY, \
     DATA_FOR_HYPOTHESIS_TOOL, SAVE_HYPOTHESES_TOOL, EXPLORE_FREELY_TOOL, SYSTEM_QUERY_TOOL, \
-    COLLECT_DATA_FOR_HYPOTHESIS_TOOL_OUTPUT, HYPOTHESIS_GATHER_START, VALIDATE_HYPOTHESIS, DONT_KNOW, EXECUTIVE_AGENT
+    COLLECT_DATA_FOR_HYPOTHESIS_TOOL_OUTPUT, HYPOTHESIS_GATHER_START, VALIDATE_HYPOTHESIS_EXEC, DONT_KNOW, EXECUTIVE_AGENT
 from graph.router_constants import DONT_KNOW_DECISION, SYSTEM_QUERY_DECISION, FREEFORM_EXPLORATION_DECISION, \
     VALIDATE_HYPOTHESIS_DECISION, HYPOTHESIZE_DECISION, EXIT_DECISION
 
@@ -292,7 +292,7 @@ async def make_graph(client: MultiServerMCPClient) -> AsyncGenerator[CompiledSta
         workflow.add_node(HYPOTHESIZE, hypothesizer)
         workflow.add_node(EXPLORE_FREELY, free_explore(llm_with_tool))
         workflow.add_node(SYSTEM_QUERY, system_query(llm_with_tool, mcp_tools))
-        workflow.add_node(VALIDATE_HYPOTHESIS, validate_hypothesis)
+        workflow.add_node(VALIDATE_HYPOTHESIS_EXEC, validate_hypothesis)
         # workflow.add_node(step_4)
 
         # workflow.add_node("agent_runner", agent_runner)
@@ -309,7 +309,7 @@ async def make_graph(client: MultiServerMCPClient) -> AsyncGenerator[CompiledSta
 
         workflow.add_conditional_edges(EXECUTIVE_AGENT, agent_decider, {
             HYPOTHESIZE_DECISION: HYPOTHESIS_GATHER_START,
-            VALIDATE_HYPOTHESIS_DECISION: VALIDATE_HYPOTHESIS,
+            VALIDATE_HYPOTHESIS_DECISION: VALIDATE_HYPOTHESIS_EXEC,
             FREEFORM_EXPLORATION_DECISION: EXPLORE_FREELY,
             SYSTEM_QUERY_DECISION: SYSTEM_QUERY,
             DONT_KNOW_DECISION: DONT_KNOW,
@@ -342,7 +342,7 @@ async def make_graph(client: MultiServerMCPClient) -> AsyncGenerator[CompiledSta
         workflow.add_edge(SAVE_HYPOTHESES_TOOL, EXECUTIVE_AGENT)
         workflow.add_edge(SYSTEM_QUERY_TOOL, EXECUTIVE_AGENT)
 
-        workflow.add_edge(VALIDATE_HYPOTHESIS, EXECUTIVE_AGENT)
+        workflow.add_edge(VALIDATE_HYPOTHESIS_EXEC, EXECUTIVE_AGENT)
         # workflow.add_edge("step_4", END)
 
         graph = workflow.compile()

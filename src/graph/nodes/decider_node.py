@@ -9,8 +9,6 @@ def reverse_engineering_step_decider(tool_llm):
         messages = state["messages"]
         if messages[-1].content == EXIT_DECISION:
             return EXIT_DECISION
-        elif messages[-1].content == "hyp":
-            return "test_inductive"
 
         prompt = f"""         The user request is: "{state['current_request']}".
                               Based on the request, decide which agent you wish to activate. Your choices are:
@@ -42,14 +40,17 @@ def reverse_engineering_step_decider(tool_llm):
         if FREEFORM_EXPLORATION_DECISION in response.content:
             print("Free Explore")
             return FREEFORM_EXPLORATION_DECISION
+        elif VALIDATE_HYPOTHESIS_DECISION in response.content:
+            print("Validate Hypothesis")
+            return VALIDATE_HYPOTHESIS_DECISION
         elif (HYPOTHESIZE_DECISION in response.content
               or "hypothesis" in response.content.lower()
               or "hypotheses" in response.content.lower()):
             print(HYPOTHESIZE_DECISION)
             return HYPOTHESIZE_DECISION
-        elif VALIDATE_HYPOTHESIS_DECISION in response.content:
-            print("Validate Hypothesis")
-            return VALIDATE_HYPOTHESIS_DECISION
+        elif SYSTEM_QUERY_DECISION in response.content:
+            print("System Query")
+            return SYSTEM_QUERY_DECISION
         elif SYSTEM_QUERY_DECISION in response.content:
             print("System Query")
             return SYSTEM_QUERY_DECISION

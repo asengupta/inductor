@@ -1,8 +1,9 @@
 from typing import Any, Dict
 
+from graph.nodes.types import LLM
 from graph.state import MyState
 
-def system_query(tool_llm, tools):
+def system_query(tool_llm: LLM, tools):
     def run_agent(state: MyState) -> Dict[str, Any]:
         print("In System Query Mode")
         print("=============================")
