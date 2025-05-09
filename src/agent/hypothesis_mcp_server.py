@@ -10,6 +10,7 @@ from typing import Dict, Any, Optional, List
 from dotenv import load_dotenv
 from mcp.server import FastMCP
 
+from evidence import Evidence
 from neo4j_operations import Neo4jOperations
 from hypothesis import Hypothesis, HypothesisSubject, HypothesisObject
 from hypothesis_operations import HypothesisOperations
@@ -35,7 +36,7 @@ mcp = FastMCP("Hypothesis Operations")
 
 
 @mcp.tool()
-async def create_evidence_strategy(evidence_components: list[str]) -> list[str]:
+async def create_evidence_strategy(evidence_components: list[Evidence]) -> list[Evidence]:
     return evidence_components
 
 

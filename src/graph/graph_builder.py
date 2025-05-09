@@ -16,7 +16,7 @@ from graph.node_names import (
     COLLECT_DATA_FOR_HYPOTHESIS, HYPOTHESIZE, EXPLORE_FREELY, SYSTEM_QUERY,
     DATA_FOR_HYPOTHESIS_TOOL, SAVE_HYPOTHESES_TOOL, EXPLORE_FREELY_TOOL, SYSTEM_QUERY_TOOL,
     COLLECT_DATA_FOR_HYPOTHESIS_TOOL_OUTPUT, HYPOTHESIS_GATHER_START, VALIDATE_HYPOTHESIS_EXEC, DONT_KNOW,
-    EXECUTIVE_AGENT, BREAKDOWN_HYPOTHESIS_TOOL
+    EXECUTIVE_AGENT, BREAKDOWN_HYPOTHESIS_TOOL, BREAKDOWN_HYPOTHESIS_TOOL_OUTPUT
 )
 from graph.nodes.collect_data_node import collect_data_for_hypothesis
 from graph.nodes.decider_node import reverse_engineering_step_decider
@@ -68,6 +68,7 @@ async def make_graph(client: MultiServerMCPClient) -> AsyncGenerator[CompiledSta
         lead = reverse_engineering_lead(llm_with_tool)
         evidence_gatherer = collect_data_for_hypothesis(llm_with_tool)
         hypothesizer = hypothesize(llm_with_tool)
+        breakdown_hypothesis_tool_output = generic_tool_output(BREAKDOWN_HYPOTHESIS_TOOL)
 
         workflow = StateGraph(MyState)
 
@@ -79,6 +80,7 @@ async def make_graph(client: MultiServerMCPClient) -> AsyncGenerator[CompiledSta
         workflow.add_node(EXPLORE_FREELY, free_explore(llm_with_tool))
         workflow.add_node(SYSTEM_QUERY, system_query(llm_with_tool, mcp_tools))
         workflow.add_node(VALIDATE_HYPOTHESIS_EXEC, validate_hypothesis(llm_with_tool, mcp_tools))
+        workflow.add_node(BREAKDOWN_HYPOTHESIS_TOOL_OUTPUT, breakdown_hypothesis_tool_output)
         # workflow.add_node(step_4)
 
         # workflow.add_node("agent_runner", agent_runner)
@@ -134,9 +136,10 @@ async def make_graph(client: MultiServerMCPClient) -> AsyncGenerator[CompiledSta
         workflow.add_edge(COLLECT_DATA_FOR_HYPOTHESIS_TOOL_OUTPUT, HYPOTHESIZE)
         workflow.add_edge(SAVE_HYPOTHESES_TOOL, EXECUTIVE_AGENT)
         workflow.add_edge(SYSTEM_QUERY_TOOL, EXECUTIVE_AGENT)
-        workflow.add_edge(BREAKDOWN_HYPOTHESIS_TOOL, EXECUTIVE_AGENT)
+        workflow.add_edge(BREAKDOWN_HYPOTHESIS_TOOL, BREAKDOWN_HYPOTHESIS_TOOL_OUTPUT)
+        workflow.add_edge(BREAKDOWN_HYPOTHESIS_TOOL_OUTPUT, EXECUTIVE_AGENT)
 
-        workflow.add_edge(VALIDATE_HYPOTHESIS_EXEC, EXECUTIVE_AGENT)
+        # workflow.add_edge(VALIDATE_HYPOTHESIS_EXEC, EXECUTIVE_AGENT)
         # workflow.add_edge("step_4", END)
 
         graph = workflow.compile()

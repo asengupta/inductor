@@ -17,9 +17,11 @@ def validate_hypothesis(tool_llm: LLM, tools: list[BaseTool]) -> Dict[str, Any]:
         Based on the list of tools provided, you have two options:
         1) If you think you can gather evidence for this hypothesis directly,
         call the 'create_evidence_strategy' tool with the list of evidences needed to be gathered,
-        along with the name of the tools you will use to gather these evidences.
+        along with the name of the tools you will use to gather these evidences. For each
+        evidence, also provide its percentage of contribution to proving the root hypothesis.
         2) If you think this hypothesis needs to be broken down further into smaller, more testable hypotheses,
-        call the 'breakdown_hypothesis' tool with the list of the sub-hypotheses you come up with.
+        call the 'breakdown_hypothesis' tool with the list of the sub-hypotheses you come up with. For each
+        sub-hypothesis, also provide its percentage of contribution to proving the root hypothesis.
         The list of tools are: {tools}
         """
         response = tool_llm.invoke([prompt, generic_breakdown_prompt])

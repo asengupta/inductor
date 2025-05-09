@@ -97,19 +97,21 @@ class HypothesisObject:
 @dataclass
 class Hypothesis:
     """
-    A dataclass representing a hypothesis with subject, relation, object, and confidence.
+    A dataclass representing a hypothesis with subject, relation, object, confidence, and contribution to root.
 
     Attributes:
         subject: The subject of the hypothesis (HypothesisSubject)
         relation: The relation between subject and object (string)
         object: The object of the hypothesis (HypothesisObject)
         confidence: The confidence level (between 0 and 1)
+        contribution_to_root: How much this hypothesis contributes to the root hypothesis (between 0 and 1)
         id: The unique identifier (auto-generated if not explicitly provided)
     """
     subject: HypothesisSubject
     relation: str
     object: HypothesisObject
     confidence: float
+    contribution_to_root: float = 0.0
     id: str = field(default_factory=lambda: str(uuid.uuid4()))
 
     def __post_init__(self):
@@ -129,6 +131,12 @@ class Hypothesis:
         if self.confidence < 0 or self.confidence > 1:
             raise ValueError("Confidence must be between 0 and 1")
 
+        if not isinstance(self.contribution_to_root, (int, float)):
+            raise ValueError("contribution_to_root must be a number")
+
+        if self.contribution_to_root < 0 or self.contribution_to_root > 1:
+            raise ValueError("contribution_to_root must be between 0 and 1")
+
     def to_dict(self) -> Dict[str, Any]:
         """Convert the hypothesis to a dictionary for Neo4j storage."""
         result = {
@@ -136,6 +144,7 @@ class Hypothesis:
             'relation': self.relation,
             'object': self.object.name,  # For backward compatibility
             'confidence': self.confidence,
+            'contribution_to_root': self.contribution_to_root,
             'id': self.id,  # Always include the ID
             'subject_id': self.subject.id,
             'object_id': self.object.id
@@ -163,6 +172,7 @@ class Hypothesis:
         # Extract the main attributes
         relation = data.get('relation', '')
         confidence = data.get('confidence', 0.0)
+        contribution_to_root = data.get('contribution_to_root', 0.0)
         id_ = data.get('id', str(uuid.uuid4()))
 
         # Create subject
@@ -190,12 +200,14 @@ class Hypothesis:
             relation=relation,
             object=object_,
             confidence=confidence,
+            contribution_to_root=contribution_to_root,
             id=id_
         )
 
     @classmethod
     def create_from_strings(cls, subject: str, relation: str, object_: str,
-                            confidence: float, id_: str = None) -> 'Hypothesis':
+                            confidence: float, contribution_to_root: float = 0.0,
+                            id_: str = None) -> 'Hypothesis':
         """
         Create a Hypothesis instance from string values for backward compatibility.
 
@@ -204,6 +216,7 @@ class Hypothesis:
             relation: The relation
             object_: The object name
             confidence: The confidence level
+            contribution_to_root: How much this hypothesis contributes to the root hypothesis (between 0 and 1)
             id_: The hypothesis ID (optional)
 
         Returns:
@@ -220,5 +233,6 @@ class Hypothesis:
             relation=relation,
             object=object_obj,
             confidence=confidence,
+            contribution_to_root=contribution_to_root,
             id=id_
         )
