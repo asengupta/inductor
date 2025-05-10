@@ -40,6 +40,7 @@ def inference_tree_build_step_calculator(state: CodeExplorerState) -> dict[str, 
             return stateful(state, TREE_COMPLETE, pop2[0])
         incomplete_ancestor = stack[-1]
         print_stack(state["inference_stack"])
+        # Go to next child of current incomplete ancestor
         stack[-1] = (incomplete_ancestor[0], incomplete_ancestor[1] + 1)
         print(f"Top stack counter: {stack[0][1]}")
         print(f"Incomplete parent with counter: {stack[-1][1]}")
@@ -48,11 +49,6 @@ def inference_tree_build_step_calculator(state: CodeExplorerState) -> dict[str, 
         return stateful(state, TREE_INCOMPLETE, stack[0][0])
     else:
         raise (Exception("Cannot come here"))
-        # print("IN THE ELSE\n======================================")
-        # stack[-1] = (most_recent[0], most_recent[1] + 1)
-        # stack.append((most_recent[0].children[most_recent[1]], 0))
-        # print(f"All children NOT completed, pushing new peer child, returning {TREE_INCOMPLETE}")
-        # return TREE_INCOMPLETE
 
 
 def print_stack(stack):
