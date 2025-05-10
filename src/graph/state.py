@@ -13,3 +13,5 @@ class MyState(TypedDict):
     tool_calls: list[str]
     llm_response: list[BaseMessage]
     inference_stack: list[tuple[InferenceNode, int]]
+    base_hypothesis: InferenceNode
+    tree_build_status: str

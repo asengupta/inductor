@@ -8,8 +8,8 @@ from graph.state import MyState
 
 def decompose_hypothesis(tool_llm: LLM, tools: list[BaseTool]) -> Dict[str, Any]:
     def run_agent(state: MyState) -> Dict[str, Any]:
-        print("In validating hypothesis")
-        print("=====================")
+        print("In Decomposing Hypothesis")
+        print("============================")
         messages = state["messages"]
         print(f"Stack length is {len(state["inference_stack"])}")
         current_hypothesis = state["inference_stack"][-1][0].node

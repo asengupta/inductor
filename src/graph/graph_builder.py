@@ -18,7 +18,7 @@ from graph.node_names import (
     DATA_FOR_HYPOTHESIS_TOOL, SAVE_HYPOTHESES_TOOL, EXPLORE_FREELY_TOOL, SYSTEM_QUERY_TOOL,
     COLLECT_DATA_FOR_HYPOTHESIS_TOOL_OUTPUT, HYPOTHESIS_GATHER_START, DECOMPOSE_HYPOTHESIS, DONT_KNOW,
     EXECUTIVE_AGENT, BREAKDOWN_HYPOTHESIS_TOOL, BUILD_INFERENCE_TREE_INIT,
-    BUILD_INFERENCE_NODE_BUILD
+    BUILD_INFERENCE_NODE_BUILD, INFERENCE_TREE_BUILD_STEP_CALCULATOR
 )
 from graph.nodes.build_inference_node_build import build_inference_node_build
 from graph.nodes.collect_data_node import collect_data_for_hypothesis
@@ -26,6 +26,7 @@ from graph.nodes.executive_node import reverse_engineering_lead
 from graph.nodes.explore_node import free_explore
 from graph.nodes.hypothesize_node import hypothesize, hypothesis_exec
 from graph.nodes.inference_tree_build_decider_node import inference_tree_build_step_decider
+from graph.nodes.inference_tree_build_next_step_calculator import inference_tree_build_step_calculator
 from graph.nodes.inference_tree_decisions import TREE_INCOMPLETE, TREE_COMPLETE
 from graph.nodes.re_decider_node import reverse_engineering_step_decider
 from graph.nodes.system_query_node import system_query
@@ -96,6 +97,7 @@ async def make_graph(client: MultiServerMCPClient) -> AsyncGenerator[CompiledSta
         workflow.add_node(BUILD_INFERENCE_TREE_INIT, build_inference_tree_init_node)
         workflow.add_node(DECOMPOSE_HYPOTHESIS, decompose_hypothesis(llm_with_tool, inference_tree_building_tools))
         workflow.add_node(BUILD_INFERENCE_NODE_BUILD, build_inference_node_build)
+        workflow.add_node(INFERENCE_TREE_BUILD_STEP_CALCULATOR, inference_tree_build_step_calculator)
         # workflow.add_node(step_4)
 
         # workflow.add_node("agent_runner", agent_runner)
@@ -153,7 +155,8 @@ async def make_graph(client: MultiServerMCPClient) -> AsyncGenerator[CompiledSta
         workflow.add_edge(SAVE_HYPOTHESES_TOOL, EXECUTIVE_AGENT)
         workflow.add_edge(SYSTEM_QUERY_TOOL, EXECUTIVE_AGENT)
         workflow.add_edge(BREAKDOWN_HYPOTHESIS_TOOL, BUILD_INFERENCE_NODE_BUILD)
-        workflow.add_conditional_edges(BUILD_INFERENCE_NODE_BUILD, inference_tree_build_step_decider, {
+        workflow.add_edge(BUILD_INFERENCE_NODE_BUILD, INFERENCE_TREE_BUILD_STEP_CALCULATOR)
+        workflow.add_conditional_edges(INFERENCE_TREE_BUILD_STEP_CALCULATOR, inference_tree_build_step_decider, {
             TREE_INCOMPLETE: DECOMPOSE_HYPOTHESIS,
             TREE_COMPLETE: EXECUTIVE_AGENT,
             "default": EXECUTIVE_AGENT
