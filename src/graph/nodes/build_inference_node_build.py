@@ -3,7 +3,7 @@ from typing import Dict, Any
 
 from evidence import Evidence
 from graph.state import MyState
-from hypothesis import Hypothesis
+from hypothesis import Hypothesis, HypothesisSubject, HypothesisObject
 from induction_node import InferenceNode
 
 
@@ -13,8 +13,10 @@ def as_evidence_inference_node(child) -> InferenceNode:
 
 
 def as_hypothesis_inference_node(child) -> InferenceNode:
+    print(f"Child is of type {type(child)} and is {child}")
     return InferenceNode(
-        Hypothesis(child["subject"], child["object"], confidence=0.5,
+        Hypothesis(HypothesisSubject(child["subject"]["name"]), child["relation"],
+                   HypothesisObject(child["object"]["name"]), confidence=0.5,
                    contribution_to_root=child["contribution_to_root"]))
 
 
@@ -35,8 +37,8 @@ def build_inference_node_build(state: MyState) -> Dict[str, Any]:
         node: InferenceNode = latest_entry[0]
         all_children = [json.loads(raw_child) for raw_child in json.loads(tool_message.content)]
         sub_hypotheses = [as_hypothesis_inference_node(child) for child in all_children]
-        # state["inference_stack"].append((sub_hypotheses[0], 0))
         node.add_all(sub_hypotheses)
+        state["inference_stack"].append((sub_hypotheses[0], 0))
         print(f"Inference stack after build: {state['inference_stack']}")
     return MyState(input=state["input"], current_request=state["current_request"],
                    messages=state["messages"], inference_stack=state["inference_stack"])

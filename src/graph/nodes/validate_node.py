@@ -11,7 +11,8 @@ def build_inference_node(tool_llm: LLM, tools: list[BaseTool]) -> Dict[str, Any]
         print("In validating hypothesis")
         print("=====================")
         messages = state["messages"]
-        current_hypothesis = state["inference_stack"][-1]
+        print(f"Stack length is {len(state["inference_stack"])}")
+        current_hypothesis = state["inference_stack"][-1][0].node
         message = "Validation of hypothesis not yet implemented"
         prompt = f"The hypothesis is: {current_hypothesis}."
         generic_breakdown_prompt = f"""

@@ -26,10 +26,10 @@ class InferenceNode:
                 raise ValueError("All children must be InferenceNode instances")
 
     def __repr__(self) -> str:
-        return str(self.node)
+        return f"InferenceNode(type={type(self.node)}, content={self.node}, children={str(self.children)})"
 
     def __str__(self):
-        return f"[InferenceNode[type={type(self.node)}, children={str(self.children)}]"
+        return f"InferenceNode(type={type(self.node)}, content={self.node}, children={str(self.children)})"
 
     def add_all(self, children):
         self.children += children
