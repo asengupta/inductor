@@ -22,11 +22,11 @@ def inference_tree_build_step_decider(state: MyState) -> str:
     if len(stack) > 1:
         parent = stack[-2]
         if parent[1] == 0:
-            stack[-2] = (parent[0], parent[1] + 1)
+            # stack[-2] = (parent[0], parent[1] + 1)
             print(f"Pushed first child to stack already, returning {TREE_INCOMPLETE}")
             return TREE_INCOMPLETE
         elif parent[1] == len(parent[0].children):
-            stack[-2] = (parent[0], parent[1] + 1)
+            # stack[-2] = (parent[0], parent[1] + 1)
             print(f"Before stack.pop() = {len(stack)}, {len(state['inference_stack'])}")
             pop1 = stack.pop()
             print(f"Popped child: {pop1[0].just_str()}...")
@@ -45,11 +45,11 @@ def inference_tree_build_step_decider(state: MyState) -> str:
             return ret_code
         else:
             # In the middle of iterating through children
-            stack[-2] = (parent[0], parent[1] + 1)
             print(f"Before stack.pop() = {len(stack)}")
             stack.pop()
             print(f"After stack.pop() = {len(stack)}, {len(state['inference_stack'])}")
             stack.append((parent[0].children[parent[1]], 0))
+            stack[-2] = (parent[0], parent[1] + 1)
             print(f"All children NOT completed, pushing new peer child, returning {TREE_INCOMPLETE}")
             return TREE_INCOMPLETE
     else:
