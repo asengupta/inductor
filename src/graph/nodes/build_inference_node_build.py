@@ -20,19 +20,23 @@ def as_hypothesis_inference_node(child) -> InferenceNode:
 
 def build_inference_node_build(state: MyState) -> Dict[str, Any]:
     tool_message = state["messages"][-1]
-    tool_name = tool_message["name"]
+    tool_name = tool_message.name
     latest_entry = state["inference_stack"][-1]
     if tool_name == "create_evidence_strategy":
         node: InferenceNode = latest_entry[0]
-        all_children = json.loads(tool_message["content"])
+        print(f"TOOL MESSAGE IS: {tool_message.content}")
+        all_children = [json.loads(raw_child) for raw_child in json.loads(tool_message.content)]
+        print(f"Raw Evidences are: {all_children}")
         child_evidences = [as_evidence_inference_node(child) for child in all_children]
         state["inference_stack"][-1] = (node, len(child_evidences))
         node.add_all(child_evidences)
+        print(f"Inference stack after build: {state['inference_stack']}")
     elif tool_name == "breakdown_hypothesis":
         node: InferenceNode = latest_entry[0]
-        all_children = json.loads(tool_message["content"])
+        all_children = [json.loads(raw_child) for raw_child in json.loads(tool_message.content)]
         sub_hypotheses = [as_hypothesis_inference_node(child) for child in all_children]
         # state["inference_stack"].append((sub_hypotheses[0], 0))
         node.add_all(sub_hypotheses)
+        print(f"Inference stack after build: {state['inference_stack']}")
     return MyState(input=state["input"], current_request=state["current_request"],
-                   messages=state["messages"], inference_stack=[])
+                   messages=state["messages"], inference_stack=state["inference_stack"])

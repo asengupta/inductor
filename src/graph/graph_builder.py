@@ -74,6 +74,7 @@ async def make_graph(client: MultiServerMCPClient) -> AsyncGenerator[CompiledSta
     async with client:
         mcp_tools: list[BaseTool] = client.get_tools()
         print("SOMETHING")
+        inference_tree_building_tools = [tool for tool in mcp_tools if tool.name in ["create_evidence_strategy", "breakdown_hypothesis"]]
         # print(mcp_tools)
         llm_with_tool = anthropic_model().bind_tools(mcp_tools, tool_choice="auto")
         # llm_with_tool = bedrock_model().bind_tools(mcp_tools)
@@ -92,7 +93,7 @@ async def make_graph(client: MultiServerMCPClient) -> AsyncGenerator[CompiledSta
         workflow.add_node(EXPLORE_FREELY, free_explore(llm_with_tool))
         workflow.add_node(SYSTEM_QUERY, system_query(llm_with_tool, mcp_tools))
         workflow.add_node(BUILD_INFERENCE_TREE_INIT, build_inference_tree_init_node)
-        workflow.add_node(BUILD_INFERENCE_NODE_EXEC, build_inference_node(llm_with_tool, mcp_tools))
+        workflow.add_node(BUILD_INFERENCE_NODE_EXEC, build_inference_node(llm_with_tool, inference_tree_building_tools))
         workflow.add_node(BUILD_INFERENCE_NODE_BUILD, build_inference_node_build)
         # workflow.add_node(step_4)
 

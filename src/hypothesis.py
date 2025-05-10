@@ -51,6 +51,12 @@ class HypothesisSubject:
             id=id_
         )
 
+    def __repr__(self):
+        return self.name
+
+    def __str__(self):
+        return self.name
+
 
 @dataclass
 class HypothesisObject:
@@ -93,6 +99,12 @@ class HypothesisObject:
             id=id_
         )
 
+    def __repr__(self):
+        return self.name
+
+    def __str__(self):
+        return self.name
+
 
 @dataclass
 class Hypothesis:
@@ -113,6 +125,12 @@ class Hypothesis:
     confidence: float
     contribution_to_root: float = 0.0
     id: str = field(default_factory=lambda: str(uuid.uuid4()))
+
+    def __repr__(self):
+        return f"{self.subject} {self.relation} {self.object} with a confidence of {self.confidence}."
+
+    def __str__(self):
+        return f"{self.subject} {self.relation} {self.object} with a confidence of {self.confidence}."
 
     def __post_init__(self):
         """Validate the hypothesis data after initialization."""

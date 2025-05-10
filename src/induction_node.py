@@ -6,7 +6,7 @@ from evidence import Evidence
 from hypothesis import Hypothesis
 
 
-@dataclass(frozen=True, slots=True, order=True)
+@dataclass(frozen=False, slots=True, order=True)
 class InferenceNode:
     node: Union[Hypothesis, Evidence]
     children: List["InferenceNode"] = field(default_factory=list)
@@ -26,8 +26,10 @@ class InferenceNode:
                 raise ValueError("All children must be InferenceNode instances")
 
     def __repr__(self) -> str:
-        """Return a string representation of the InferenceNode."""
-        node_type = type(self.node).__name__
-        node_id = getattr(self.node, 'id', 'unknown')
-        children_count = len(self.children)
-        return f"InferenceNode(node={node_type}(id='{node_id}'), children_count={children_count}, id='{self.id}')"
+        return str(self.node)
+
+    def __str__(self):
+        return f"[InferenceNode[type={type(self.node)}, children={str(self.children)}]"
+
+    def add_all(self, children):
+        self.children += children
