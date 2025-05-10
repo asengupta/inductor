@@ -17,18 +17,20 @@ def decompose_hypothesis(tool_llm: LLM, tools: list[BaseTool]) -> Dict[str, Any]
         prompt = f"The hypothesis is: {current_hypothesis}."
         generic_breakdown_prompt = f"""
         Based on the list of tools provided, you have the following options:
-        1) If you think you can gather evidence for this hypothesis directly,
+        1) If you think you can gather evidence for this hypothesis directly using the tools provided,
         call the 'create_evidence_strategy' tool with the list of evidences needed to be gathered,
         along with the name of the tools you will use to gather these evidences. For each
         evidence, also provide its percentage of contribution to proving the root hypothesis.
         2) If you think this hypothesis needs to be broken down further into smaller, more testable hypotheses,
-        call the 'breakdown_hypothesis' tool with the list of the sub-hypotheses you come up with. For each
-        sub-hypothesis, also provide its percentage of contribution to proving the root hypothesis.
+        call the 'breakdown_hypothesis' tool with the list of the sub-hypotheses you come up with.
+        A testable hypothesis is one which is specific to the codebase and unambiguous, and can
+        be verified with the tools provided.
+        For each sub-hypothesis, also provide its percentage of contribution to proving the root hypothesis.
         3) If the stack depth is more than 3, you must use the 'create_evidence_strategy' tool.
         
         
         The current stack depth is {len(state["inference_stack"])}.
-        Limit the sub-hypotheses and evidences to 2 or less. Less is better.
+        Limit the sub-hypotheses and evidences to 2 or less.
         The list of tools are: {tools}
         """
         print(f"The prompt is:\n{prompt}")
