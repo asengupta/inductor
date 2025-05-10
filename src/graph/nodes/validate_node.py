@@ -11,8 +11,9 @@ def build_inference_node(tool_llm: LLM, tools: list[BaseTool]) -> Dict[str, Any]
         print("In validating hypothesis")
         print("=====================")
         messages = state["messages"]
+        current_hypothesis = state["inference_stack"][-1]
         message = "Validation of hypothesis not yet implemented"
-        prompt = "The hypothesis is that this code is very simple to understand."
+        prompt = f"The hypothesis is: {current_hypothesis}."
         generic_breakdown_prompt = f"""
         Based on the list of tools provided, you have two options:
         1) If you think you can gather evidence for this hypothesis directly,

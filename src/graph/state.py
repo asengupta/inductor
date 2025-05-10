@@ -1,5 +1,5 @@
-from numbers import Number
-from typing import TypedDict, Any, Annotated
+from typing import TypedDict, Annotated
+
 from langchain_core.messages import BaseMessage
 from langgraph.graph.message import add_messages
 
@@ -12,4 +12,4 @@ class MyState(TypedDict):
     current_request: str
     tool_calls: list[str]
     llm_response: list[BaseMessage]
-    inference_stack: list[tuple[InferenceNode, Number]]
+    inference_stack: list[tuple[InferenceNode, int]]
