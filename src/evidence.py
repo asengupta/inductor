@@ -37,3 +37,6 @@ class Evidence:
     def __repr__(self) -> str:
         """Return a string representation of the Evidence."""
         return f"Evidence(description='{self.evidence_description}', contribution={self.contribution_to_hypothesis}, id='{self.id}')"
+
+    def as_tree(self) -> str:
+        return f"[EVIDENCE] {self.evidence_description}"

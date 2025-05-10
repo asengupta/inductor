@@ -6,7 +6,7 @@ from graph.nodes.types import LLM
 from graph.state import MyState
 
 
-def build_inference_node(tool_llm: LLM, tools: list[BaseTool]) -> Dict[str, Any]:
+def decompose_hypothesis(tool_llm: LLM, tools: list[BaseTool]) -> Dict[str, Any]:
     def run_agent(state: MyState) -> Dict[str, Any]:
         print("In validating hypothesis")
         print("=====================")
@@ -16,7 +16,7 @@ def build_inference_node(tool_llm: LLM, tools: list[BaseTool]) -> Dict[str, Any]
         message = "Validation of hypothesis not yet implemented"
         prompt = f"The hypothesis is: {current_hypothesis}."
         generic_breakdown_prompt = f"""
-        Based on the list of tools provided, you have only two options:
+        Based on the list of tools provided, you have the following options:
         1) If you think you can gather evidence for this hypothesis directly,
         call the 'create_evidence_strategy' tool with the list of evidences needed to be gathered,
         along with the name of the tools you will use to gather these evidences. For each
@@ -25,7 +25,7 @@ def build_inference_node(tool_llm: LLM, tools: list[BaseTool]) -> Dict[str, Any]
         call the 'breakdown_hypothesis' tool with the list of the sub-hypotheses you come up with. For each
         sub-hypothesis, also provide its percentage of contribution to proving the root hypothesis.
         
-        Limit the sub-hypotheses and evidences to 3.
+        Limit the sub-hypotheses and evidences to 2.
         The list of tools are: {tools}
         """
         print(f"The prompt is:\n{prompt}")

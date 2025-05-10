@@ -137,6 +137,9 @@ class Hypothesis:
     def __str__(self):
         return f"{self.subject} {self.relation} {self.object} with a confidence of {self.confidence}."
 
+    def as_tree(self) -> str:
+        return f"[HYPOTHESIS] {self.subject} {self.relation} {self.object}"
+
     def __post_init__(self):
         """Validate the hypothesis data after initialization."""
         if not isinstance(self.subject, HypothesisSubject):

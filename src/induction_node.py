@@ -36,3 +36,9 @@ class InferenceNode:
 
     def add_all(self, children):
         self.children += children
+
+    def as_tree(self, level: int = 0) -> None:
+        spaces = (level - 1) * " "
+        print(f"{spaces}{'└-' if level > 0 else ""}{self.node.as_tree()}")
+        for child in self.children:
+            child.as_tree(level + 1)

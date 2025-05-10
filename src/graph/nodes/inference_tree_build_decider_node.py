@@ -1,11 +1,12 @@
 from graph.nodes.inference_tree_decisions import TREE_COMPLETE, TREE_INCOMPLETE
 from graph.state import MyState
-from dataclasses_json import dataclass_json
+
 
 def inference_tree_build_step_decider(state: MyState) -> str:
     stack = state["inference_stack"]
     ssss = stack[0][0]
-    print(f"Inference tree build step: {ssss.to_json(indent=2)}")
+    ssss.as_tree()
+    # print(f"Inference tree build step: {ssss.to_json(indent=2)}")
     most_recent = stack[-1]
     print(
         f"Checking indices: {most_recent[1]} vs. {len(most_recent[0].children)} = {most_recent[1] == len(most_recent[0].children)}")
@@ -26,13 +27,18 @@ def inference_tree_build_step_decider(state: MyState) -> str:
             return TREE_INCOMPLETE
         elif stack[-2][1] == len(stack[-2][0].children):
             # stack[-2] = (parent[0], parent[1] + 1)
+            print(f"Before stack.pop() = {len(stack)}, {len(state['inference_stack'])}")
             stack.pop()
+            stack.pop()
+            print(f"After stack.pop() = {len(stack)}")
             ret_code = TREE_COMPLETE if len(stack) == 1 else TREE_INCOMPLETE
             print(f"All children completed, popping up back to parent, returning {ret_code}")
             return ret_code
         else:
             stack[-2] = (parent[0], parent[1] + 1)
+            print(f"Before stack.pop() = {len(stack)}")
             stack.pop()
+            print(f"After stack.pop() = {len(stack)}, {len(state['inference_stack'])}")
             stack.append((parent[0].children[parent[1]], 0))
             print(f"All children NOT completed, pushing new peer child, returning {TREE_INCOMPLETE}")
             return TREE_INCOMPLETE
