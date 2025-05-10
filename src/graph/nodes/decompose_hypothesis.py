@@ -33,7 +33,7 @@ def decompose_hypothesis(tool_llm: LLM, tools: list[BaseTool]) -> Dict[str, Any]
         """
         print(f"The prompt is:\n{prompt}")
         response = tool_llm.invoke([prompt, generic_breakdown_prompt])
-        print(response.content)
+        # print(response.content)
         # return {"messages": [response]}
         return MyState(input=state["input"], current_request=state["current_request"],
                        messages=[response], inference_stack=state["inference_stack"])
