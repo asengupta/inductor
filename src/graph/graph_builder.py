@@ -172,7 +172,7 @@ async def start_task_graph(user_input: str, graph: CompiledStateGraph):
             """
             You are part of a reverse engineering pipeline looking at a HLASM codebase. Help navigate the user in understanding this code.
             """,
-            HumanMessage(content=user_input)]})
+            HumanMessage(content=user_input)]}, {"recursion_limit": 500})
     print("Results")
     for event in result:
         print(event)

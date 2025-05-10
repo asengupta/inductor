@@ -24,6 +24,8 @@ def build_inference_node(tool_llm: LLM, tools: list[BaseTool]) -> Dict[str, Any]
         2) If you think this hypothesis needs to be broken down further into smaller, more testable hypotheses,
         call the 'breakdown_hypothesis' tool with the list of the sub-hypotheses you come up with. For each
         sub-hypothesis, also provide its percentage of contribution to proving the root hypothesis.
+        
+        Limit the sub-hypotheses and evidences to 3.
         The list of tools are: {tools}
         """
         print(f"The prompt is:\n{prompt}")

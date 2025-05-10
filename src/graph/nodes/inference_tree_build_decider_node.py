@@ -24,8 +24,8 @@ def inference_tree_build_step_decider(state: MyState) -> str:
             stack[-2] = (parent[0], parent[1] + 1)
             print(f"Pushing child to stack, returning {TREE_INCOMPLETE}")
             return TREE_INCOMPLETE
-        elif stack[-1][1] == len(stack[-1][0].children):
-            stack[-2] = (parent[0], parent[1] + 1)
+        elif stack[-2][1] == len(stack[-2][0].children):
+            # stack[-2] = (parent[0], parent[1] + 1)
             stack.pop()
             ret_code = TREE_COMPLETE if len(stack) == 1 else TREE_INCOMPLETE
             print(f"All children completed, popping up back to parent, returning {ret_code}")
