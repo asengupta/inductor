@@ -2,10 +2,10 @@ from typing import Any, Dict
 from langchain_core.messages import HumanMessage
 
 from graph.nodes.types import LLM
-from graph.state import MyState
+from graph.state import CodeExplorerState
 
 def hypothesize(tool_llm: LLM):
-    def run_agent(state: MyState) -> Dict[str, Any]:
+    def run_agent(state: CodeExplorerState) -> Dict[str, Any]:
         print("IN HYPOTHESIZER....================================================================")
         messages = state["messages"]
         human_message = HumanMessage("""
@@ -21,12 +21,12 @@ def hypothesize(tool_llm: LLM):
         response = tool_llm.invoke(messages + [human_message])
         print(response.content)
         # return {"messages": [response]}
-        return MyState(input=state["input"], current_request=state["current_request"],
-                       messages=state["messages"] + [response])
+        return CodeExplorerState(input=state["input"], current_request=state["current_request"],
+                                 messages=state["messages"] + [response])
 
     return run_agent
 
-def hypothesis_exec(state: MyState):
+def hypothesis_exec(state: CodeExplorerState):
     print("============IN HYPO EXEC=================")
-    return MyState(input=state["input"], current_request=state["current_request"],
-                   messages=state["messages"] + [])
+    return CodeExplorerState(input=state["input"], current_request=state["current_request"],
+                             messages=state["messages"] + [])

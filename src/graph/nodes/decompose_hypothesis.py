@@ -3,11 +3,11 @@ from typing import Any, Dict
 from langchain_core.tools import BaseTool
 
 from graph.nodes.types import LLM
-from graph.state import MyState
+from graph.state import CodeExplorerState
 
 
 def decompose_hypothesis(tool_llm: LLM, tools: list[BaseTool]) -> Dict[str, Any]:
-    def run_agent(state: MyState) -> Dict[str, Any]:
+    def run_agent(state: CodeExplorerState) -> Dict[str, Any]:
         print("In Decomposing Hypothesis")
         print("============================")
         messages = state["messages"]
@@ -37,7 +37,7 @@ def decompose_hypothesis(tool_llm: LLM, tools: list[BaseTool]) -> Dict[str, Any]
         response = tool_llm.invoke([prompt, generic_breakdown_prompt])
         # print(response.content)
         # return {"messages": [response]}
-        return MyState(input=state["input"], current_request=state["current_request"],
-                       messages=[response], inference_stack=state["inference_stack"])
+        return CodeExplorerState(input=state["input"], current_request=state["current_request"],
+                                 messages=[response], inference_stack=state["inference_stack"])
 
     return run_agent

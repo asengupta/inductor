@@ -1,10 +1,10 @@
 from typing import Any, Dict
 
 from graph.nodes.types import LLM
-from graph.state import MyState
+from graph.state import CodeExplorerState
 
 def free_explore(tool_llm: LLM):
-    def run_agent(state: MyState) -> Dict[str, Any]:
+    def run_agent(state: CodeExplorerState) -> Dict[str, Any]:
         print("In Free Exploration Mode")
         print("=============================")
         print(state)
@@ -12,7 +12,7 @@ def free_explore(tool_llm: LLM):
         You have multiple tools at your disposal to investigate this codebase. Use as many tools at once as needed. 
         """, state["current_request"]])
         print(response.content)
-        return MyState(input=state["input"], current_request=state["current_request"],
-                       messages=[response])
+        return CodeExplorerState(input=state["input"], current_request=state["current_request"],
+                                 messages=[response])
 
     return run_agent

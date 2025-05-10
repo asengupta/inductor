@@ -6,7 +6,7 @@ from langgraph.graph.message import add_messages
 from induction_node import InferenceNode
 
 
-class MyState(TypedDict):
+class CodeExplorerState(TypedDict):
     input: str
     messages: Annotated[list[BaseMessage], add_messages]
     current_request: str

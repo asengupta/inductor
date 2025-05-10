@@ -1,8 +1,7 @@
-from graph.nodes.inference_tree_decisions import TREE_COMPLETE, TREE_INCOMPLETE
-from graph.state import MyState
+from graph.state import CodeExplorerState
 
 
-def inference_tree_build_step_decider(state: MyState) -> str:
+def inference_tree_build_step_decider(state: CodeExplorerState) -> str:
     return state["tree_build_status"]
     # stack = state["inference_stack"]
     # ssss = stack[0][0]

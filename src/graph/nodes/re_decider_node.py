@@ -1,11 +1,11 @@
-from graph.state import MyState
+from graph.state import CodeExplorerState
 from graph.router_constants import (
     FREEFORM_EXPLORATION_DECISION, HYPOTHESIZE_DECISION, VALIDATE_HYPOTHESIS_DECISION,
     SYSTEM_QUERY_DECISION, DONT_KNOW_DECISION, EXIT_DECISION
 )
 
 def reverse_engineering_step_decider(tool_llm):
-    def run_agent(state: MyState) -> str:
+    def run_agent(state: CodeExplorerState) -> str:
         messages = state["messages"]
         if messages[-1].content == EXIT_DECISION:
             return EXIT_DECISION

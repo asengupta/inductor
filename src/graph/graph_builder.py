@@ -38,7 +38,7 @@ from graph.router_constants import (
     DONT_KNOW_DECISION, SYSTEM_QUERY_DECISION, FREEFORM_EXPLORATION_DECISION,
     VALIDATE_HYPOTHESIS_DECISION, HYPOTHESIZE_DECISION, EXIT_DECISION
 )
-from graph.state import MyState
+from graph.state import CodeExplorerState
 
 load_dotenv("./env/.env")
 
@@ -63,7 +63,7 @@ mcp_client = MultiServerMCPClient(
     })
 
 
-def as_json(state: MyState) -> str:
+def as_json(state: CodeExplorerState) -> str:
     if not state["messages"]:
         return str(state)
     tool_result = state["messages"][-1]
@@ -85,7 +85,7 @@ async def make_graph(client: MultiServerMCPClient) -> AsyncGenerator[CompiledSta
         evidence_gatherer = collect_data_for_hypothesis(llm_with_tool)
         hypothesizer = hypothesize(llm_with_tool)
 
-        workflow = StateGraph(MyState)
+        workflow = StateGraph(CodeExplorerState)
 
         workflow.add_node(EXECUTIVE_AGENT, lead)
         workflow.add_node(DONT_KNOW, fallback)

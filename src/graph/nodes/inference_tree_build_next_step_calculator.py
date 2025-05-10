@@ -1,17 +1,17 @@
 from typing import Any
 
 from graph.nodes.inference_tree_decisions import TREE_COMPLETE, TREE_INCOMPLETE
-from graph.state import MyState
+from graph.state import CodeExplorerState
 from induction_node import InferenceNode
 
 
 def stateful(state, tree_build_status: str, root_node: InferenceNode) -> dict[str, Any]:
-    return MyState(input=state["input"], current_request=state["current_request"],
-                   messages=state["messages"], inference_stack=state["inference_stack"],
-                   tree_build_status=tree_build_status, base_hypothesis=root_node)
+    return CodeExplorerState(input=state["input"], current_request=state["current_request"],
+                             messages=state["messages"], inference_stack=state["inference_stack"],
+                             tree_build_status=tree_build_status, base_hypothesis=root_node)
 
 
-def inference_tree_build_step_calculator(state: MyState) -> dict[str, Any]:
+def inference_tree_build_step_calculator(state: CodeExplorerState) -> dict[str, Any]:
     stack = state["inference_stack"]
     ssss = stack[0][0]
     print("STACK\n================")
