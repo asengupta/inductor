@@ -16,18 +16,23 @@ from graph.models import anthropic_model
 from graph.node_names import (
     COLLECT_DATA_FOR_HYPOTHESIS, HYPOTHESIZE, EXPLORE_FREELY, SYSTEM_QUERY,
     DATA_FOR_HYPOTHESIS_TOOL, SAVE_HYPOTHESES_TOOL, EXPLORE_FREELY_TOOL, SYSTEM_QUERY_TOOL,
-    COLLECT_DATA_FOR_HYPOTHESIS_TOOL_OUTPUT, HYPOTHESIS_GATHER_START, VALIDATE_HYPOTHESIS_EXEC, DONT_KNOW,
-    EXECUTIVE_AGENT, BREAKDOWN_HYPOTHESIS_TOOL, BREAKDOWN_HYPOTHESIS_TOOL_OUTPUT
+    COLLECT_DATA_FOR_HYPOTHESIS_TOOL_OUTPUT, HYPOTHESIS_GATHER_START, BUILD_INFERENCE_NODE_EXEC, DONT_KNOW,
+    EXECUTIVE_AGENT, BREAKDOWN_HYPOTHESIS_TOOL, BUILD_INFERENCE_TREE_INIT,
+    BUILD_INFERENCE_NODE_BUILD
 )
+from graph.nodes.build_inference_node_build import build_inference_node_build
 from graph.nodes.collect_data_node import collect_data_for_hypothesis
-from graph.nodes.decider_node import reverse_engineering_step_decider
 from graph.nodes.executive_node import reverse_engineering_lead
 from graph.nodes.explore_node import free_explore
 from graph.nodes.hypothesize_node import hypothesize, hypothesis_exec
+from graph.nodes.inference_tree_build_decider_node import inference_tree_build_step_decider
+from graph.nodes.inference_tree_decisions import TREE_INCOMPLETE, TREE_COMPLETE
+from graph.nodes.re_decider_node import reverse_engineering_step_decider
 from graph.nodes.system_query_node import system_query
 from graph.nodes.tool_output_node import generic_tool_output
 from graph.nodes.utility_nodes import fallback
-from graph.nodes.validate_node import validate_hypothesis
+from graph.nodes.validate_init_node import build_inference_tree_init_node
+from graph.nodes.validate_node import build_inference_node
 from graph.router_constants import (
     DONT_KNOW_DECISION, SYSTEM_QUERY_DECISION, FREEFORM_EXPLORATION_DECISION,
     VALIDATE_HYPOTHESIS_DECISION, HYPOTHESIZE_DECISION, EXIT_DECISION
@@ -76,7 +81,6 @@ async def make_graph(client: MultiServerMCPClient) -> AsyncGenerator[CompiledSta
         lead = reverse_engineering_lead(llm_with_tool)
         evidence_gatherer = collect_data_for_hypothesis(llm_with_tool)
         hypothesizer = hypothesize(llm_with_tool)
-        breakdown_hypothesis_tool_output = generic_tool_output(BREAKDOWN_HYPOTHESIS_TOOL, formatter=as_json)
 
         workflow = StateGraph(MyState)
 
@@ -87,8 +91,9 @@ async def make_graph(client: MultiServerMCPClient) -> AsyncGenerator[CompiledSta
         workflow.add_node(HYPOTHESIZE, hypothesizer)
         workflow.add_node(EXPLORE_FREELY, free_explore(llm_with_tool))
         workflow.add_node(SYSTEM_QUERY, system_query(llm_with_tool, mcp_tools))
-        workflow.add_node(VALIDATE_HYPOTHESIS_EXEC, validate_hypothesis(llm_with_tool, mcp_tools))
-        workflow.add_node(BREAKDOWN_HYPOTHESIS_TOOL_OUTPUT, breakdown_hypothesis_tool_output)
+        workflow.add_node(BUILD_INFERENCE_TREE_INIT, build_inference_tree_init_node)
+        workflow.add_node(BUILD_INFERENCE_NODE_EXEC, build_inference_node(llm_with_tool, mcp_tools))
+        workflow.add_node(BUILD_INFERENCE_NODE_BUILD, build_inference_node_build)
         # workflow.add_node(step_4)
 
         # workflow.add_node("agent_runner", agent_runner)
@@ -106,7 +111,7 @@ async def make_graph(client: MultiServerMCPClient) -> AsyncGenerator[CompiledSta
 
         workflow.add_conditional_edges(EXECUTIVE_AGENT, agent_decider, {
             HYPOTHESIZE_DECISION: HYPOTHESIS_GATHER_START,
-            VALIDATE_HYPOTHESIS_DECISION: VALIDATE_HYPOTHESIS_EXEC,
+            VALIDATE_HYPOTHESIS_DECISION: BUILD_INFERENCE_TREE_INIT,
             FREEFORM_EXPLORATION_DECISION: EXPLORE_FREELY,
             SYSTEM_QUERY_DECISION: SYSTEM_QUERY,
             DONT_KNOW_DECISION: DONT_KNOW,
@@ -132,7 +137,8 @@ async def make_graph(client: MultiServerMCPClient) -> AsyncGenerator[CompiledSta
             END: EXECUTIVE_AGENT
         })
 
-        workflow.add_conditional_edges(VALIDATE_HYPOTHESIS_EXEC, tools_condition, {
+        workflow.add_edge(BUILD_INFERENCE_TREE_INIT, BUILD_INFERENCE_NODE_EXEC)
+        workflow.add_conditional_edges(BUILD_INFERENCE_NODE_EXEC, tools_condition, {
             "tools": BREAKDOWN_HYPOTHESIS_TOOL,
             END: EXECUTIVE_AGENT
         })
@@ -144,8 +150,12 @@ async def make_graph(client: MultiServerMCPClient) -> AsyncGenerator[CompiledSta
         workflow.add_edge(COLLECT_DATA_FOR_HYPOTHESIS_TOOL_OUTPUT, HYPOTHESIZE)
         workflow.add_edge(SAVE_HYPOTHESES_TOOL, EXECUTIVE_AGENT)
         workflow.add_edge(SYSTEM_QUERY_TOOL, EXECUTIVE_AGENT)
-        workflow.add_edge(BREAKDOWN_HYPOTHESIS_TOOL, BREAKDOWN_HYPOTHESIS_TOOL_OUTPUT)
-        workflow.add_edge(BREAKDOWN_HYPOTHESIS_TOOL_OUTPUT, EXECUTIVE_AGENT)
+        workflow.add_edge(BREAKDOWN_HYPOTHESIS_TOOL, BUILD_INFERENCE_NODE_BUILD)
+        workflow.add_conditional_edges(BUILD_INFERENCE_NODE_BUILD, inference_tree_build_step_decider, {
+            TREE_INCOMPLETE: BUILD_INFERENCE_NODE_EXEC,
+            TREE_COMPLETE: EXECUTIVE_AGENT,
+            "default": EXECUTIVE_AGENT
+        })
 
         # workflow.add_edge(VALIDATE_HYPOTHESIS_EXEC, EXECUTIVE_AGENT)
         # workflow.add_edge("step_4", END)

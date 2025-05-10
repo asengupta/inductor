@@ -41,6 +41,11 @@ async def create_evidence_strategy(evidence_components: list[Evidence]) -> list[
 
 
 @mcp.tool()
+async def breakdown_hypothesis(hypotheses: List[Hypothesis]) -> List[Hypothesis]:
+    return hypotheses
+
+
+@mcp.tool()
 async def create_hypothesis(subject: str, relation: str, object_: str, confidence: float) -> Dict[str, Any]:
     """
     Create a new Hypothesis in Neo4j.
@@ -970,45 +975,6 @@ async def get_all_hypotheses() -> Dict[str, Any]:
             "count": len(result),
             "hypotheses": result
         }
-    except Exception as e:
-        return {
-            "success": False,
-            "error": f"An error occurred: {str(e)}"
-        }
-
-
-@mcp.tool()
-async def breakdown_hypothesis(hypotheses: List[Hypothesis]) -> List[Hypothesis]:
-    """
-    Process a list of Hypothesis objects and return the same list.
-
-    This tool is a simple pass-through that accepts Hypothesis objects and returns them.
-    It can be used as a building block for more complex hypothesis processing pipelines.
-
-    Args:
-        hypotheses: A list of Hypothesis objects to process
-
-    Returns:
-        A dictionary containing the processed hypotheses (same as input)
-    """
-    try:
-        result = []
-        for h in hypotheses:
-            result.append({
-                "id": h.id,
-                "subject": {
-                    "id": h.subject.id,
-                    "name": h.subject.name
-                },
-                "relation": h.relation,
-                "object": {
-                    "id": h.object.id,
-                    "name": h.object.name
-                },
-                "confidence": h.confidence
-            })
-
-        return result
     except Exception as e:
         return {
             "success": False,

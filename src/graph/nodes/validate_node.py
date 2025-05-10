@@ -6,7 +6,7 @@ from graph.nodes.types import LLM
 from graph.state import MyState
 
 
-def validate_hypothesis(tool_llm: LLM, tools: list[BaseTool]) -> Dict[str, Any]:
+def build_inference_node(tool_llm: LLM, tools: list[BaseTool]) -> Dict[str, Any]:
     def run_agent(state: MyState) -> Dict[str, Any]:
         print("In validating hypothesis")
         print("=====================")
