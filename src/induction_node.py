@@ -42,3 +42,6 @@ class InferenceNode:
         print(f"{spaces}{'└-' if level > 0 else ""}{self.node.as_tree()}")
         for child in self.children:
             child.as_tree(level + 1)
+
+    def just_str(self):
+        return str(self.node)
