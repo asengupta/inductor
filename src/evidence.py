@@ -8,7 +8,10 @@ Each Evidence consists of a description, a contribution value to the hypothesis,
 import uuid
 from dataclasses import dataclass, field
 
+from dataclasses_json import dataclass_json
 
+
+@dataclass_json
 @dataclass(frozen=True, slots=True, order=True)
 class Evidence:
     """

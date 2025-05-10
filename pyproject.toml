@@ -24,6 +24,7 @@ dependencies = [
     "anthropic",
     "langchain-aws",
     "neo4j",
+    "dataclasses_json"
 ]
 
 [tool.poetry.dependencies]

@@ -1,10 +1,11 @@
 from graph.nodes.inference_tree_decisions import TREE_COMPLETE, TREE_INCOMPLETE
 from graph.state import MyState
-
+from dataclasses_json import dataclass_json
 
 def inference_tree_build_step_decider(state: MyState) -> str:
     stack = state["inference_stack"]
-    print(f"Inference tree build step: {stack[0]}")
+    ssss = stack[0][0]
+    print(f"Inference tree build step: {ssss.to_json(indent=2)}")
     most_recent = stack[-1]
     print(
         f"Checking indices: {most_recent[1]} vs. {len(most_recent[0].children)} = {most_recent[1] == len(most_recent[0].children)}")

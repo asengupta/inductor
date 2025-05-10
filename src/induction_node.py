@@ -2,10 +2,13 @@ import uuid
 from dataclasses import dataclass, field
 from typing import List, Union
 
+from dataclasses_json import dataclass_json
+
 from evidence import Evidence
 from hypothesis import Hypothesis
 
 
+@dataclass_json
 @dataclass(frozen=False, slots=True, order=True)
 class InferenceNode:
     node: Union[Hypothesis, Evidence]

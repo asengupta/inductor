@@ -9,7 +9,10 @@ import uuid
 from dataclasses import dataclass, field
 from typing import Dict, Any
 
+from dataclasses_json import dataclass_json
 
+
+@dataclass_json
 @dataclass
 class HypothesisSubject:
     """
@@ -58,6 +61,7 @@ class HypothesisSubject:
         return self.name
 
 
+@dataclass_json
 @dataclass
 class HypothesisObject:
     """
@@ -106,6 +110,7 @@ class HypothesisObject:
         return self.name
 
 
+@dataclass_json
 @dataclass
 class Hypothesis:
     """
