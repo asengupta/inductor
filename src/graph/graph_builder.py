@@ -31,7 +31,7 @@ from graph.nodes.re_decider_node import reverse_engineering_step_decider
 from graph.nodes.system_query_node import system_query
 from graph.nodes.tool_output_node import generic_tool_output
 from graph.nodes.utility_nodes import fallback
-from graph.nodes.validate_init_node import build_inference_tree_init_node
+from graph.nodes.build_inference_tree_init import build_inference_tree_init_node
 from graph.nodes.decompose_hypothesis import decompose_hypothesis
 from graph.router_constants import (
     DONT_KNOW_DECISION, SYSTEM_QUERY_DECISION, FREEFORM_EXPLORATION_DECISION,
@@ -74,7 +74,8 @@ async def make_graph(client: MultiServerMCPClient) -> AsyncGenerator[CompiledSta
     async with client:
         mcp_tools: list[BaseTool] = client.get_tools()
         print("SOMETHING")
-        inference_tree_building_tools = [tool for tool in mcp_tools if tool.name in ["create_evidence_strategy", "breakdown_hypothesis"]]
+        inference_tree_building_tools = [tool for tool in mcp_tools if
+                                         tool.name in ["create_evidence_strategy", "breakdown_hypothesis"]]
         # print(mcp_tools)
         llm_with_tool = anthropic_model().bind_tools(mcp_tools, tool_choice="auto")
         # llm_with_tool = bedrock_model().bind_tools(mcp_tools)
@@ -173,29 +174,12 @@ async def start_task_graph(user_input: str, graph: CompiledStateGraph):
             You are part of a reverse engineering pipeline looking at a HLASM codebase. Help navigate the user in understanding this code.
             """,
             HumanMessage(content=user_input)]}, {"recursion_limit": 500})
-    print("Results")
-    for event in result:
-        print(event)
+    print("Goodbye!")
 
 
 async def run_thing():
     async with make_graph(mcp_client) as graph:
-        # user_input: str = input("What do you want to do? ")
         await start_task_graph("", graph)
-        # while True:
-        #     try:
-        #         user_input: str = input("What do you want to do? ")
-        #         if user_input.lower() in ["quit", "exit", "q"]:
-        #             print("Goodbye!")
-        #             break
-        #         elif user_input.strip() == "":
-        #             print("No input provided. Please try again.")
-        #             continue
-        #         await update(user_input, graph)
-        #         continue
-        #     except:
-        #         print("Closing graph")
-        #         break
 
 
 if __name__ == "__main__":
