@@ -28,7 +28,7 @@ def decompose_hypothesis(tool_llm: LLM, tools: list[BaseTool]) -> Dict[str, Any]
         
         
         The current stack depth is {len(state["inference_stack"])}.
-        Limit the sub-hypotheses and evidences to 2.
+        Limit the sub-hypotheses and evidences to 3. Less is better.
         The list of tools are: {tools}
         """
         print(f"The prompt is:\n{prompt}")

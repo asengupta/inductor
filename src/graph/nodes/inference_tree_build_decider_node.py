@@ -12,7 +12,7 @@ def inference_tree_build_step_decider(state: MyState) -> str:
     # print(f"Inference tree build step: {ssss.to_json(indent=2)}")
     most_recent = stack[-1]
     print(f"Stack top is {most_recent[0].just_str()}")
-    input("Press Enter to continue...")
+    # input("Press Enter to continue...")
     print(
         f"Checking indices: {most_recent[1]} vs. {len(most_recent[0].children)} = {most_recent[1] == len(most_recent[0].children)}")
     if len(most_recent[0].children) == 0:
