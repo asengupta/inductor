@@ -2,8 +2,7 @@ from typing import Any
 
 from graph.nodes.inference_tree_decisions import TREE_COMPLETE, TREE_INCOMPLETE
 from graph.state import CodeExplorerState
-from graph.state_keys import CURRENT_REQUEST_KEY, INPUT_KEY, MESSAGES_KEY
-from graph.tool_names import INFERENCE_STACK_KEY
+from graph.state_keys import CURRENT_REQUEST_KEY, INPUT_KEY, MESSAGES_KEY, INFERENCE_STACK_KEY
 from induction_node import InferenceNode
 
 

@@ -1,3 +1,5 @@
 CURRENT_REQUEST_KEY = "current_request"
 INPUT_KEY = "input"
 MESSAGES_KEY = "messages"
+INFERENCE_STACK_KEY = "inference_stack"
+TREE_BUILD_STATUS_KEY = "tree_build_status"

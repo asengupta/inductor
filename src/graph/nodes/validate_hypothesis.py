@@ -3,8 +3,8 @@ from typing import Any
 
 from evidence import Evidence
 from graph.state import CodeExplorerState
-from graph.state_keys import CURRENT_REQUEST_KEY, INPUT_KEY, MESSAGES_KEY
-from graph.tool_names import BASE_HYPOTHESIS_KEY, INFERENCE_STACK_KEY
+from graph.state_keys import CURRENT_REQUEST_KEY, INPUT_KEY, MESSAGES_KEY, INFERENCE_STACK_KEY
+from graph.tool_names import BASE_HYPOTHESIS_KEY
 from hypothesis import Hypothesis, HypothesisSubject, HypothesisObject
 from induction_node import InferenceNode
 

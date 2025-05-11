@@ -1,5 +1,3 @@
 CREATE_EVIDENCE_STRATEGY_MCP_TOOL_NAME= "create_evidence_strategy"
 BREAKDOWN_HYPOTHESIS_MCP_TOOL_NAME= "breakdown_hypothesis"
-INFERENCE_STACK_KEY = "inference_stack"
 BASE_HYPOTHESIS_KEY = "base_hypothesis"
-TREE_BUILD_STATUS_KEY = "tree_build_status"

@@ -3,9 +3,8 @@ from typing import Any
 
 from evidence import Evidence
 from graph.state import CodeExplorerState
-from graph.state_keys import CURRENT_REQUEST_KEY, MESSAGES_KEY, INPUT_KEY
-from graph.tool_names import CREATE_EVIDENCE_STRATEGY_MCP_TOOL_NAME, BREAKDOWN_HYPOTHESIS_MCP_TOOL_NAME, \
-    INFERENCE_STACK_KEY
+from graph.state_keys import CURRENT_REQUEST_KEY, MESSAGES_KEY, INPUT_KEY, INFERENCE_STACK_KEY
+from graph.tool_names import CREATE_EVIDENCE_STRATEGY_MCP_TOOL_NAME, BREAKDOWN_HYPOTHESIS_MCP_TOOL_NAME
 from hypothesis import Hypothesis, HypothesisSubject, HypothesisObject
 from induction_node import InferenceNode
 
