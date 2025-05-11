@@ -26,32 +26,44 @@ def validate_hypothesis(state: CodeExplorerState) -> dict[str, Any]:
                                      ])
     print(root_hypothesis.as_tree())
 
-    stack = [root_hypothesis]
-    recurse(stack)
-    print(f"At the end: stack = {stack}")
+    state["recursion_stack"] = [root_hypothesis]
+    recurse(state)
+    print(f"At the end: stack = {stack(state)}")
     return CodeExplorerState(input=state[INPUT_KEY], current_request=state[CURRENT_REQUEST_KEY],
                              messages=state[MESSAGES_KEY], inference_stack=[],
                              base_hypothesis=root_hypothesis)
 
 
-def gather_evidence_with_tool(stack) -> None:
-    print(f"Visiting evidence: {stack[-1].just_str()}")
+def stack(state: CodeExplorerState) -> list[InferenceNode]:
+    return state["recursion_stack"]
 
 
-def recurse(stack: list[InferenceNode]) -> None:
-    current = stack[-1]
+def push(state, node: InferenceNode) -> None:
+    state["recursion_stack"].append(node)
+
+
+def pop(state) -> InferenceNode:
+    return state["recursion_stack"].pop()
+
+
+def gather_evidence_with_tool(state: CodeExplorerState) -> None:
+    print(f"Visiting evidence: {stack(state)[-1].just_str()}")
+
+
+def recurse(state: CodeExplorerState) -> None:
+    current = stack(state)[-1]
     if isinstance(current.node, Evidence):
-        gather_evidence_with_tool(stack)
+        gather_evidence_with_tool(state)
         return
-    visit_hypothesis(stack)
+    visit_hypothesis(state)
 
 
-def visit_hypothesis(stack):
-    current = stack[-1]
+def visit_hypothesis(state: CodeExplorerState) -> None:
+    current = stack(state)[-1]
     print(f"Visiting hypothesis: {current.just_str()}")
-    stack.append(current)
+    push(state, current)
     for child in current.children:
-        stack.append(child)
-        recurse(stack)
-        stack.pop()
-    stack.pop()
+        push(state, child)
+        recurse(state)
+        pop(state)
+    pop(state)
