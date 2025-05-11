@@ -1,7 +1,9 @@
 from typing import Optional, Any
 
 from belief import Belief
-from hypothesis import Hypothesis, HypothesisSubject, HypothesisObject
+from hypothesis import Hypothesis
+from hypothesis_subject import HypothesisSubject
+from hypothesis_object import HypothesisObject
 from neo4j_operations import Neo4jOperations
 
 

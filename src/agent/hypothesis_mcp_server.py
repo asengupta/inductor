@@ -13,7 +13,9 @@ from mcp.server import FastMCP
 
 from evidence import Evidence
 from belief import Belief, equally_likely
-from hypothesis import Hypothesis, HypothesisSubject, HypothesisObject
+from hypothesis import Hypothesis
+from hypothesis_subject import HypothesisSubject
+from hypothesis_object import HypothesisObject
 from hypothesis_operations import HypothesisOperations
 from id_provider import UuidProvider
 from neo4j_operations import Neo4jOperations

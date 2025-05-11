@@ -3,7 +3,9 @@ from typing import Any
 from belief import equally_likely
 from graph.state import CodeExplorerState
 from graph.state_keys import CURRENT_REQUEST_KEY, INPUT_KEY, MESSAGES_KEY
-from hypothesis import Hypothesis, HypothesisSubject, HypothesisObject
+from hypothesis import Hypothesis
+from hypothesis_subject import HypothesisSubject
+from hypothesis_object import HypothesisObject
 from induction_node import InferenceNode
 
 

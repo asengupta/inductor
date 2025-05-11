@@ -1,0 +1,60 @@
+"""
+Hypothesis Object Module
+
+This module provides the HypothesisObject class used in hypothesis operations.
+"""
+
+import uuid
+from dataclasses import dataclass, field
+from typing import Any
+
+from dataclasses_json import dataclass_json
+
+
+@dataclass_json
+@dataclass
+class HypothesisObject:
+    """
+    A dataclass representing the object of a hypothesis.
+
+    Attributes:
+        name: The name of the object
+        id: The unique identifier (auto-generated if not explicitly provided)
+    """
+    name: str
+    id: str = field(default_factory=lambda: str(uuid.uuid4()))
+
+    def __post_init__(self):
+        """Validate the object data after initialization."""
+        if not self.name or not isinstance(self.name, str):
+            raise ValueError("Object name must be a non-empty string")
+
+    def to_dict(self) -> dict[str, Any]:
+        """Convert the object to a dictionary for Neo4j storage."""
+        result = {
+            'name': self.name,
+            'id': self.id
+        }
+
+        return result
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> 'HypothesisObject':
+        """Create a HypothesisObject instance from a dictionary."""
+        if not data:
+            raise ValueError("Cannot create HypothesisObject from empty data")
+
+        # Extract the main attributes
+        name = data.get('name', '')
+        id_ = data.get('id', str(uuid.uuid4()))
+
+        return cls(
+            name=name,
+            id=id_
+        )
+
+    def __repr__(self):
+        return self.name
+
+    def __str__(self):
+        return self.name
