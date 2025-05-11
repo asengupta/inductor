@@ -10,7 +10,7 @@ from induction_node import InferenceNode
 
 def visit_evidence(state: CodeExplorerState) -> dict[str, Any]:
     current = stack(state)[-1]
-    print(f"Visiting evidence: {current.just_str()}")
+    print(f"Visiting evidence: {current[0].just_str()}")
     le_stack = stack(state)
     le_stack[-2] = (le_stack[-2][0], le_stack[-2][1] + 1)
     return CodeExplorerState(input=state[INPUT_KEY], current_request=state[CURRENT_REQUEST_KEY],
