@@ -1,16 +1,16 @@
-from typing import Any, Callable, Coroutine
+from typing import Any, Callable, Awaitable
 
 from langchain_core.tools import BaseTool
 from langgraph.prebuilt import create_react_agent
 
 from graph.nodes.state_operations import stack
-from graph.nodes.types import LLM, LanggraphNode, EvidenceResult
+from graph.nodes.types import LLM, EvidenceResult
 from graph.state import CodeExplorerState
 from graph.state_keys import CURRENT_REQUEST_KEY, INPUT_KEY, MESSAGES_KEY, BASE_HYPOTHESIS_KEY
 
 
 def visit_evidence_build(llm: LLM, tools: list[BaseTool]) -> Callable[
-    [CodeExplorerState], Coroutine[Any, Any, dict[str, Any]]]:
+    [CodeExplorerState], Awaitable[dict[str, Any]]]:
     async def visit_evidence(state: CodeExplorerState) -> dict[str, Any]:
         current = stack(state)[-1]
         print(f"Visiting evidence: {current[0].just_str()}")
@@ -28,9 +28,10 @@ def visit_evidence_build(llm: LLM, tools: list[BaseTool]) -> Callable[
                                    response_format=EvidenceResult)
 
         response = await agent.ainvoke({"messages": [{"role": "user", "content": joined_prompt}]})
-        print(f"Response from gathering evidence: {response["structured_response"]}")
+        print("Response from gathering evidence")
         # print(f"Response from gathering evidence: {response}")
         print("====================================================================================")
+        print(response["structured_response"])
         le_stack[-2] = (le_stack[-2][0], le_stack[-2][1] + 1)
         return CodeExplorerState(input=state[INPUT_KEY], current_request=state[CURRENT_REQUEST_KEY],
                                  messages=state[MESSAGES_KEY], inference_stack=[],
