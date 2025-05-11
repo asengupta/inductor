@@ -36,7 +36,7 @@ from graph.nodes.build_inference_tree_init import build_inference_tree_init_node
 from graph.nodes.decompose_hypothesis import decompose_hypothesis
 from graph.router_constants import (
     DONT_KNOW_DECISION, SYSTEM_QUERY_DECISION, FREEFORM_EXPLORATION_DECISION,
-    VALIDATE_HYPOTHESIS_DECISION, HYPOTHESIZE_DECISION, EXIT_DECISION
+    BUILD_INFERENCE_TREE_DECISION, HYPOTHESIZE_DECISION, EXIT_DECISION
 )
 from graph.state import CodeExplorerState
 
@@ -115,7 +115,7 @@ async def make_graph(client: MultiServerMCPClient) -> AsyncGenerator[CompiledSta
 
         workflow.add_conditional_edges(EXECUTIVE_AGENT, agent_decider, {
             HYPOTHESIZE_DECISION: HYPOTHESIS_GATHER_START,
-            VALIDATE_HYPOTHESIS_DECISION: BUILD_INFERENCE_TREE_INIT,
+            BUILD_INFERENCE_TREE_DECISION: BUILD_INFERENCE_TREE_INIT,
             FREEFORM_EXPLORATION_DECISION: EXPLORE_FREELY,
             SYSTEM_QUERY_DECISION: SYSTEM_QUERY,
             DONT_KNOW_DECISION: DONT_KNOW,
@@ -161,9 +161,6 @@ async def make_graph(client: MultiServerMCPClient) -> AsyncGenerator[CompiledSta
             TREE_COMPLETE: EXECUTIVE_AGENT,
             "default": EXECUTIVE_AGENT
         })
-
-        # workflow.add_edge(VALIDATE_HYPOTHESIS_EXEC, EXECUTIVE_AGENT)
-        # workflow.add_edge("step_4", END)
 
         graph = workflow.compile()
         graph.name = "My Graph"

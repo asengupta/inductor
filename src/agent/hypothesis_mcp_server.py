@@ -7,14 +7,15 @@ and updating and deleting HypothesisSubject and HypothesisObject in Neo4J.
 
 import os
 from typing import Dict, Any, Optional, List
+
 from dotenv import load_dotenv
 from mcp.server import FastMCP
 
 from evidence import Evidence
-from neo4j_operations import Neo4jOperations
 from hypothesis import Hypothesis, HypothesisSubject, HypothesisObject
 from hypothesis_operations import HypothesisOperations
 from id_provider import UuidProvider
+from neo4j_operations import Neo4jOperations
 
 # Load environment variables from .env file
 load_dotenv("./env/.env")
@@ -33,6 +34,11 @@ hypothesis_ops = HypothesisOperations(neo4j_ops)
 
 # Create the MCP server
 mcp = FastMCP("Hypothesis Operations")
+
+
+@mcp.tool()
+async def crcrcrcrcrc(evidence_components: list[Evidence]) -> list[Evidence]:
+    return evidence_components
 
 
 @mcp.tool()
