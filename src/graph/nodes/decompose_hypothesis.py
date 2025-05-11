@@ -29,7 +29,7 @@ def decompose_hypothesis(tool_llm: LLM, tools: list[BaseTool]) -> LanggraphNode:
         A testable hypothesis is one which is specific to the codebase and unambiguous, and can
         be verified with the tools provided.
         For each sub-hypothesis, also provide its percentage of contribution to proving the root hypothesis.
-        3) If the stack depth is more than 3, you must use the '{CREATE_EVIDENCE_STRATEGY_MCP_TOOL_NAME}' tool.
+        3) If the stack depth is more than 2, you must use the '{CREATE_EVIDENCE_STRATEGY_MCP_TOOL_NAME}' tool.
         
         
         The current stack depth is {len(state[INFERENCE_STACK_KEY])}.

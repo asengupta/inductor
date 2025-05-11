@@ -15,10 +15,10 @@ class BetaBernoulliBelief(BeliefProtocol):
     id: str = field(default_factory=lambda: str(uuid.uuid4()), compare=False)
 
     def __repr__(self) -> str:
-        return f"BetaBernoulli(alpha='{self.alpha}', beta={self.beta}, id='{self.id}')"
+        return f"({self.alpha}, {self.beta})"
 
     def __str__(self) -> str:
-        return f"BetaBernoulli(alpha='{self.alpha}', beta={self.beta}, id='{self.id}')"
+        return f"({self.alpha}, {self.beta})"
 
     def update(self, data: tuple[int, int]) -> "BetaBernoulliBelief":
         """Update the belief with new evidence."""

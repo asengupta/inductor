@@ -4,7 +4,7 @@ from beta_bernoulli_belief import equally_likely
 from evidence import Evidence
 from graph.nodes.state_operations import stack, push, pop
 from graph.state import CodeExplorerState
-from graph.state_keys import CURRENT_REQUEST_KEY, INPUT_KEY, MESSAGES_KEY, RECURSION_STACK_KEY
+from graph.state_keys import CURRENT_REQUEST_KEY, INPUT_KEY, MESSAGES_KEY, RECURSION_STACK_KEY, BASE_HYPOTHESIS_KEY
 from hypothesis import Hypothesis
 from induction_node import InferenceNode
 
@@ -13,7 +13,7 @@ def validate_hypothesis_init(state: CodeExplorerState) -> dict[str, Any]:
     print("In Validation Hypothesis Init")
     print("==============================")
     print("Setting up bookkeeping for the inference stack...")
-    # root_hypothesis: InferenceNode = state[BASE_HYPOTHESIS_KEY]
+    root_hypothesis: InferenceNode = state[BASE_HYPOTHESIS_KEY]
     # root_hypothesis = InferenceNode(Hypothesis.create_from_strings("program", "does not interact with", "user", equally_likely(), 1),
     #                                 [InferenceNode(Hypothesis.create_from_strings("program", "lacks", "input functions", equally_likely(), 0.5),
     #                                                [
@@ -26,12 +26,12 @@ def validate_hypothesis_init(state: CodeExplorerState) -> dict[str, Any]:
     #                                                    InferenceNode(Evidence("Search for custom output function definitions using regex", 0.5, equally_likely()))
     #                                                ])
     #                                  ])
-    root_hypothesis = InferenceNode(Hypothesis.create_from_strings("program", "has", "low complexity", equally_likely(), 1),
-                                    [InferenceNode(Evidence("The cyclomatic complexity is low", 0.5, equally_likely()),
-                                                   []),
-                                     InferenceNode(Evidence("The number of sections is small", 0.5, equally_likely()),
-                                                   [])
-                                     ])
+    # root_hypothesis = InferenceNode(Hypothesis.create_from_strings("program", "has", "low complexity", equally_likely(), 1),
+    #                                 [InferenceNode(Evidence("The cyclomatic complexity is low", 0.5, equally_likely()),
+    #                                                []),
+    #                                  InferenceNode(Evidence("The number of sections is small", 0.5, equally_likely()),
+    #                                                [])
+    #                                  ])
     print(root_hypothesis.as_tree())
 
     state["recursion_stack"] = [(root_hypothesis, 0)]

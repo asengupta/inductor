@@ -18,7 +18,8 @@ def visit_evidence_build(llm: LLM, tools: list[BaseTool]) -> Callable[
         le_stack = stack(state)
         print(f"Evidence is updating count of {le_stack[-2][0].just_str()} from {le_stack[-2][1]} by 1...")
         messages = [
-            "You are required to gather evidence for a particular hypothesis using all the tools that are available to you.",
+            "You are required to gather evidence for a particular hypothesis using the tools that are available to you.",
+            "Don't use a lot of tools. Only use what fits the situation.",
             f"The hypothesis is: {le_stack[-2][0].just_str()}",
             f"The evidence you are required to collect is the following: {current[0].just_str()}",
             f"As output, also list the number of evidences for and against the hypothesis."
