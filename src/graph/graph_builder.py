@@ -41,6 +41,8 @@ from graph.router_constants import (
     VALIDATE_HYPOTHESIS_DECISION
 )
 from graph.state import CodeExplorerState
+from graph.state_keys import MESSAGES_KEY
+from graph.tool_names import CREATE_EVIDENCE_STRATEGY_MCP_TOOL_NAME, BREAKDOWN_HYPOTHESIS_MCP_TOOL_NAME
 
 load_dotenv("./env/.env")
 
@@ -66,9 +68,9 @@ mcp_client = MultiServerMCPClient(
 
 
 def as_json(state: CodeExplorerState) -> str:
-    if not state["messages"]:
+    if not state[MESSAGES_KEY]:
         return str(state)
-    tool_result = state["messages"][-1]
+    tool_result = state[MESSAGES_KEY][-1]
     return json.loads(tool_result.content)
 
 
@@ -77,7 +79,7 @@ async def make_graph(client: MultiServerMCPClient) -> AsyncGenerator[CompiledSta
     async with client:
         mcp_tools: list[BaseTool] = client.get_tools()
         inference_tree_building_tools = [tool for tool in mcp_tools if
-                                         tool.name in ["create_evidence_strategy", "breakdown_hypothesis"]]
+                                         tool.name in [CREATE_EVIDENCE_STRATEGY_MCP_TOOL_NAME, BREAKDOWN_HYPOTHESIS_MCP_TOOL_NAME]]
         # print(mcp_tools)
         llm_with_tool = anthropic_model().bind_tools(mcp_tools, tool_choice="auto")
         # llm_with_tool = bedrock_model().bind_tools(mcp_tools)

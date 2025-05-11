@@ -2,6 +2,7 @@ from typing import Any
 
 from graph.router_constants import EXIT_DECISION
 from graph.state import CodeExplorerState
+from graph.state_keys import MESSAGES_KEY
 
 
 def reverse_engineering_lead(tool_llm):
@@ -21,6 +22,6 @@ def reverse_engineering_lead(tool_llm):
                 break
 
         return CodeExplorerState(input=user_input, current_request=user_input,
-                                 messages=state["messages"] + [user_input])
+                                 messages=state[MESSAGES_KEY] + [user_input])
 
     return run_agent

@@ -4,12 +4,13 @@ from langchain_core.messages import HumanMessage
 
 from graph.nodes.types import LLM
 from graph.state import CodeExplorerState
+from graph.state_keys import CURRENT_REQUEST_KEY, INPUT_KEY, MESSAGES_KEY
 
 
 def hypothesize(tool_llm: LLM):
     def run_agent(state: CodeExplorerState) -> dict[str, Any]:
         print("IN HYPOTHESIZER....================================================================")
-        messages = state["messages"]
+        messages = state[MESSAGES_KEY]
         human_message = HumanMessage("""
             The previous steps have gathered some evidence of the codebase to gather hypotheses.
             Use the evidence to gather upto 5 hypotheses about the codebase. Do not start gathering any
@@ -23,12 +24,12 @@ def hypothesize(tool_llm: LLM):
         response = tool_llm.invoke(messages + [human_message])
         print(response.content)
         # return {"messages": [response]}
-        return CodeExplorerState(input=state["input"], current_request=state["current_request"],
-                                 messages=state["messages"] + [response])
+        return CodeExplorerState(input=state[INPUT_KEY], current_request=state[CURRENT_REQUEST_KEY],
+                                 messages=state[MESSAGES_KEY] + [response])
 
     return run_agent
 
 def hypothesis_exec(state: CodeExplorerState):
     print("============IN HYPO EXEC=================")
-    return CodeExplorerState(input=state["input"], current_request=state["current_request"],
-                             messages=state["messages"] + [])
+    return CodeExplorerState(input=state[INPUT_KEY], current_request=state[CURRENT_REQUEST_KEY],
+                             messages=state[MESSAGES_KEY] + [])

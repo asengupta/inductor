@@ -1,6 +1,7 @@
 from typing import Any
 
 from graph.state import CodeExplorerState
+from graph.state_keys import CURRENT_REQUEST_KEY, INPUT_KEY, MESSAGES_KEY
 from hypothesis import Hypothesis, HypothesisSubject, HypothesisObject
 from induction_node import InferenceNode
 
@@ -16,5 +17,5 @@ def build_inference_tree_init_node(state: CodeExplorerState) -> dict[str, Any]:
     #                              contribution_to_root=1.0)
     base_hypothesis = Hypothesis(HypothesisSubject(h_subject), h_relation, HypothesisObject(h_object), confidence=0.5,
                                  contribution_to_root=1.0)
-    return CodeExplorerState(input=state["input"], current_request=state["current_request"],
-                             messages=state["messages"], inference_stack=[(InferenceNode(base_hypothesis, []), 0)])
+    return CodeExplorerState(input=state[INPUT_KEY], current_request=state[CURRENT_REQUEST_KEY],
+                             messages=state[MESSAGES_KEY], inference_stack=[(InferenceNode(base_hypothesis, []), 0)])

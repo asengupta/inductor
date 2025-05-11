@@ -3,6 +3,9 @@ from typing import Any
 
 from evidence import Evidence
 from graph.state import CodeExplorerState
+from graph.state_keys import CURRENT_REQUEST_KEY, MESSAGES_KEY, INPUT_KEY
+from graph.tool_names import CREATE_EVIDENCE_STRATEGY_MCP_TOOL_NAME, BREAKDOWN_HYPOTHESIS_MCP_TOOL_NAME, \
+    INFERENCE_STACK_KEY
 from hypothesis import Hypothesis, HypothesisSubject, HypothesisObject
 from induction_node import InferenceNode
 
@@ -21,10 +24,10 @@ def as_hypothesis_inference_node(child) -> InferenceNode:
 
 
 def build_inference_node_build(state: CodeExplorerState) -> dict[str, Any]:
-    tool_message = state["messages"][-1]
+    tool_message = state[MESSAGES_KEY][-1]
     tool_name = tool_message.name
-    latest_entry = state["inference_stack"][-1]
-    if tool_name == "create_evidence_strategy":
+    latest_entry = state[INFERENCE_STACK_KEY][-1]
+    if tool_name == CREATE_EVIDENCE_STRATEGY_MCP_TOOL_NAME:
         node: InferenceNode = latest_entry[0]
         print(f"TOOL MESSAGE IS: {tool_message.content}")
 
@@ -32,19 +35,19 @@ def build_inference_node_build(state: CodeExplorerState) -> dict[str, Any]:
         print(f"Raw Evidences are: {all_children}")
         child_evidences = [as_evidence_inference_node(child) for child in all_children]
         print(f"Number of evidences is: {len(child_evidences)}")
-        state["inference_stack"][-1] = (node, len(child_evidences) - 1)
+        state[INFERENCE_STACK_KEY][-1] = (node, len(child_evidences) - 1)
         node.add_all(child_evidences)
         # print(f"Inference stack after build: {state['inference_stack']}")
-    elif tool_name == "breakdown_hypothesis":
+    elif tool_name == BREAKDOWN_HYPOTHESIS_MCP_TOOL_NAME:
         node: InferenceNode = latest_entry[0]
         all_children = parsed(tool_message.content)
         sub_hypotheses = [as_hypothesis_inference_node(child) for child in all_children]
         print(f"Number of sub-hypotheses is: {len(sub_hypotheses)}")
         node.add_all(sub_hypotheses)
-        state["inference_stack"].append((sub_hypotheses[0], 0))
+        state[INFERENCE_STACK_KEY].append((sub_hypotheses[0], 0))
         # print(f"Inference stack after build: {state['inference_stack']}")
-    return CodeExplorerState(input=state["input"], current_request=state["current_request"],
-                             messages=state["messages"], inference_stack=state["inference_stack"])
+    return CodeExplorerState(input=state[INPUT_KEY], current_request=state[CURRENT_REQUEST_KEY],
+                             messages=state[MESSAGES_KEY], inference_stack=state[INFERENCE_STACK_KEY])
 
 
 def parsed(tool_message_content: str | list[str, dict]):

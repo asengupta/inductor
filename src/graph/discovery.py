@@ -11,12 +11,14 @@ from langgraph.graph import StateGraph
 from langgraph.graph.message import add_messages
 from langgraph.graph.state import CompiledStateGraph
 
+from graph.state_keys import MESSAGES_KEY
+
 load_dotenv("./env/.env")
 
 
 # def build_agent(tool_llm):
 #     def run_agent(state: MyState) -> dict[str, Any]:
-#         messages = state["messages"]
+#         messages = state[MESSAGES_KEY]
 #         print("Input\n----------\n")
 #         print(state)
 #         response = tool_llm.invoke(messages)
@@ -29,7 +31,7 @@ load_dotenv("./env/.env")
 
 def random_picker(tool_llm):
     def run_agent(state: MyState) -> dict[str, Any]:
-        messages = state["messages"]
+        messages = state[MESSAGES_KEY]
         print("Input\n----------\n")
         print(state)
         response = tool_llm.invoke(messages)
@@ -80,7 +82,7 @@ def build_decider(tool_llm):
     def decision(state: MyState) -> str:
         print("In decision")
         # return "step_2"
-        messages = state["messages"]
+        messages = state[MESSAGES_KEY]
         print("Input\n----------\n")
         print(state)
         response = tool_llm.invoke(messages)
@@ -185,9 +187,9 @@ async def make_graph(client: MultiServerMCPClient) -> AsyncGenerator[CompiledSta
 async def update(user_input: str, graph: CompiledStateGraph):
     print("Sending message: " + user_input)
     result = await graph.ainvoke({"messages":
-                                      [
-                                          "You are executing a Langgraph task graph, and your job is to assist in the navigation of this graph. Output only the name of the next node without any other text or whitespace.",
-                                          HumanMessage(content=user_input)]})
+        [
+            "You are executing a Langgraph task graph, and your job is to assist in the navigation of this graph. Output only the name of the next node without any other text or whitespace.",
+            HumanMessage(content=user_input)]})
     print("Results")
     for event in result:
         print(event)

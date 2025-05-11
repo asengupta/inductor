@@ -2,17 +2,19 @@ from typing import Any
 
 from graph.nodes.inference_tree_decisions import TREE_COMPLETE, TREE_INCOMPLETE
 from graph.state import CodeExplorerState
+from graph.state_keys import CURRENT_REQUEST_KEY, INPUT_KEY, MESSAGES_KEY
+from graph.tool_names import INFERENCE_STACK_KEY
 from induction_node import InferenceNode
 
 
 def stateful(state, tree_build_status: str, root_node: InferenceNode) -> dict[str, Any]:
-    return CodeExplorerState(input=state["input"], current_request=state["current_request"],
-                             messages=state["messages"], inference_stack=state["inference_stack"],
+    return CodeExplorerState(input=state[INPUT_KEY], current_request=state[CURRENT_REQUEST_KEY],
+                             messages=state[MESSAGES_KEY], inference_stack=state[INFERENCE_STACK_KEY],
                              tree_build_status=tree_build_status, base_hypothesis=root_node)
 
 
 def inference_tree_build_step_calculator(state: CodeExplorerState) -> dict[str, Any]:
-    stack = state["inference_stack"]
+    stack = state[INFERENCE_STACK_KEY]
     ssss = stack[0][0]
     print("STACK\n================")
     print_stack(stack)
@@ -35,11 +37,10 @@ def inference_tree_build_step_calculator(state: CodeExplorerState) -> dict[str, 
             pop2 = stack.pop()
             print(f"Popped parent: {pop2[0].just_str()} with count: {pop2[1]}...")
         if len(stack) == 0:
-            # state["base_hypothesis"] = pop2[0]
             print(f"All children completed, TREE COMPLETE")
             return stateful(state, TREE_COMPLETE, pop2[0])
         incomplete_ancestor = stack[-1]
-        print_stack(state["inference_stack"])
+        print_stack(state[INFERENCE_STACK_KEY])
         # Go to next child of current incomplete ancestor
         stack[-1] = (incomplete_ancestor[0], incomplete_ancestor[1] + 1)
         print(f"Top stack counter: {stack[0][1]}")
