@@ -17,8 +17,13 @@ class Belief:
     def as_tree(self) -> str:
         return f"Belief(alpha='{self.alpha}', beta={self.beta}, id='{self.id}')"
 
+
 def no_evidence():
     return Belief(0, 0)
 
+
 def equally_likely():
+    return Belief(1, 1)
+
+def random_belief():
     return Belief(1, 1)

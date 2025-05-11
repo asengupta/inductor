@@ -18,18 +18,19 @@ def reverse_engineering_step_decider(tool_llm):
         prompt = f"""         The user request is: "{state['current_request']}".
                               Based on the request, decide which agent you wish to activate. Your choices are:
                               1) Hypothesis-gathering agent
-                              2) Hypothesis-validating agent
-                              3) Exploration agent,
-                              4) System Query agent
-                              
+                              2) Inference Tree building agent
+                              3) Hypothesis-validating agent
+                              4) Exploration agent,
+                              5) System Query agent
                               Do not use any tools at this point.
                               Output either '{FREEFORM_EXPLORATION_DECISION}', '{HYPOTHESIZE_DECISION}' or '{BUILD_INFERENCE_TREE_DECISION}', '{SYSTEM_QUERY_DECISION}', or '{DONT_KNOW_DECISION}' based on this decision
                               as a single string without any other text or whitespace.
                               The rules are:
                               1) Use '{HYPOTHESIZE_DECISION}' only for creating hypotheses.
-                              2) Use '{BUILD_INFERENCE_TREE_DECISION}' only for validating hypotheses.
-                              3) Use '{FREEFORM_EXPLORATION_DECISION}' when answering general questions about the codebase not related to hypotheses or MCP tools.
-                              4) Use '{SYSTEM_QUERY_DECISION}' when answering questions about the MCP tools themselves.
+                              2) Use '{BUILD_INFERENCE_TREE_DECISION}' only for building inference trees.
+                              3) Use '{VALIDATE_HYPOTHESIS_DECISION}' only for validating hypotheses.
+                              4) Use '{FREEFORM_EXPLORATION_DECISION}' when answering general questions about the codebase not related to hypotheses or MCP tools.
+                              5) Use '{SYSTEM_QUERY_DECISION}' when answering questions about the MCP tools themselves.
                               operations, just use the exploration agent.
                               5) If you are not sure what to do, output '{DONT_KNOW_DECISION}'.
                               
@@ -45,8 +46,11 @@ def reverse_engineering_step_decider(tool_llm):
             print("Free Explore")
             return FREEFORM_EXPLORATION_DECISION
         elif BUILD_INFERENCE_TREE_DECISION in response.content:
-            print("Validate Hypothesis")
+            print("Build Inference Tree")
             return BUILD_INFERENCE_TREE_DECISION
+        elif VALIDATE_HYPOTHESIS_DECISION in response.content:
+            print("Validate Hypothesis")
+            return VALIDATE_HYPOTHESIS_DECISION
         elif (HYPOTHESIZE_DECISION in response.content
               or "hypothesis" in response.content.lower()
               or "hypotheses" in response.content.lower()):

@@ -3,7 +3,8 @@ from dataclasses import dataclass, field
 
 from dataclasses_json import dataclass_json
 
-from belief import Belief
+from belief import Belief, random_belief
+from random_words import random_text
 
 
 @dataclass_json
@@ -26,3 +27,7 @@ class Evidence:
 
     def as_tree(self) -> str:
         return f"[EVIDENCE] {self.evidence_description}"
+
+
+def random_evidence() -> Evidence:
+    return Evidence(random_text(), 0.4, random_belief())

@@ -7,6 +7,7 @@ from dataclasses_json import dataclass_json
 from belief import Belief, equally_likely
 from hypothesis_subject import HypothesisSubject
 from hypothesis_object import HypothesisObject
+from random_words import random_text
 
 
 @dataclass_json
@@ -124,3 +125,6 @@ class Hypothesis:
             contribution_to_root=contribution_to_root,
             id=id_
         )
+
+def random_hypothesis() -> Hypothesis:
+    return Hypothesis.create_from_strings(random_text(), random_text(), random_text())
