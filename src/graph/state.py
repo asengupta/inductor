@@ -15,4 +15,4 @@ class CodeExplorerState(TypedDict):
     inference_stack: list[tuple[InferenceNode, int]]
     base_hypothesis: InferenceNode
     tree_build_status: str
-    recursion_stack: list[InferenceNode]
+    recursion_stack: list[tuple[InferenceNode, int]]

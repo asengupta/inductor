@@ -1,5 +1,6 @@
 from typing import Any
 
+import graph.nodes.state_operations
 from graph.nodes.inference_tree_decisions import TREE_COMPLETE, TREE_INCOMPLETE
 from graph.state import CodeExplorerState
 from graph.state_keys import CURRENT_REQUEST_KEY, INPUT_KEY, MESSAGES_KEY, INFERENCE_STACK_KEY
@@ -33,7 +34,7 @@ def inference_tree_build_step_calculator(state: CodeExplorerState) -> dict[str, 
     if most_recent[1] == len(most_recent[0].children) - 1:
         # Terminal behaviour when children are all Evidence objects
         while len(stack) > 0 and stack[-1][1] == len(stack[-1][0].children) - 1:
-            pop2 = stack.pop()
+            pop2 = graph.nodes.state_operations.pop()
             print(f"Popped parent: {pop2[0].just_str()} with count: {pop2[1]}...")
         if len(stack) == 0:
             print(f"All children completed, TREE COMPLETE")

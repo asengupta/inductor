@@ -1,0 +1,14 @@
+from graph.state import CodeExplorerState
+from induction_node import InferenceNode
+
+
+def stack(state: CodeExplorerState) -> list[tuple[InferenceNode, int]]:
+    return state["recursion_stack"]
+
+
+def push(state, node: tuple[InferenceNode, int]) -> None:
+    state["recursion_stack"].append(node)
+
+
+def pop(state) -> tuple[InferenceNode, int]:
+    return state["recursion_stack"].pop()

@@ -1,16 +1,17 @@
 from typing import Any
 
 from evidence import Evidence, random_evidence
+from graph.nodes.state_operations import stack, push, pop
 from graph.state import CodeExplorerState
-from graph.state_keys import CURRENT_REQUEST_KEY, INPUT_KEY, MESSAGES_KEY
+from graph.state_keys import CURRENT_REQUEST_KEY, INPUT_KEY, MESSAGES_KEY, RECURSION_STACK_KEY
 from hypothesis import random_hypothesis
 from induction_node import InferenceNode
 
 
-def validate_hypothesis(state: CodeExplorerState) -> dict[str, Any]:
-    print("In Validation Hypothesis")
+def validate_hypothesis_init(state: CodeExplorerState) -> dict[str, Any]:
+    print("In Validation Hypothesis Init")
     print("==============================")
-    print("Not doing anything yet, just showing the base hypothesis")
+    print("Setting up bookkeeping for the inference stack...")
     # root_hypothesis: InferenceNode = state[BASE_HYPOTHESIS_KEY]
     root_hypothesis = InferenceNode(random_hypothesis(),
                                     [InferenceNode(random_hypothesis(),
@@ -26,24 +27,12 @@ def validate_hypothesis(state: CodeExplorerState) -> dict[str, Any]:
                                      ])
     print(root_hypothesis.as_tree())
 
-    state["recursion_stack"] = [root_hypothesis]
-    recurse(state)
-    print(f"At the end: stack = {stack(state)}")
+    state["recursion_stack"] = [(root_hypothesis, 0)]
+    # recurse(state)
+    # print(f"At the end: stack = {stack(state)}")
     return CodeExplorerState(input=state[INPUT_KEY], current_request=state[CURRENT_REQUEST_KEY],
                              messages=state[MESSAGES_KEY], inference_stack=[],
-                             base_hypothesis=root_hypothesis)
-
-
-def stack(state: CodeExplorerState) -> list[InferenceNode]:
-    return state["recursion_stack"]
-
-
-def push(state, node: InferenceNode) -> None:
-    state["recursion_stack"].append(node)
-
-
-def pop(state) -> InferenceNode:
-    return state["recursion_stack"].pop()
+                             base_hypothesis=root_hypothesis, recursion_stack=state[RECURSION_STACK_KEY])
 
 
 def gather_evidence_with_tool(state: CodeExplorerState) -> None:

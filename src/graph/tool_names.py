@@ -1,3 +1,2 @@
-CREATE_EVIDENCE_STRATEGY_MCP_TOOL_NAME= "create_evidence_strategy"
-BREAKDOWN_HYPOTHESIS_MCP_TOOL_NAME= "breakdown_hypothesis"
-BASE_HYPOTHESIS_KEY = "base_hypothesis"
+CREATE_EVIDENCE_STRATEGY_MCP_TOOL_NAME = "create_evidence_strategy"
+BREAKDOWN_HYPOTHESIS_MCP_TOOL_NAME = "breakdown_hypothesis"
