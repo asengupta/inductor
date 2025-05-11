@@ -8,7 +8,7 @@ from random_words import random_text
 
 
 @dataclass_json
-@dataclass(frozen=True, slots=True, order=True)
+@dataclass(frozen=False, slots=True, order=True)
 class Evidence:
     evidence_description: str
     contribution_to_hypothesis: float
@@ -23,10 +23,10 @@ class Evidence:
             raise ValueError("contribution_to_hypothesis must be between 0 and 1")
 
     def __repr__(self) -> str:
-        return f"Evidence(description='{self.evidence_description}', contribution={self.contribution_to_hypothesis}, id='{self.id}')"
+        return f"Evidence(description='{self.evidence_description}', contribution={self.contribution_to_hypothesis}, id='{self.id}, belief={self.belief})')"
 
     def as_tree(self) -> str:
-        return f"[EVIDENCE] {self.evidence_description}"
+        return f"[EVIDENCE] ({self.belief}) {self.evidence_description}"
 
 
 def random_evidence() -> Evidence:

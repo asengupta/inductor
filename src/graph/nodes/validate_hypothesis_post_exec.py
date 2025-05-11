@@ -1,7 +1,7 @@
 from typing import Any
 
 from evidence import Evidence
-from graph.nodes.state_operations import stack, push, pop
+from graph.nodes.state_operations import stack, push, pop, print_stack
 from graph.state import CodeExplorerState
 from graph.state_keys import CURRENT_REQUEST_KEY, INPUT_KEY, MESSAGES_KEY, RECURSION_STACK_KEY, BASE_HYPOTHESIS_KEY
 from hypothesis import Hypothesis
@@ -28,10 +28,10 @@ def pop_recursive(state):
         pop(state)
 
 
-def print_stack(state):
-    le_stack = state[RECURSION_STACK_KEY]
-    for le in le_stack:
-        print(f"({le[1]}) {le[0].just_str()}")
+# def print_stack(state):
+#     le_stack = state[RECURSION_STACK_KEY]
+#     for le in le_stack:
+#         print(f"({le[1]}) {le[0].just_str()}")
 
 
 def validate_hypothesis_post_exec(state: CodeExplorerState) -> dict[str, Any]:
@@ -55,7 +55,7 @@ def validate_hypothesis_post_exec(state: CodeExplorerState) -> dict[str, Any]:
     print(f"Parent hypo children={parent[0].children}, Parent hypo count={parent[1]}")
     if isinstance(current[0].node, Evidence) and parent[1] == len(parent[0].children):
         print("END OF EVIDENCE\n============================")
-        print_stack(state)
+        print_stack(state[RECURSION_STACK_KEY])
         pop_recursive(state)
         post_visit(le_stack, le_stack[-1])  # Let it do its post-visit
         processed_with_incomplete_parent = le_stack.pop()  # Pull out remaining child which has also been completed but it still has more siblings to process
@@ -67,7 +67,7 @@ def validate_hypothesis_post_exec(state: CodeExplorerState) -> dict[str, Any]:
         print(f"Next hypo index={next_index}")
         # next_index = le_stack[-1][1]
         push(state, (le_stack[-1][0].children[next_index], 0))  # Push its sibling onto stack for processing
-        print_stack(state)
+        print_stack(state[RECURSION_STACK_KEY])
     elif isinstance(current[0].node, Evidence) and parent[1] < len(parent[0].children):
         print("MORE EVIDENCE TO COME\n============================")
         pop(state)

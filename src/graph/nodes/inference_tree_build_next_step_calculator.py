@@ -2,6 +2,7 @@ from typing import Any
 
 import graph.nodes.state_operations
 from graph.nodes.inference_tree_decisions import TREE_COMPLETE, TREE_INCOMPLETE
+from graph.nodes.state_operations import print_stack
 from graph.state import CodeExplorerState
 from graph.state_keys import CURRENT_REQUEST_KEY, INPUT_KEY, MESSAGES_KEY, INFERENCE_STACK_KEY
 from induction_node import InferenceNode
@@ -50,8 +51,3 @@ def inference_tree_build_step_calculator(state: CodeExplorerState) -> dict[str, 
         return stateful(state, TREE_INCOMPLETE, stack[0][0])
     else:
         raise (Exception("Cannot come here"))
-
-
-def print_stack(stack):
-    for st in stack:
-        print(f"({st[1]}) {st[0].just_str()}")

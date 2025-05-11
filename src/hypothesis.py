@@ -28,7 +28,7 @@ class Hypothesis:
         return f"{self.subject} {self.relation} {self.object} with a belief of {self.belief}."
 
     def as_tree(self) -> str:
-        return f"[HYPOTHESIS] {self.subject} {self.relation} {self.object}"
+        return f"[HYPOTHESIS] ({self.belief}) {self.subject} {self.relation} {self.object}"
 
     def __post_init__(self):
         if not isinstance(self.subject, HypothesisSubject):

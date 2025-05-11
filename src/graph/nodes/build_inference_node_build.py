@@ -1,20 +1,20 @@
 import json
 from typing import Any
 
-from beta_bernoulli_belief import no_evidence, equally_likely
+from beta_bernoulli_belief import equally_likely
 from evidence import Evidence
 from graph.state import CodeExplorerState
 from graph.state_keys import CURRENT_REQUEST_KEY, MESSAGES_KEY, INPUT_KEY, INFERENCE_STACK_KEY
 from graph.tool_names import CREATE_EVIDENCE_STRATEGY_MCP_TOOL_NAME, BREAKDOWN_HYPOTHESIS_MCP_TOOL_NAME
 from hypothesis import Hypothesis
-from hypothesis_subject import HypothesisSubject
 from hypothesis_object import HypothesisObject
+from hypothesis_subject import HypothesisSubject
 from induction_node import InferenceNode
 
 
 def as_evidence_inference_node(child) -> InferenceNode:
     return InferenceNode(
-        Evidence(child["evidence_description"], contribution_to_hypothesis=child["contribution_to_hypothesis"], belief=no_evidence()))
+        Evidence(child["evidence_description"], contribution_to_hypothesis=child["contribution_to_hypothesis"], belief=equally_likely()))
 
 
 def as_hypothesis_inference_node(child) -> InferenceNode:

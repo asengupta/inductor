@@ -35,7 +35,9 @@ def visit_evidence_build(llm: LLM, tools: list[BaseTool]) -> Callable[
         structured_response = response["structured_response"]
         print(structured_response)
         evidence_node: Evidence = current[0].node
-        evidence_node.belief.update((structured_response["for_hypothesis"], structured_response["against_hypothesis"]))
+        print(f"Before Evidence Update: {evidence_node.belief}")
+        evidence_node.belief = evidence_node.belief.update((structured_response["for_hypothesis"], structured_response["against_hypothesis"]))
+        print(f"After Evidence Update: {evidence_node.belief}")
         le_stack[-2] = (le_stack[-2][0], le_stack[-2][1] + 1)
         return CodeExplorerState(input=state[INPUT_KEY], current_request=state[CURRENT_REQUEST_KEY],
                                  messages=state[MESSAGES_KEY], inference_stack=[],

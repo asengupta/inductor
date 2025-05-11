@@ -19,7 +19,7 @@ from graph.node_names import (
     COLLECT_DATA_FOR_HYPOTHESIS_TOOL_OUTPUT, HYPOTHESIS_GATHER_START, DECOMPOSE_HYPOTHESIS, DONT_KNOW,
     EXECUTIVE_AGENT, BREAKDOWN_HYPOTHESIS_TOOL, BUILD_INFERENCE_TREE_INIT,
     BUILD_INFERENCE_NODE_BUILD, INFERENCE_TREE_BUILD_STEP_CALCULATOR, VISIT_HYPOTHESIS, VISIT_EVIDENCE,
-    VALIDATE_HYPOTHESIS_INIT, VALIDATE_HYPOTHESIS_PRE_EXEC, VALIDATE_HYPOTHESIS_POST_EXEC
+    VALIDATE_HYPOTHESIS_INIT, VALIDATE_HYPOTHESIS_PRE_EXEC, VALIDATE_HYPOTHESIS_POST_EXEC, UPDATE_POSTERIORS
 )
 from graph.nodes.build_inference_node_build import build_inference_node_build
 from graph.nodes.build_inference_tree_init import build_inference_tree_init_node
@@ -35,7 +35,8 @@ from graph.nodes.inference_tree_decisions import TREE_INCOMPLETE, TREE_COMPLETE
 from graph.nodes.re_decider_node import reverse_engineering_step_decider
 from graph.nodes.system_query_node import system_query
 from graph.nodes.tool_output_node import generic_tool_output
-from graph.nodes.travel_inference_tree_decider import goto_hypothesis_or_evidence_or_exit
+from graph.nodes.travel_inference_tree_decider import goto_hypothesis_or_evidence
+from graph.nodes.update_posteriors import update_posteriors
 from graph.nodes.utility_nodes import fallback
 from graph.nodes.validate_hypothesis import validate_hypothesis_init
 from graph.nodes.validate_hypothesis_post_exec import validate_hypothesis_post_exec
@@ -45,7 +46,8 @@ from graph.nodes.visit_hypothesis import visit_hypothesis
 from graph.router_constants import (
     DONT_KNOW_DECISION, SYSTEM_QUERY_DECISION, FREEFORM_EXPLORATION_DECISION,
     BUILD_INFERENCE_TREE_DECISION, HYPOTHESIZE_DECISION, EXIT_DECISION, VALIDATE_HYPOTHESIS_DECISION,
-    VISIT_HYPOTHESIS_DECISION, VISIT_EVIDENCE_DECISION, CONTINUE_RECURSE_INFERENCE_TREE_DECISION
+    VISIT_HYPOTHESIS_DECISION, VISIT_EVIDENCE_DECISION, CONTINUE_RECURSE_INFERENCE_TREE_DECISION,
+    EXIT_RECURSE_INFERENCE_TREE_DECISION
 )
 from graph.state import CodeExplorerState
 from graph.state_keys import MESSAGES_KEY
@@ -115,6 +117,7 @@ async def make_graph(client: MultiServerMCPClient) -> AsyncGenerator[CompiledSta
         workflow.add_node(VALIDATE_HYPOTHESIS_POST_EXEC, validate_hypothesis_post_exec)
         workflow.add_node(VISIT_HYPOTHESIS, visit_hypothesis)
         workflow.add_node(VISIT_EVIDENCE, visit_evidence_build(base_llm, mcp_tools))
+        workflow.add_node(UPDATE_POSTERIORS, update_posteriors)
 
         workflow.add_node(DATA_FOR_HYPOTHESIS_TOOL, ToolNode(mcp_tools, handle_tool_errors=True))
         workflow.add_node(SAVE_HYPOTHESES_TOOL, ToolNode(mcp_tools, handle_tool_errors=True))
@@ -174,11 +177,14 @@ async def make_graph(client: MultiServerMCPClient) -> AsyncGenerator[CompiledSta
         workflow.add_edge(VALIDATE_HYPOTHESIS_INIT, VALIDATE_HYPOTHESIS_PRE_EXEC)
         workflow.add_edge(VISIT_HYPOTHESIS, VALIDATE_HYPOTHESIS_POST_EXEC)
         workflow.add_edge(VISIT_EVIDENCE, VALIDATE_HYPOTHESIS_POST_EXEC)
+        workflow.add_edge(UPDATE_POSTERIORS, EXECUTIVE_AGENT)
+
         workflow.add_conditional_edges(VALIDATE_HYPOTHESIS_POST_EXEC, exit_inference_recursion, {
             CONTINUE_RECURSE_INFERENCE_TREE_DECISION: VALIDATE_HYPOTHESIS_PRE_EXEC,
+            EXIT_RECURSE_INFERENCE_TREE_DECISION: UPDATE_POSTERIORS,
             END: EXECUTIVE_AGENT
         })
-        workflow.add_conditional_edges(VALIDATE_HYPOTHESIS_PRE_EXEC, goto_hypothesis_or_evidence_or_exit, {
+        workflow.add_conditional_edges(VALIDATE_HYPOTHESIS_PRE_EXEC, goto_hypothesis_or_evidence, {
             VISIT_HYPOTHESIS_DECISION: VISIT_HYPOTHESIS,
             VISIT_EVIDENCE_DECISION: VISIT_EVIDENCE,
             END: EXECUTIVE_AGENT
