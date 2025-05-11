@@ -1,14 +1,11 @@
-from typing import Any, Dict
+from typing import Any
 
-from langchain_core.tools import BaseTool
-
-from graph.nodes.types import LLM
 from graph.state import CodeExplorerState
 from hypothesis import Hypothesis, HypothesisSubject, HypothesisObject
 from induction_node import InferenceNode
 
 
-def build_inference_tree_init_node(state: CodeExplorerState) -> Dict[str, Any]:
+def build_inference_tree_init_node(state: CodeExplorerState) -> dict[str, Any]:
     print("Initializing Inference Tree...")
     print("============================================")
     print("Input your hypothesis details and I will attempt to break it down into an inference plan.")

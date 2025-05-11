@@ -47,7 +47,7 @@ class HypothesisMCPClient:
             await asyncio.sleep(0.5)
             self.process = None
 
-    async def call_tool(self, tool_name: str, **kwargs) -> Dict[str, Any]:
+    async def call_tool(self, tool_name: str, **kwargs) -> dict[str, Any]:
         """
         Call a tool on the MCP server.
 

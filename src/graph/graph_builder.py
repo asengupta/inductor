@@ -21,7 +21,9 @@ from graph.node_names import (
     BUILD_INFERENCE_NODE_BUILD, INFERENCE_TREE_BUILD_STEP_CALCULATOR
 )
 from graph.nodes.build_inference_node_build import build_inference_node_build
+from graph.nodes.build_inference_tree_init import build_inference_tree_init_node
 from graph.nodes.collect_data_node import collect_data_for_hypothesis
+from graph.nodes.decompose_hypothesis import decompose_hypothesis
 from graph.nodes.executive_node import reverse_engineering_lead
 from graph.nodes.explore_node import free_explore
 from graph.nodes.hypothesize_node import hypothesize, hypothesis_exec
@@ -32,8 +34,6 @@ from graph.nodes.re_decider_node import reverse_engineering_step_decider
 from graph.nodes.system_query_node import system_query
 from graph.nodes.tool_output_node import generic_tool_output
 from graph.nodes.utility_nodes import fallback
-from graph.nodes.build_inference_tree_init import build_inference_tree_init_node
-from graph.nodes.decompose_hypothesis import decompose_hypothesis
 from graph.router_constants import (
     DONT_KNOW_DECISION, SYSTEM_QUERY_DECISION, FREEFORM_EXPLORATION_DECISION,
     BUILD_INFERENCE_TREE_DECISION, HYPOTHESIZE_DECISION, EXIT_DECISION
@@ -167,8 +167,8 @@ async def make_graph(client: MultiServerMCPClient) -> AsyncGenerator[CompiledSta
         yield graph
 
 
-async def start_task_graph(user_input: str, graph: CompiledStateGraph):
-    result = await graph.ainvoke({"messages":
+async def start_task_graph(user_input: str, graph: CompiledStateGraph) -> None:
+    await graph.ainvoke({"messages":
         [
             """
             You are part of a reverse engineering pipeline looking at a HLASM codebase. Help navigate the user in understanding this code.
@@ -177,7 +177,7 @@ async def start_task_graph(user_input: str, graph: CompiledStateGraph):
     print("Goodbye!")
 
 
-async def run_thing():
+async def run_thing() -> None:
     async with make_graph(mcp_client) as graph:
         await start_task_graph("", graph)
 

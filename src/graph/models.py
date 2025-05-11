@@ -6,6 +6,7 @@ AWS_MODEL_ID = "AWS_MODEL_ID"
 AWS_REGION = "AWS_REGION"
 ANTHROPIC_MODEL_ID = "ANTHROPIC_MODEL_ID"
 
+
 def anthropic_model():
     anthropic_model_id = os.environ.get(ANTHROPIC_MODEL_ID)
     llm = ChatAnthropic(

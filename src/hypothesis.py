@@ -7,7 +7,7 @@ Each Hypothesis consists of a HypothesisSubject, a relation, a HypothesisObject,
 
 import uuid
 from dataclasses import dataclass, field
-from typing import Dict, Any
+from typing import Any
 
 from dataclasses_json import dataclass_json
 
@@ -30,7 +30,7 @@ class HypothesisSubject:
         if not self.name or not isinstance(self.name, str):
             raise ValueError("Subject name must be a non-empty string")
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert the subject to a dictionary for Neo4j storage."""
         result = {
             'name': self.name,
@@ -40,7 +40,7 @@ class HypothesisSubject:
         return result
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'HypothesisSubject':
+    def from_dict(cls, data: dict[str, Any]) -> 'HypothesisSubject':
         """Create a HypothesisSubject instance from a dictionary."""
         if not data:
             raise ValueError("Cannot create HypothesisSubject from empty data")
@@ -79,7 +79,7 @@ class HypothesisObject:
         if not self.name or not isinstance(self.name, str):
             raise ValueError("Object name must be a non-empty string")
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert the object to a dictionary for Neo4j storage."""
         result = {
             'name': self.name,
@@ -89,7 +89,7 @@ class HypothesisObject:
         return result
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'HypothesisObject':
+    def from_dict(cls, data: dict[str, Any]) -> 'HypothesisObject':
         """Create a HypothesisObject instance from a dictionary."""
         if not data:
             raise ValueError("Cannot create HypothesisObject from empty data")
@@ -163,7 +163,7 @@ class Hypothesis:
         if self.contribution_to_root < 0 or self.contribution_to_root > 1:
             raise ValueError("contribution_to_root must be between 0 and 1")
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert the hypothesis to a dictionary for Neo4j storage."""
         result = {
             'subject': self.subject.name,  # For backward compatibility
@@ -179,8 +179,8 @@ class Hypothesis:
         return result
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any], subject_data: Dict[str, Any] = None,
-                  object_data: Dict[str, Any] = None) -> 'Hypothesis':
+    def from_dict(cls, data: dict[str, Any], subject_data: dict[str, Any] = None,
+                  object_data: dict[str, Any] = None) -> 'Hypothesis':
         """
         Create a Hypothesis instance from dictionaries.
 

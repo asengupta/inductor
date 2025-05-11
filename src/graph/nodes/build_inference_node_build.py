@@ -1,5 +1,5 @@
 import json
-from typing import Dict, Any
+from typing import Any
 
 from evidence import Evidence
 from graph.state import CodeExplorerState
@@ -20,7 +20,7 @@ def as_hypothesis_inference_node(child) -> InferenceNode:
                    contribution_to_root=child["contribution_to_root"]))
 
 
-def build_inference_node_build(state: CodeExplorerState) -> Dict[str, Any]:
+def build_inference_node_build(state: CodeExplorerState) -> dict[str, Any]:
     tool_message = state["messages"][-1]
     tool_name = tool_message.name
     latest_entry = state["inference_stack"][-1]

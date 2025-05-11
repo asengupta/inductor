@@ -1,10 +1,11 @@
-from typing import Any, Dict
+from typing import Any
 
 from graph.nodes.types import LLM
 from graph.state import CodeExplorerState
 
+
 def system_query(tool_llm: LLM, tools):
-    def run_agent(state: CodeExplorerState) -> Dict[str, Any]:
+    def run_agent(state: CodeExplorerState) -> dict[str, Any]:
         print("In System Query Mode")
         print("=============================")
         print(state)

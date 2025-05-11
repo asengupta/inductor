@@ -6,7 +6,7 @@ Each Hypothesis consists of three nodes: subject, relation, and object,
 with relationships between them.
 """
 
-from typing import Dict, List, Optional, Any, Tuple
+from typing import Optional, Any
 
 from hypothesis import Hypothesis, HypothesisSubject, HypothesisObject
 from neo4j_operations import Neo4jOperations
@@ -287,7 +287,7 @@ class HypothesisOperations:
     def find_hypotheses(self, subject: str = None, relation: str = None,
                         object_: str = None, min_confidence: float = None,
                         max_confidence: float = None, subject_id: str = None,
-                        object_id: str = None) -> List[Hypothesis]:
+                        object_id: str = None) -> list[Hypothesis]:
         """
         Find hypotheses matching the given criteria.
 
@@ -399,7 +399,7 @@ class HypothesisOperations:
             record = result.single()
             return record is not None
 
-    def _get_connected_nodes(self, relation_id: str) -> Tuple[Optional[Dict[str, Any]], Optional[Dict[str, Any]]]:
+    def _get_connected_nodes(self, relation_id: str) -> tuple[Optional[dict[str, Any]], Optional[dict[str, Any]]]:
         """
         Get the subject and object nodes connected to a relation node.
 

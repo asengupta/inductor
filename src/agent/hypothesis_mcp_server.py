@@ -6,7 +6,7 @@ and updating and deleting HypothesisSubject and HypothesisObject in Neo4J.
 """
 
 import os
-from typing import Dict, Any, Optional, List
+from typing import Any, Optional
 
 from dotenv import load_dotenv
 from mcp.server import FastMCP
@@ -47,12 +47,12 @@ async def create_evidence_strategy(evidence_components: list[Evidence]) -> list[
 
 
 @mcp.tool()
-async def breakdown_hypothesis(hypotheses: List[Hypothesis]) -> List[Hypothesis]:
+async def breakdown_hypothesis(hypotheses: list[Hypothesis]) -> list[Hypothesis]:
     return hypotheses
 
 
 @mcp.tool()
-async def create_hypothesis(subject: str, relation: str, object_: str, confidence: float) -> Dict[str, Any]:
+async def create_hypothesis(subject: str, relation: str, object_: str, confidence: float) -> dict[str, Any]:
     """
     Create a new Hypothesis in Neo4j.
 
@@ -96,7 +96,7 @@ async def create_hypothesis(subject: str, relation: str, object_: str, confidenc
 
 @mcp.tool()
 async def create_hypothesis_with_objects(subject_name: str, relation: str, object_name: str,
-                                         confidence: float) -> Dict[str, Any]:
+                                         confidence: float) -> dict[str, Any]:
     """
     Create a new Hypothesis in Neo4j with detailed subject and object properties.
 
@@ -151,7 +151,7 @@ async def create_hypothesis_with_objects(subject_name: str, relation: str, objec
 
 
 @mcp.tool()
-async def get_hypothesis(hypothesis_id: str) -> Dict[str, Any]:
+async def get_hypothesis(hypothesis_id: str) -> dict[str, Any]:
     """
     Get a hypothesis by its ID.
 
@@ -195,7 +195,7 @@ async def get_hypothesis(hypothesis_id: str) -> Dict[str, Any]:
 
 @mcp.tool()
 async def update_hypothesis(hypothesis_id: str, relation: Optional[str] = None,
-                            confidence: Optional[float] = None) -> Dict[str, Any]:
+                            confidence: Optional[float] = None) -> dict[str, Any]:
     """
     Update a hypothesis by its ID.
 
@@ -250,7 +250,7 @@ async def update_hypothesis(hypothesis_id: str, relation: Optional[str] = None,
 
 
 @mcp.tool()
-async def delete_hypothesis(hypothesis_id: str, keep_subject_object: bool = False) -> Dict[str, Any]:
+async def delete_hypothesis(hypothesis_id: str, keep_subject_object: bool = False) -> dict[str, Any]:
     """
     Delete a hypothesis by its ID.
 
@@ -285,7 +285,7 @@ async def delete_hypothesis(hypothesis_id: str, keep_subject_object: bool = Fals
 async def find_hypotheses(subject: Optional[str] = None, relation: Optional[str] = None,
                           object_: Optional[str] = None, min_confidence: Optional[float] = None,
                           max_confidence: Optional[float] = None, subject_id: Optional[str] = None,
-                          object_id: Optional[str] = None) -> Dict[str, Any]:
+                          object_id: Optional[str] = None) -> dict[str, Any]:
     """
     Find hypotheses matching the given criteria.
 
@@ -341,7 +341,7 @@ async def find_hypotheses(subject: Optional[str] = None, relation: Optional[str]
 
 
 @mcp.tool()
-async def update_subject(subject_id: str, name: Optional[str] = None) -> Dict[str, Any]:
+async def update_subject(subject_id: str, name: Optional[str] = None) -> dict[str, Any]:
     """
     Update a HypothesisSubject by its ID.
 
@@ -395,7 +395,7 @@ async def update_subject(subject_id: str, name: Optional[str] = None) -> Dict[st
 
 
 @mcp.tool()
-async def delete_subject(subject_id: str) -> Dict[str, Any]:
+async def delete_subject(subject_id: str) -> dict[str, Any]:
     """
     Delete a HypothesisSubject by its ID.
 
@@ -436,7 +436,7 @@ async def delete_subject(subject_id: str) -> Dict[str, Any]:
 
 
 @mcp.tool()
-async def update_object(object_id: str, name: Optional[str] = None) -> Dict[str, Any]:
+async def update_object(object_id: str, name: Optional[str] = None) -> dict[str, Any]:
     """
     Update a HypothesisObject by its ID.
 
@@ -490,7 +490,7 @@ async def update_object(object_id: str, name: Optional[str] = None) -> Dict[str,
 
 
 @mcp.tool()
-async def delete_object(object_id: str) -> Dict[str, Any]:
+async def delete_object(object_id: str) -> dict[str, Any]:
     """
     Delete a HypothesisObject by its ID.
 
@@ -531,7 +531,7 @@ async def delete_object(object_id: str) -> Dict[str, Any]:
 
 
 @mcp.tool()
-async def create_subject(name: str) -> Dict[str, Any]:
+async def create_subject(name: str) -> dict[str, Any]:
     """
     Create a new HypothesisSubject in Neo4j.
 
@@ -572,7 +572,7 @@ async def create_subject(name: str) -> Dict[str, Any]:
 
 
 @mcp.tool()
-async def create_object(name: str) -> Dict[str, Any]:
+async def create_object(name: str) -> dict[str, Any]:
     """
     Create a new HypothesisObject in Neo4j.
 
@@ -613,7 +613,7 @@ async def create_object(name: str) -> Dict[str, Any]:
 
 
 @mcp.tool()
-async def get_subject(subject_id: str) -> Dict[str, Any]:
+async def get_subject(subject_id: str) -> dict[str, Any]:
     """
     Get a subject by its ID.
 
@@ -650,7 +650,7 @@ async def get_subject(subject_id: str) -> Dict[str, Any]:
 
 
 @mcp.tool()
-async def get_object(object_id: str) -> Dict[str, Any]:
+async def get_object(object_id: str) -> dict[str, Any]:
     """
     Get an object by its ID.
 
@@ -688,7 +688,7 @@ async def get_object(object_id: str) -> Dict[str, Any]:
 
 @mcp.tool()
 async def find_subjects(name: Optional[str] = None,
-                        properties: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+                        properties: Optional[dict[str, Any]] = None) -> dict[str, Any]:
     """
     Find subjects matching the given criteria.
 
@@ -736,7 +736,7 @@ async def find_subjects(name: Optional[str] = None,
 
 @mcp.tool()
 async def find_objects(name: Optional[str] = None,
-                       properties: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+                       properties: Optional[dict[str, Any]] = None) -> dict[str, Any]:
     """
     Find objects matching the given criteria.
 
@@ -783,7 +783,7 @@ async def find_objects(name: Optional[str] = None,
 
 
 @mcp.tool()
-async def create_multiple_hypotheses(hypotheses_data: List[Dict[str, Any]]) -> Dict[str, Any]:
+async def create_multiple_hypotheses(hypotheses_data: list[dict[str, Any]]) -> dict[str, Any]:
     """
     Create multiple Hypothesis objects at once.
 
@@ -859,7 +859,7 @@ async def create_multiple_hypotheses(hypotheses_data: List[Dict[str, Any]]) -> D
 
 
 @mcp.tool()
-async def create_multiple_hypotheses_with_objects(hypotheses_data: List[Dict[str, Any]]) -> Dict[str, Any]:
+async def create_multiple_hypotheses_with_objects(hypotheses_data: list[dict[str, Any]]) -> dict[str, Any]:
     """
     Create multiple Hypothesis objects at once with detailed subject and object properties.
 
@@ -949,7 +949,7 @@ async def create_multiple_hypotheses_with_objects(hypotheses_data: List[Dict[str
 
 
 @mcp.tool()
-async def get_all_hypotheses() -> Dict[str, Any]:
+async def get_all_hypotheses() -> dict[str, Any]:
     """
     Retrieve all available Hypothesis instances from the database.
 

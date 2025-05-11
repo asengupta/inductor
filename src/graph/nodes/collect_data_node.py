@@ -1,10 +1,10 @@
-from typing import Any, Dict
-from langchain_core.messages import BaseMessage
+from typing import Any
 
 from graph.state import CodeExplorerState
 
+
 def collect_data_for_hypothesis(tool_llm):
-    def run_agent(state: CodeExplorerState) -> Dict[str, Any]:
+    def run_agent(state: CodeExplorerState) -> dict[str, Any]:
         print("============IN COLLECT DATA TO BUILD HYPOTHESIS===============")
         msg = """
         You have multiple tools to investigate the codebase. Use as many of them as needed to get some initial

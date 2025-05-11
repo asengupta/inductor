@@ -1,11 +1,11 @@
-from typing import Any, Dict
+from typing import Any
 
-from graph.state import CodeExplorerState
 from graph.router_constants import EXIT_DECISION
+from graph.state import CodeExplorerState
 
 
 def reverse_engineering_lead(tool_llm):
-    def run_agent(state: CodeExplorerState) -> Dict[str, Any]:
+    def run_agent(state: CodeExplorerState) -> dict[str, Any]:
         print("============IN LEAD===============")
         print(state)
         while True:

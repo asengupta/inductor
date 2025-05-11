@@ -1,4 +1,4 @@
-from typing import List, Callable, TypeVar, Generic, Optional, Protocol
+from typing import List, TypeVar, Protocol
 
 class BayesNode:
     """
@@ -10,7 +10,7 @@ class BayesNode:
         children (List[BayesNode]): An ordered list of child BayesNode objects
     """
 
-    def __init__(self, alpha: float = 0.5, beta: float = 0.5, children: List['BayesNode'] = None):
+    def __init__(self, alpha: float = 0.5, beta: float = 0.5, children: list['BayesNode'] = None):
         """
         Initialize a BayesNode with alpha and beta values and optional children.
 
@@ -26,7 +26,7 @@ class BayesNode:
 
         self.alpha = alpha
         self.beta = beta
-        self.children: List[BayesNode] = [] if children is None else children
+        self.children: list[BayesNode] = [] if children is None else children
 
     def accept(self, visitor: 'BayesNodeVisitor') -> None:
         """

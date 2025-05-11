@@ -5,11 +5,11 @@ This module provides CRUD operations for Neo4J nodes.
 Each node will have an ID and a nodeType property.
 """
 
-from typing import Dict, List, Optional, Any
+from typing import Optional, Any
 
 from neo4j import GraphDatabase, Driver, Session
 
-from id_provider import IdProvider, UuidProvider
+from id_provider import IdProvider
 
 
 class Neo4jOperations:
@@ -40,7 +40,7 @@ class Neo4jOperations:
         """Get a new session from the driver."""
         return self.driver.session()
 
-    def create_node(self, node_type: str, properties: Dict[str, Any] = {}, labels: List[str] = []) -> str:
+    def create_node(self, node_type: str, properties: dict[str, Any] = {}, labels: list[str] = []) -> str:
         """
         Create a new node in Neo4j.
 
@@ -74,7 +74,7 @@ class Neo4jOperations:
             record = result.single()
             return record["id"]
 
-    def read_node(self, node_id: str) -> Optional[Dict[str, Any]]:
+    def read_node(self, node_id: str) -> Optional[dict[str, Any]]:
         """
         Read a node from Neo4j by its ID.
 
@@ -94,7 +94,7 @@ class Neo4jOperations:
                 return dict(node.items())
             return None
 
-    def update_node(self, node_id: str, properties: Dict[str, Any]) -> bool:
+    def update_node(self, node_id: str, properties: dict[str, Any]) -> bool:
         """
         Update a node in Neo4j.
 
@@ -137,8 +137,8 @@ class Neo4jOperations:
             record = result.single()
             return record and record["count"] > 0
 
-    def find_nodes(self, node_type: Optional[str] = None, properties: Dict[str, Any] = {},
-                  labels: List[str] = []) -> List[Dict[str, Any]]:
+    def find_nodes(self, node_type: Optional[str] = None, properties: dict[str, Any] = {},
+                  labels: list[str] = []) -> list[dict[str, Any]]:
         """
         Find nodes matching the given criteria.
 

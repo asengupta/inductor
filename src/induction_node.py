@@ -12,7 +12,7 @@ from hypothesis import Hypothesis
 @dataclass(frozen=False, slots=True, order=True)
 class InferenceNode:
     node: Union[Hypothesis, Evidence]
-    children: List["InferenceNode"] = field(default_factory=list)
+    children: list["InferenceNode"] = field(default_factory=list)
 
     id: str = field(default_factory=lambda: str(uuid.uuid4()), compare=False)
 
