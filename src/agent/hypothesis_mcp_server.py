@@ -11,12 +11,12 @@ from typing import Any, Optional
 from dotenv import load_dotenv
 from mcp.server import FastMCP
 
-from evidence import Evidence
 from beta_bernoulli_belief import BetaBernoulliBelief, equally_likely
+from evidence import Evidence
 from hypothesis import Hypothesis
-from hypothesis_subject import HypothesisSubject
 from hypothesis_object import HypothesisObject
 from hypothesis_operations import HypothesisOperations
+from hypothesis_subject import HypothesisSubject
 from id_provider import UuidProvider
 from neo4j_operations import Neo4jOperations
 
@@ -42,7 +42,6 @@ mcp = FastMCP("Hypothesis Operations")
 @mcp.tool()
 async def crcrcrcrcrc(evidence_components: list[Evidence]) -> list[Evidence]:
     return evidence_components
-
 
 @mcp.tool()
 async def create_evidence_strategy(evidence_components: list[Evidence]) -> list[Evidence]:

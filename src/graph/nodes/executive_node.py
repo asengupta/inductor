@@ -1,11 +1,12 @@
 from typing import Any
 
+from graph.nodes.types import LanggraphNode
 from graph.router_constants import EXIT_DECISION
 from graph.state import CodeExplorerState
 from graph.state_keys import MESSAGES_KEY
 
 
-def reverse_engineering_lead(tool_llm):
+def reverse_engineering_lead(tool_llm) -> LanggraphNode:
     def run_agent(state: CodeExplorerState) -> dict[str, Any]:
         print("============IN LEAD===============")
         print(state)

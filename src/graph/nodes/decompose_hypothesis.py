@@ -2,13 +2,13 @@ from typing import Any
 
 from langchain_core.tools import BaseTool
 
-from graph.nodes.types import LLM
+from graph.nodes.types import LLM, LanggraphNode
 from graph.state import CodeExplorerState
 from graph.state_keys import CURRENT_REQUEST_KEY, INPUT_KEY, MESSAGES_KEY, INFERENCE_STACK_KEY
 from graph.tool_names import CREATE_EVIDENCE_STRATEGY_MCP_TOOL_NAME, BREAKDOWN_HYPOTHESIS_MCP_TOOL_NAME
 
 
-def decompose_hypothesis(tool_llm: LLM, tools: list[BaseTool]) -> dict[str, Any]:
+def decompose_hypothesis(tool_llm: LLM, tools: list[BaseTool]) -> LanggraphNode:
     def run_agent(state: CodeExplorerState) -> dict[str, Any]:
         print("In Decomposing Hypothesis")
         print("============================")

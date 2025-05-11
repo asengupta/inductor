@@ -107,7 +107,7 @@ class Hypothesis:
 
     @classmethod
     def create_from_strings(cls, subject: str, relation: str, object_: str,
-                            belief: BeliefProtocol = None, contribution_to_root: float = 0.0,
+                            belief: BeliefProtocol = equally_likely(), contribution_to_root: float = 0.0,
                             id_: str = None) -> 'Hypothesis':
         if id_ is None:
             id_ = str(uuid.uuid4())

@@ -2,12 +2,12 @@ from typing import Any
 
 from langchain_core.messages import HumanMessage
 
-from graph.nodes.types import LLM
+from graph.nodes.types import LLM, LanggraphNode
 from graph.state import CodeExplorerState
 from graph.state_keys import CURRENT_REQUEST_KEY, INPUT_KEY, MESSAGES_KEY
 
 
-def hypothesize(tool_llm: LLM):
+def hypothesize(tool_llm: LLM) -> LanggraphNode:
     def run_agent(state: CodeExplorerState) -> dict[str, Any]:
         print("IN HYPOTHESIZER....================================================================")
         messages = state[MESSAGES_KEY]

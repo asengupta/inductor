@@ -40,7 +40,7 @@ from graph.nodes.utility_nodes import fallback
 from graph.nodes.validate_hypothesis import validate_hypothesis_init
 from graph.nodes.validate_hypothesis_post_exec import validate_hypothesis_post_exec
 from graph.nodes.validate_hypothesis_pre_exec import validate_hypothesis_pre_exec
-from graph.nodes.visit_evidence import visit_evidence
+from graph.nodes.visit_evidence import visit_evidence_build
 from graph.nodes.visit_hypothesis import visit_hypothesis
 from graph.router_constants import (
     DONT_KNOW_DECISION, SYSTEM_QUERY_DECISION, FREEFORM_EXPLORATION_DECISION,
@@ -89,7 +89,8 @@ async def make_graph(client: MultiServerMCPClient) -> AsyncGenerator[CompiledSta
                                          tool.name in [CREATE_EVIDENCE_STRATEGY_MCP_TOOL_NAME,
                                                        BREAKDOWN_HYPOTHESIS_MCP_TOOL_NAME]]
         # print(mcp_tools)
-        llm_with_tool = anthropic_model().bind_tools(mcp_tools, tool_choice="auto")
+        base_llm = anthropic_model()
+        llm_with_tool = base_llm.bind_tools(mcp_tools, tool_choice="auto")
         # llm_with_tool = bedrock_model().bind_tools(mcp_tools)
         agent_decider = reverse_engineering_step_decider(llm_with_tool)
         lead = reverse_engineering_lead(llm_with_tool)
@@ -113,7 +114,7 @@ async def make_graph(client: MultiServerMCPClient) -> AsyncGenerator[CompiledSta
         workflow.add_node(VALIDATE_HYPOTHESIS_PRE_EXEC, validate_hypothesis_pre_exec)
         workflow.add_node(VALIDATE_HYPOTHESIS_POST_EXEC, validate_hypothesis_post_exec)
         workflow.add_node(VISIT_HYPOTHESIS, visit_hypothesis)
-        workflow.add_node(VISIT_EVIDENCE, visit_evidence)
+        workflow.add_node(VISIT_EVIDENCE, visit_evidence_build(base_llm, mcp_tools))
 
         workflow.add_node(DATA_FOR_HYPOTHESIS_TOOL, ToolNode(mcp_tools, handle_tool_errors=True))
         workflow.add_node(SAVE_HYPOTHESES_TOOL, ToolNode(mcp_tools, handle_tool_errors=True))

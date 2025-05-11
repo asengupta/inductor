@@ -1,10 +1,11 @@
 from typing import Any
 
+from graph.nodes.types import LanggraphNode
 from graph.state import CodeExplorerState
 from graph.state_keys import CURRENT_REQUEST_KEY, INPUT_KEY, MESSAGES_KEY
 
 
-def collect_data_for_hypothesis(tool_llm):
+def collect_data_for_hypothesis(tool_llm) -> LanggraphNode:
     def run_agent(state: CodeExplorerState) -> dict[str, Any]:
         print("============IN COLLECT DATA TO BUILD HYPOTHESIS===============")
         msg = """
