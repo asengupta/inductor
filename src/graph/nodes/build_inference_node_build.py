@@ -1,6 +1,7 @@
 import json
 from typing import Any
 
+from belief import no_evidence, equally_likely
 from evidence import Evidence
 from graph.state import CodeExplorerState
 from graph.state_keys import CURRENT_REQUEST_KEY, MESSAGES_KEY, INPUT_KEY, INFERENCE_STACK_KEY
@@ -11,14 +12,14 @@ from induction_node import InferenceNode
 
 def as_evidence_inference_node(child) -> InferenceNode:
     return InferenceNode(
-        Evidence(child["evidence_description"], contribution_to_hypothesis=child["contribution_to_hypothesis"]))
+        Evidence(child["evidence_description"], contribution_to_hypothesis=child["contribution_to_hypothesis"], belief=no_evidence()))
 
 
 def as_hypothesis_inference_node(child) -> InferenceNode:
     print(f"Child is of type {type(child)} and is {child}")
     return InferenceNode(
         Hypothesis(HypothesisSubject(child["subject"]["name"]), child["relation"],
-                   HypothesisObject(child["object"]["name"]), confidence=0.5,
+                   HypothesisObject(child["object"]["name"]), belief=equally_likely(),
                    contribution_to_root=child["contribution_to_root"]))
 
 

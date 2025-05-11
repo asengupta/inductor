@@ -11,6 +11,8 @@ from typing import Any
 
 from dataclasses_json import dataclass_json
 
+from belief import Belief, equally_likely
+
 
 @dataclass_json
 @dataclass
@@ -116,15 +118,15 @@ class Hypothesis:
     subject: HypothesisSubject
     relation: str
     object: HypothesisObject
-    confidence: float
+    belief: Belief = field(default_factory=equally_likely)
     contribution_to_root: float = 0.0
     id: str = field(default_factory=lambda: str(uuid.uuid4()))
 
     def __repr__(self):
-        return f"{self.subject} {self.relation} {self.object} with a confidence of {self.confidence}."
+        return f"{self.subject} {self.relation} {self.object} with a belief of {self.belief}."
 
     def __str__(self):
-        return f"{self.subject} {self.relation} {self.object} with a confidence of {self.confidence}."
+        return f"{self.subject} {self.relation} {self.object} with a belief of {self.belief}."
 
     def as_tree(self) -> str:
         return f"[HYPOTHESIS] {self.subject} {self.relation} {self.object}"
@@ -139,11 +141,8 @@ class Hypothesis:
         if not isinstance(self.object, HypothesisObject):
             raise ValueError("Object must be a HypothesisObject instance")
 
-        if not isinstance(self.confidence, (int, float)):
-            raise ValueError("Confidence must be a number")
-
-        if self.confidence < 0 or self.confidence > 1:
-            raise ValueError("Confidence must be between 0 and 1")
+        if not isinstance(self.belief, Belief):
+            raise ValueError("Belief must be a Belief instance")
 
         if not isinstance(self.contribution_to_root, (int, float)):
             raise ValueError("contribution_to_root must be a number")
@@ -156,7 +155,7 @@ class Hypothesis:
             'subject': self.subject.name,  # For backward compatibility
             'relation': self.relation,
             'object': self.object.name,  # For backward compatibility
-            'confidence': self.confidence,
+            'belief': self.belief.to_dict(),
             'contribution_to_root': self.contribution_to_root,
             'id': self.id,  # Always include the ID
             'subject_id': self.subject.id,
@@ -173,7 +172,8 @@ class Hypothesis:
 
         # Extract the main attributes
         relation = data.get('relation', '')
-        confidence = data.get('confidence', 0.0)
+        belief_data = data.get('belief', None)
+        belief = Belief.from_dict(belief_data) if belief_data else equally_likely()
         contribution_to_root = data.get('contribution_to_root', 0.0)
         id_ = data.get('id', str(uuid.uuid4()))
 
@@ -201,17 +201,20 @@ class Hypothesis:
             subject=subject,
             relation=relation,
             object=object_,
-            confidence=confidence,
+            belief=belief,
             contribution_to_root=contribution_to_root,
             id=id_
         )
 
     @classmethod
     def create_from_strings(cls, subject: str, relation: str, object_: str,
-                            confidence: float, contribution_to_root: float = 0.0,
+                            belief: Belief = None, contribution_to_root: float = 0.0,
                             id_: str = None) -> 'Hypothesis':
         if id_ is None:
             id_ = str(uuid.uuid4())
+
+        if belief is None:
+            belief = equally_likely()
 
         subject_obj = HypothesisSubject(name=subject)
         object_obj = HypothesisObject(name=object_)
@@ -220,7 +223,7 @@ class Hypothesis:
             subject=subject_obj,
             relation=relation,
             object=object_obj,
-            confidence=confidence,
+            belief=belief,
             contribution_to_root=contribution_to_root,
             id=id_
         )

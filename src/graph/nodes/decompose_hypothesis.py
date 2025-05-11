@@ -22,7 +22,8 @@ def decompose_hypothesis(tool_llm: LLM, tools: list[BaseTool]) -> dict[str, Any]
         1) If you think you can gather evidence for this hypothesis directly using the tools provided,
         call the '{CREATE_EVIDENCE_STRATEGY_MCP_TOOL_NAME}' tool with the list of evidences needed to be gathered,
         along with the name of the tools you will use to gather these evidences. For each
-        evidence, also provide its percentage of contribution to proving the root hypothesis.
+        evidence, also provide its percentage of contribution to proving the root hypothesis. Since you
+        have not gathered any evidence, belief in this evidence will be zero.
         2) If you think this hypothesis needs to be broken down further into smaller, more testable hypotheses,
         call the '{BREAKDOWN_HYPOTHESIS_MCP_TOOL_NAME}' tool with the list of the sub-hypotheses you come up with.
         A testable hypothesis is one which is specific to the codebase and unambiguous, and can

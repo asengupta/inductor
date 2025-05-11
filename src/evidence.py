@@ -3,12 +3,15 @@ from dataclasses import dataclass, field
 
 from dataclasses_json import dataclass_json
 
+from belief import Belief
+
 
 @dataclass_json
 @dataclass(frozen=True, slots=True, order=True)
 class Evidence:
     evidence_description: str
     contribution_to_hypothesis: float
+    belief: Belief
     id: str = field(default_factory=lambda: str(uuid.uuid4()), compare=False)
 
     def __post_init__(self):

@@ -12,6 +12,7 @@ from dotenv import load_dotenv
 from mcp.server import FastMCP
 
 from evidence import Evidence
+from belief import Belief, equally_likely
 from hypothesis import Hypothesis, HypothesisSubject, HypothesisObject
 from hypothesis_operations import HypothesisOperations
 from id_provider import UuidProvider
@@ -52,7 +53,7 @@ async def breakdown_hypothesis(hypotheses: list[Hypothesis]) -> list[Hypothesis]
 
 
 @mcp.tool()
-async def create_hypothesis(subject: str, relation: str, object_: str, confidence: float) -> dict[str, Any]:
+async def create_hypothesis(subject: str, relation: str, object_: str, confidence: float = None) -> dict[str, Any]:
     """
     Create a new Hypothesis in Neo4j.
 
@@ -60,18 +61,19 @@ async def create_hypothesis(subject: str, relation: str, object_: str, confidenc
         subject: The name of the subject
         relation: The relation between subject and object
         object_: The name of the object
-        confidence: The confidence level (between 0 and 1)
+        confidence: The confidence level (between 0 and 1) - deprecated, use belief instead
 
     Returns:
         A dictionary containing the ID of the created hypothesis
     """
     try:
         # Create a hypothesis using the create_from_strings method
+        belief = equally_likely()
         hypothesis = Hypothesis.create_from_strings(
             subject=subject,
             relation=relation,
             object_=object_,
-            confidence=confidence
+            belief=belief
         )
 
         # Save the hypothesis to Neo4J
@@ -80,7 +82,7 @@ async def create_hypothesis(subject: str, relation: str, object_: str, confidenc
         return {
             "success": True,
             "hypothesis_id": hypothesis_id,
-            "message": f"Created hypothesis: {subject} {relation} {object_} (confidence: {confidence})"
+            "message": f"Created hypothesis: {subject} {relation} {object_} (belief: {belief})"
         }
     except ValueError as e:
         return {
@@ -96,7 +98,7 @@ async def create_hypothesis(subject: str, relation: str, object_: str, confidenc
 
 @mcp.tool()
 async def create_hypothesis_with_objects(subject_name: str, relation: str, object_name: str,
-                                         confidence: float) -> dict[str, Any]:
+                                         confidence: float = None) -> dict[str, Any]:
     """
     Create a new Hypothesis in Neo4j with detailed subject and object properties.
 
@@ -104,7 +106,7 @@ async def create_hypothesis_with_objects(subject_name: str, relation: str, objec
         subject_name: The name of the subject
         relation: The relation between subject and object
         object_name: The name of the object
-        confidence: The confidence level (between 0 and 1)
+        confidence: The confidence level (between 0 and 1) - deprecated, use belief instead
 
     Returns:
         A dictionary containing the ID of the created hypothesis
@@ -121,11 +123,12 @@ async def create_hypothesis_with_objects(subject_name: str, relation: str, objec
         )
 
         # Create hypothesis
+        belief = equally_likely()
         hypothesis = Hypothesis(
             subject=subject,
             relation=relation,
             object=object_,
-            confidence=confidence
+            belief=belief
         )
 
         # Save the hypothesis to Neo4J
@@ -136,7 +139,7 @@ async def create_hypothesis_with_objects(subject_name: str, relation: str, objec
             "hypothesis_id": hypothesis_id,
             "subject_id": subject.id,
             "object_id": object_.id,
-            "message": f"Created hypothesis: {subject_name} {relation} {object_name} (confidence: {confidence})"
+            "message": f"Created hypothesis: {subject_name} {relation} {object_name} (belief: {belief})"
         }
     except ValueError as e:
         return {
@@ -178,7 +181,7 @@ async def get_hypothesis(hypothesis_id: str) -> dict[str, Any]:
                         "id": hypothesis.object.id,
                         "name": hypothesis.object.name
                     },
-                    "confidence": hypothesis.confidence
+                    "belief": hypothesis.belief.to_dict()
                 }
             }
         else:
@@ -195,14 +198,16 @@ async def get_hypothesis(hypothesis_id: str) -> dict[str, Any]:
 
 @mcp.tool()
 async def update_hypothesis(hypothesis_id: str, relation: Optional[str] = None,
-                            confidence: Optional[float] = None) -> dict[str, Any]:
+                            belief_alpha: Optional[int] = None,
+                            belief_beta: Optional[int] = None) -> dict[str, Any]:
     """
     Update a hypothesis by its ID.
 
     Args:
         hypothesis_id: The ID of the hypothesis to update
         relation: The new relation (optional)
-        confidence: The new confidence level (optional)
+        belief_alpha: The new belief alpha parameter (optional)
+        belief_beta: The new belief beta parameter (optional)
 
     Returns:
         A dictionary indicating success or failure
@@ -221,8 +226,12 @@ async def update_hypothesis(hypothesis_id: str, relation: Optional[str] = None,
         if relation is not None:
             hypothesis.relation = relation
 
-        if confidence is not None:
-            hypothesis.confidence = confidence
+        if belief_alpha is not None and belief_beta is not None:
+            hypothesis.belief = Belief(alpha=belief_alpha, beta=belief_beta)
+        elif belief_alpha is not None:
+            hypothesis.belief = Belief(alpha=belief_alpha, beta=hypothesis.belief.beta)
+        elif belief_beta is not None:
+            hypothesis.belief = Belief(alpha=hypothesis.belief.alpha, beta=belief_beta)
 
         # Save the updates
         updated = hypothesis_ops.update_hypothesis(hypothesis)
@@ -283,8 +292,9 @@ async def delete_hypothesis(hypothesis_id: str, keep_subject_object: bool = Fals
 
 @mcp.tool()
 async def find_hypotheses(subject: Optional[str] = None, relation: Optional[str] = None,
-                          object_: Optional[str] = None, min_confidence: Optional[float] = None,
-                          max_confidence: Optional[float] = None, subject_id: Optional[str] = None,
+                          object_: Optional[str] = None, min_alpha: Optional[int] = None,
+                          max_alpha: Optional[int] = None, min_beta: Optional[int] = None,
+                          max_beta: Optional[int] = None, subject_id: Optional[str] = None,
                           object_id: Optional[str] = None) -> dict[str, Any]:
     """
     Find hypotheses matching the given criteria.
@@ -293,8 +303,10 @@ async def find_hypotheses(subject: Optional[str] = None, relation: Optional[str]
         subject: Subject name to match (optional)
         relation: Relation to match (optional)
         object_: Object name to match (optional)
-        min_confidence: Minimum confidence value (optional)
-        max_confidence: Maximum confidence value (optional)
+        min_alpha: Minimum alpha value for belief (optional)
+        max_alpha: Maximum alpha value for belief (optional)
+        min_beta: Minimum beta value for belief (optional)
+        max_beta: Maximum beta value for belief (optional)
         subject_id: Subject ID to match (optional)
         object_id: Object ID to match (optional)
 
@@ -306,8 +318,10 @@ async def find_hypotheses(subject: Optional[str] = None, relation: Optional[str]
             subject=subject,
             relation=relation,
             object_=object_,
-            min_confidence=min_confidence,
-            max_confidence=max_confidence,
+            min_alpha=min_alpha,
+            max_alpha=max_alpha,
+            min_beta=min_beta,
+            max_beta=max_beta,
             subject_id=subject_id,
             object_id=object_id
         )
@@ -325,7 +339,7 @@ async def find_hypotheses(subject: Optional[str] = None, relation: Optional[str]
                     "id": h.object.id,
                     "name": h.object.name
                 },
-                "confidence": h.confidence
+                "belief": h.belief.to_dict()
             })
 
         return {
@@ -792,7 +806,8 @@ async def create_multiple_hypotheses(hypotheses_data: list[dict[str, Any]]) -> d
             - subject: The name of the subject
             - relation: The relation between subject and object
             - object: The name of the object
-            - confidence: The confidence level (between 0 and 1)
+            - belief: (Optional) A dictionary with alpha and beta values for the belief
+              If not provided, equally_likely() will be used
             - additional_properties: Additional properties for the hypothesis (optional)
 
     Returns:
@@ -808,22 +823,33 @@ async def create_multiple_hypotheses(hypotheses_data: list[dict[str, Any]]) -> d
                 subject = hypo_data.get("subject")
                 relation = hypo_data.get("relation")
                 object_ = hypo_data.get("object")
-                confidence = hypo_data.get("confidence")
+                belief_data = hypo_data.get("belief")
 
                 # Validate required fields
-                if not subject or not relation or not object_ or confidence is None:
+                if not subject or not relation or not object_:
                     failed_hypotheses.append({
                         "index": idx,
-                        "error": "Missing required fields (subject, relation, object, confidence)"
+                        "error": "Missing required fields (subject, relation, object)"
                     })
                     continue
+
+                # Create belief object
+                if belief_data and isinstance(belief_data, dict):
+                    alpha = belief_data.get("alpha")
+                    beta = belief_data.get("beta")
+                    if alpha is not None and beta is not None:
+                        belief = Belief(alpha=alpha, beta=beta)
+                    else:
+                        belief = equally_likely()
+                else:
+                    belief = equally_likely()
 
                 # Create a hypothesis using the create_from_strings method
                 hypothesis = Hypothesis.create_from_strings(
                     subject=subject,
                     relation=relation,
                     object_=object_,
-                    confidence=confidence
+                    belief=belief
                 )
 
                 # Save the hypothesis to Neo4J
@@ -835,7 +861,7 @@ async def create_multiple_hypotheses(hypotheses_data: list[dict[str, Any]]) -> d
                     "subject": subject,
                     "relation": relation,
                     "object": object_,
-                    "confidence": confidence
+                    "belief": belief.to_dict()
                 })
 
             except Exception as e:
@@ -868,7 +894,8 @@ async def create_multiple_hypotheses_with_objects(hypotheses_data: list[dict[str
             - subject_name: The name of the subject
             - relation: The relation between subject and object
             - object_name: The name of the object
-            - confidence: The confidence level (between 0 and 1)
+            - belief: (Optional) A dictionary with alpha and beta values for the belief
+              If not provided, equally_likely() will be used
             - subject_properties: Additional properties for the subject (optional)
             - object_properties: Additional properties for the object (optional)
             - hypothesis_properties: Additional properties for the hypothesis (optional)
@@ -886,13 +913,13 @@ async def create_multiple_hypotheses_with_objects(hypotheses_data: list[dict[str
                 subject_name = hypo_data.get("subject_name")
                 relation = hypo_data.get("relation")
                 object_name = hypo_data.get("object_name")
-                confidence = hypo_data.get("confidence")
+                belief_data = hypo_data.get("belief")
 
                 # Validate required fields
-                if not subject_name or not relation or not object_name or confidence is None:
+                if not subject_name or not relation or not object_name:
                     failed_hypotheses.append({
                         "index": idx,
-                        "error": "Missing required fields (subject_name, relation, object_name, confidence)"
+                        "error": "Missing required fields (subject_name, relation, object_name)"
                     })
                     continue
 
@@ -906,12 +933,23 @@ async def create_multiple_hypotheses_with_objects(hypotheses_data: list[dict[str
                     name=object_name
                 )
 
+                # Create belief object
+                if belief_data and isinstance(belief_data, dict):
+                    alpha = belief_data.get("alpha")
+                    beta = belief_data.get("beta")
+                    if alpha is not None and beta is not None:
+                        belief = Belief(alpha=alpha, beta=beta)
+                    else:
+                        belief = equally_likely()
+                else:
+                    belief = equally_likely()
+
                 # Create hypothesis
                 hypothesis = Hypothesis(
                     subject=subject,
                     relation=relation,
                     object=object_,
-                    confidence=confidence
+                    belief=belief
                 )
 
                 # Save the hypothesis to Neo4J
@@ -925,7 +963,7 @@ async def create_multiple_hypotheses_with_objects(hypotheses_data: list[dict[str
                     "subject_name": subject_name,
                     "relation": relation,
                     "object_name": object_name,
-                    "confidence": confidence
+                    "belief": belief.to_dict()
                 })
 
             except Exception as e:
@@ -973,7 +1011,7 @@ async def get_all_hypotheses() -> dict[str, Any]:
                     "id": h.object.id,
                     "name": h.object.name
                 },
-                "confidence": h.confidence
+                "belief": h.belief.to_dict()
             })
 
         return {

@@ -1,5 +1,6 @@
 from typing import Optional, Any
 
+from belief import Belief
 from hypothesis import Hypothesis, HypothesisSubject, HypothesisObject
 from neo4j_operations import Neo4jOperations
 
@@ -33,10 +34,12 @@ class HypothesisOperations:
                 "id": hypothesis.object.id
             })
 
-        # Create relation node with confidence
+        # Create relation node with belief
+        belief_dict = hypothesis.belief.to_dict()
         relation_id = self.neo4j_ops.create_node(node_type="Relation", properties={
             "name": hypothesis.relation,
-            "confidence": hypothesis.confidence,
+            "belief_alpha": belief_dict.get("alpha", 1),
+            "belief_beta": belief_dict.get("beta", 1),
             "id": hypothesis.id,  # Use the hypothesis ID for the relation node
             "hypothesisId": hypothesis.id,  # Store the hypothesis ID for reference
             "subject_id": subject_id,  # Store the subject ID for reference
@@ -73,11 +76,15 @@ class HypothesisOperations:
         )
 
         # Create a Hypothesis object
+        alpha = relation_node.get("belief_alpha", 1)
+        beta = relation_node.get("belief_beta", 1)
+        belief = Belief(alpha=alpha, beta=beta)
+
         return Hypothesis(
             subject=subject,
             relation=relation_node.get("name", ""),
             object=object_,
-            confidence=relation_node.get("confidence", 0.0),
+            belief=belief,
             id=hypothesis_id
         )
 
@@ -155,9 +162,11 @@ class HypothesisOperations:
             self._create_relationship(hypothesis.id, object_id, "FLOWS_TO")
 
         # Update relation node
+        belief_dict = hypothesis.belief.to_dict()
         relation_properties = {
             "name": hypothesis.relation,
-            "confidence": hypothesis.confidence,
+            "belief_alpha": belief_dict.get("alpha", 1),
+            "belief_beta": belief_dict.get("beta", 1),
             "subject_id": hypothesis.subject.id,
             "object_id": hypothesis.object.id
         }
@@ -217,8 +226,9 @@ class HypothesisOperations:
             return total_count > 0
 
     def find_hypotheses(self, subject: str = None, relation: str = None,
-                        object_: str = None, min_confidence: float = None,
-                        max_confidence: float = None, subject_id: str = None,
+                        object_: str = None, min_alpha: int = None,
+                        max_alpha: int = None, min_beta: int = None,
+                        max_beta: int = None, subject_id: str = None,
                         object_id: str = None) -> list[Hypothesis]:
         query = """
         MATCH (s:Subject)-[:FLOWS_TO]->(r:Relation)-[:FLOWS_TO]->(o:Object)
@@ -247,13 +257,21 @@ class HypothesisOperations:
             query += " AND o.id = $object_id"
             params["object_id"] = object_id
 
-        if min_confidence is not None:
-            query += " AND r.confidence >= $min_confidence"
-            params["min_confidence"] = min_confidence
+        if min_alpha is not None:
+            query += " AND r.belief_alpha >= $min_alpha"
+            params["min_alpha"] = min_alpha
 
-        if max_confidence is not None:
-            query += " AND r.confidence <= $max_confidence"
-            params["max_confidence"] = max_confidence
+        if max_alpha is not None:
+            query += " AND r.belief_alpha <= $max_alpha"
+            params["max_alpha"] = max_alpha
+
+        if min_beta is not None:
+            query += " AND r.belief_beta >= $min_beta"
+            params["min_beta"] = min_beta
+
+        if max_beta is not None:
+            query += " AND r.belief_beta <= $max_beta"
+            params["max_beta"] = max_beta
 
         query += " RETURN r.id as id, s, r, o"
 
@@ -279,11 +297,15 @@ class HypothesisOperations:
 
                 # Create Hypothesis
                 relation_node = dict(record["r"].items())
+                alpha = relation_node.get("belief_alpha", 1)
+                beta = relation_node.get("belief_beta", 1)
+                belief = Belief(alpha=alpha, beta=beta)
+
                 hypothesis = Hypothesis(
                     subject=subject,
                     relation=relation_node.get("name", ""),
                     object=object_,
-                    confidence=relation_node.get("confidence", 0.0),
+                    belief=belief,
                     id=relation_node.get("id", "")
                 )
 
