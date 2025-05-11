@@ -1,10 +1,3 @@
-"""
-Hypothesis Operations Module
-
-This module provides CRUD operations for Hypothesis nodes in Neo4J.
-Each Hypothesis consists of a HypothesisSubject, a relation, a HypothesisObject, and a confidence value.
-"""
-
 import uuid
 from dataclasses import dataclass, field
 from typing import Any

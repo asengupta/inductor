@@ -1,9 +1,3 @@
-"""
-Hypothesis Subject Module
-
-This module provides the HypothesisSubject class used in hypothesis operations.
-"""
-
 import uuid
 from dataclasses import dataclass, field
 from typing import Any
@@ -14,13 +8,6 @@ from dataclasses_json import dataclass_json
 @dataclass_json
 @dataclass
 class HypothesisSubject:
-    """
-    A dataclass representing the subject of a hypothesis.
-
-    Attributes:
-        name: The name of the subject
-        id: The unique identifier (auto-generated if not explicitly provided)
-    """
     name: str
     id: str = field(default_factory=lambda: str(uuid.uuid4()))
 

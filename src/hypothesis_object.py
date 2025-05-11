@@ -1,9 +1,3 @@
-"""
-Hypothesis Object Module
-
-This module provides the HypothesisObject class used in hypothesis operations.
-"""
-
 import uuid
 from dataclasses import dataclass, field
 from typing import Any
@@ -14,13 +8,6 @@ from dataclasses_json import dataclass_json
 @dataclass_json
 @dataclass
 class HypothesisObject:
-    """
-    A dataclass representing the object of a hypothesis.
-
-    Attributes:
-        name: The name of the object
-        id: The unique identifier (auto-generated if not explicitly provided)
-    """
     name: str
     id: str = field(default_factory=lambda: str(uuid.uuid4()))
 
