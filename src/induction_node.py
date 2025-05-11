@@ -37,11 +37,13 @@ class InferenceNode:
     def add_all(self, children):
         self.children += children
 
-    def as_tree(self, level: int = 0) -> None:
+    def as_tree(self, level: int = 0) -> str:
+        formatted = ""
         spaces = (level - 1) * " "
-        print(f"{spaces}{'└-' if level > 0 else ""}{self.node.as_tree()}")
+        formatted += f"{spaces}{'└-' if level > 0 else ""}{self.node.as_tree()}\n"
         for child in self.children:
-            child.as_tree(level + 1)
+            formatted += child.as_tree(level + 1)
+        return formatted
 
     def just_str(self):
         return str(self.node)

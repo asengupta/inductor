@@ -1,14 +1,17 @@
 from graph.state import CodeExplorerState
 from graph.router_constants import (
     FREEFORM_EXPLORATION_DECISION, HYPOTHESIZE_DECISION, BUILD_INFERENCE_TREE_DECISION,
-    SYSTEM_QUERY_DECISION, DONT_KNOW_DECISION, EXIT_DECISION
+    SYSTEM_QUERY_DECISION, DONT_KNOW_DECISION, EXIT_DECISION, VALIDATE_HYPOTHESIS_DECISION
 )
 
 def reverse_engineering_step_decider(tool_llm):
     def run_agent(state: CodeExplorerState) -> str:
         messages = state["messages"]
-        if messages[-1].content == EXIT_DECISION:
+        user_input = messages[-1]
+        if user_input.content == EXIT_DECISION:
             return EXIT_DECISION
+        elif user_input.content.strip() == "v":
+            return VALIDATE_HYPOTHESIS_DECISION
 
         prompt = f"""         The user request is: "{state['current_request']}".
                               Based on the request, decide which agent you wish to activate. Your choices are:

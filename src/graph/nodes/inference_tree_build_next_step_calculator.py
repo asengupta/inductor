@@ -16,7 +16,7 @@ def inference_tree_build_step_calculator(state: CodeExplorerState) -> dict[str, 
     ssss = stack[0][0]
     print("STACK\n================")
     print_stack(stack)
-    ssss.as_tree()
+    print(ssss.as_tree())
     print(f"Top stack counter: {stack[0][1]}")
     # print(f"Inference tree build step: {ssss.to_json(indent=2)}")
     most_recent = stack[-1]
