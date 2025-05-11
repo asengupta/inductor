@@ -3,6 +3,7 @@ from typing import Any, Callable, Awaitable
 from langchain_core.tools import BaseTool
 from langgraph.prebuilt import create_react_agent
 
+from evidence import Evidence
 from graph.nodes.state_operations import stack
 from graph.nodes.types import LLM, EvidenceResult
 from graph.state import CodeExplorerState
@@ -31,7 +32,10 @@ def visit_evidence_build(llm: LLM, tools: list[BaseTool]) -> Callable[
         print("Response from gathering evidence")
         # print(f"Response from gathering evidence: {response}")
         print("====================================================================================")
-        print(response["structured_response"])
+        structured_response = response["structured_response"]
+        print(structured_response)
+        evidence_node: Evidence = current[0].node
+        evidence_node.belief.update((structured_response["for_hypothesis"], structured_response["against_hypothesis"]))
         le_stack[-2] = (le_stack[-2][0], le_stack[-2][1] + 1)
         return CodeExplorerState(input=state[INPUT_KEY], current_request=state[CURRENT_REQUEST_KEY],
                                  messages=state[MESSAGES_KEY], inference_stack=[],
