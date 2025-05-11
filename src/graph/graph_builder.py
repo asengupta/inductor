@@ -76,7 +76,6 @@ def as_json(state: CodeExplorerState) -> str:
 async def make_graph(client: MultiServerMCPClient) -> AsyncGenerator[CompiledStateGraph, Any]:
     async with client:
         mcp_tools: list[BaseTool] = client.get_tools()
-        print("SOMETHING")
         inference_tree_building_tools = [tool for tool in mcp_tools if
                                          tool.name in ["create_evidence_strategy", "breakdown_hypothesis"]]
         # print(mcp_tools)
