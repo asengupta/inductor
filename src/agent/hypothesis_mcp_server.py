@@ -12,7 +12,7 @@ from dotenv import load_dotenv
 from mcp.server import FastMCP
 
 from evidence import Evidence
-from belief import BetaBernoulliBelief, equally_likely
+from beta_bernoulli_belief import BetaBernoulliBelief, equally_likely
 from hypothesis import Hypothesis
 from hypothesis_subject import HypothesisSubject
 from hypothesis_object import HypothesisObject

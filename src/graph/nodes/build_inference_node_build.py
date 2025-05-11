@@ -1,7 +1,7 @@
 import json
 from typing import Any
 
-from belief import no_evidence, equally_likely
+from beta_bernoulli_belief import no_evidence, equally_likely
 from evidence import Evidence
 from graph.state import CodeExplorerState
 from graph.state_keys import CURRENT_REQUEST_KEY, MESSAGES_KEY, INPUT_KEY, INFERENCE_STACK_KEY

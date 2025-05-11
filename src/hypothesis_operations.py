@@ -1,6 +1,6 @@
 from typing import Optional, Any
 
-from belief import BetaBernoulliBelief
+from beta_bernoulli_belief import BetaBernoulliBelief
 from hypothesis import Hypothesis
 from hypothesis_subject import HypothesisSubject
 from hypothesis_object import HypothesisObject

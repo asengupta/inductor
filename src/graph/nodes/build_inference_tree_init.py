@@ -1,6 +1,6 @@
 from typing import Any
 
-from belief import equally_likely
+from beta_bernoulli_belief import equally_likely
 from graph.state import CodeExplorerState
 from graph.state_keys import CURRENT_REQUEST_KEY, INPUT_KEY, MESSAGES_KEY
 from hypothesis import Hypothesis

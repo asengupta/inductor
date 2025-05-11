@@ -4,7 +4,8 @@ from typing import Any
 
 from dataclasses_json import dataclass_json
 
-from belief import BetaBernoulliBelief, equally_likely, BeliefProtocol
+from belief import BeliefProtocol
+from beta_bernoulli_belief import BetaBernoulliBelief, equally_likely
 from hypothesis_object import HypothesisObject
 from hypothesis_subject import HypothesisSubject
 from random_words import random_text
