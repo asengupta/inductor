@@ -39,6 +39,7 @@ def validate_hypothesis_post_exec(state: CodeExplorerState) -> dict[str, Any]:
     if isinstance(current[0].node, Hypothesis):
         pre_visit(le_stack, current)
         push(state, (current[0].children[0], 0))
+        print(f"After adding children, tip is {le_stack[-1][0].just_str()} with counter {le_stack[-1][1]}...")
         return generic_return(state)
 
     parent = le_stack[-2]
