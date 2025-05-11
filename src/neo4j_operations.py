@@ -1,10 +1,3 @@
-"""
-Neo4J Operations Module
-
-This module provides CRUD operations for Neo4J nodes.
-Each node will have an ID and a nodeType property.
-"""
-
 from typing import Optional, Any
 
 from neo4j import GraphDatabase, Driver, Session
@@ -13,46 +6,17 @@ from id_provider import IdProvider
 
 
 class Neo4jOperations:
-    """
-    A class to handle CRUD operations for Neo4J nodes.
-
-    Each node will have an ID and a nodeType property.
-    """
-
     def __init__(self, uri: str, username: str, password: str, id_provider: IdProvider):
-        """
-        Initialize the Neo4jOperations with connection details.
-
-        Args:
-            uri: The URI for the Neo4j instance
-            username: The username for authentication
-            password: The password for authentication
-            id_provider: Provider for generating unique IDs (defaults to UuidProvider)
-        """
         self.driver: Driver = GraphDatabase.driver(uri, auth=(username, password))
         self.id_provider = id_provider
 
     def close(self):
-        """Close the driver connection."""
         self.driver.close()
 
     def _get_session(self) -> Session:
-        """Get a new session from the driver."""
         return self.driver.session()
 
     def create_node(self, node_type: str, properties: dict[str, Any] = {}, labels: list[str] = []) -> str:
-        """
-        Create a new node in Neo4j.
-
-        Args:
-            node_type: The type of the node (required)
-            properties: Additional properties for the node
-            labels: Additional labels for the node
-
-        Returns:
-            The ID of the created node
-        """
-
         # Ensure node_type is included in properties
         properties['nodeType'] = node_type
 
@@ -75,15 +39,6 @@ class Neo4jOperations:
             return record["id"]
 
     def read_node(self, node_id: str) -> Optional[dict[str, Any]]:
-        """
-        Read a node from Neo4j by its ID.
-
-        Args:
-            node_id: The ID of the node to read
-
-        Returns:
-            A dictionary containing the node properties or None if not found
-        """
         query = "MATCH (n {id: $id}) RETURN n"
 
         with self._get_session() as session:
@@ -95,16 +50,6 @@ class Neo4jOperations:
             return None
 
     def update_node(self, node_id: str, properties: dict[str, Any]) -> bool:
-        """
-        Update a node in Neo4j.
-
-        Args:
-            node_id: The ID of the node to update
-            properties: The properties to update
-
-        Returns:
-            True if the node was updated, False otherwise
-        """
         # Don't allow updating the ID
         if 'id' in properties:
             del properties['id']
@@ -121,15 +66,6 @@ class Neo4jOperations:
             return record is not None
 
     def delete_node(self, node_id: str) -> bool:
-        """
-        Delete a node from Neo4j.
-
-        Args:
-            node_id: The ID of the node to delete
-
-        Returns:
-            True if the node was deleted, False otherwise
-        """
         query = "MATCH (n {id: $id}) DELETE n RETURN count(n) as count"
 
         with self._get_session() as session:
@@ -139,18 +75,6 @@ class Neo4jOperations:
 
     def find_nodes(self, node_type: Optional[str] = None, properties: dict[str, Any] = {},
                   labels: list[str] = []) -> list[dict[str, Any]]:
-        """
-        Find nodes matching the given criteria.
-
-        Args:
-            node_type: The type of nodes to find
-            properties: Properties to match
-            labels: Labels to match
-
-        Returns:
-            A list of dictionaries containing the node properties
-        """
-
         # Build the match clause
         match_parts = []
         if node_type:

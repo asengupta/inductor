@@ -113,17 +113,6 @@ class HypothesisObject:
 @dataclass_json
 @dataclass
 class Hypothesis:
-    """
-    A dataclass representing a hypothesis with subject, relation, object, confidence, and contribution to root.
-
-    Attributes:
-        subject: The subject of the hypothesis (HypothesisSubject)
-        relation: The relation between subject and object (string)
-        object: The object of the hypothesis (HypothesisObject)
-        confidence: The confidence level (between 0 and 1)
-        contribution_to_root: How much this hypothesis contributes to the root hypothesis (between 0 and 1)
-        id: The unique identifier (auto-generated if not explicitly provided)
-    """
     subject: HypothesisSubject
     relation: str
     object: HypothesisObject
@@ -141,7 +130,6 @@ class Hypothesis:
         return f"[HYPOTHESIS] {self.subject} {self.relation} {self.object}"
 
     def __post_init__(self):
-        """Validate the hypothesis data after initialization."""
         if not isinstance(self.subject, HypothesisSubject):
             raise ValueError("Subject must be a HypothesisSubject instance")
 
@@ -164,7 +152,6 @@ class Hypothesis:
             raise ValueError("contribution_to_root must be between 0 and 1")
 
     def to_dict(self) -> dict[str, Any]:
-        """Convert the hypothesis to a dictionary for Neo4j storage."""
         result = {
             'subject': self.subject.name,  # For backward compatibility
             'relation': self.relation,
@@ -181,17 +168,6 @@ class Hypothesis:
     @classmethod
     def from_dict(cls, data: dict[str, Any], subject_data: dict[str, Any] = None,
                   object_data: dict[str, Any] = None) -> 'Hypothesis':
-        """
-        Create a Hypothesis instance from dictionaries.
-
-        Args:
-            data: Dictionary containing hypothesis data
-            subject_data: Dictionary containing subject data (optional)
-            object_data: Dictionary containing object data (optional)
-
-        Returns:
-            A Hypothesis instance
-        """
         if not data:
             raise ValueError("Cannot create Hypothesis from empty data")
 
@@ -234,20 +210,6 @@ class Hypothesis:
     def create_from_strings(cls, subject: str, relation: str, object_: str,
                             confidence: float, contribution_to_root: float = 0.0,
                             id_: str = None) -> 'Hypothesis':
-        """
-        Create a Hypothesis instance from string values for backward compatibility.
-
-        Args:
-            subject: The subject name
-            relation: The relation
-            object_: The object name
-            confidence: The confidence level
-            contribution_to_root: How much this hypothesis contributes to the root hypothesis (between 0 and 1)
-            id_: The hypothesis ID (optional)
-
-        Returns:
-            A Hypothesis instance
-        """
         if id_ is None:
             id_ = str(uuid.uuid4())
 

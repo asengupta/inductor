@@ -1,11 +1,3 @@
-"""
-Hypothesis Operations Module
-
-This module provides CRUD operations for Hypothesis nodes in Neo4J.
-Each Hypothesis consists of three nodes: subject, relation, and object,
-with relationships between them.
-"""
-
 from typing import Optional, Any
 
 from hypothesis import Hypothesis, HypothesisSubject, HypothesisObject
@@ -13,33 +5,10 @@ from neo4j_operations import Neo4jOperations
 
 
 class HypothesisOperations:
-    """
-    A class to handle CRUD operations for Hypothesis nodes in Neo4J.
-
-    Each Hypothesis consists of three nodes (subject, relation, object)
-    with relationships between them. The confidence is stored as a property
-    of the relation node.
-    """
-
     def __init__(self, neo4j_ops: Neo4jOperations):
-        """
-        Initialize the HypothesisOperations with a Neo4jOperations instance.
-
-        Args:
-            neo4j_ops: An instance of Neo4jOperations for database access
-        """
         self.neo4j_ops = neo4j_ops
 
     def create_hypothesis(self, hypothesis: Hypothesis) -> str:
-        """
-        Create a new Hypothesis in Neo4j as three connected nodes.
-
-        Args:
-            hypothesis: A Hypothesis object containing subject, relation, object, and confidence
-
-        Returns:
-            The ID of the created hypothesis (relation node ID)
-        """
         # Check if subject node already exists
         existing_subject = self.neo4j_ops.read_node(hypothesis.subject.id)
         if existing_subject:
@@ -81,15 +50,6 @@ class HypothesisOperations:
         return hypothesis.id
 
     def read_hypothesis(self, hypothesis_id: str) -> Optional[Hypothesis]:
-        """
-        Read a Hypothesis from Neo4j by its ID.
-
-        Args:
-            hypothesis_id: The ID of the hypothesis to read
-
-        Returns:
-            A Hypothesis object or None if not found
-        """
         # Get the relation node
         relation_node = self.neo4j_ops.read_node(hypothesis_id)
         if not relation_node:
@@ -122,15 +82,6 @@ class HypothesisOperations:
         )
 
     def update_hypothesis(self, hypothesis: Hypothesis) -> bool:
-        """
-        Update a Hypothesis in Neo4j.
-
-        Args:
-            hypothesis: The Hypothesis object with updated values
-
-        Returns:
-            True if the hypothesis was updated, False otherwise
-        """
         # Get the existing relation node
         relation_node = self.neo4j_ops.read_node(hypothesis.id)
         if not relation_node:
@@ -220,16 +171,6 @@ class HypothesisOperations:
         return subject_updated and object_updated and relation_updated
 
     def delete_hypothesis(self, hypothesis_id: str, keep_subject_object: bool = False) -> bool:
-        """
-        Delete a Hypothesis from Neo4j.
-
-        Args:
-            hypothesis_id: The ID of the hypothesis to delete
-            keep_subject_object: If True, keep the subject and object nodes
-
-        Returns:
-            True if the hypothesis was deleted, False otherwise
-        """
         # Get the nodes
         relation_node = self.neo4j_ops.read_node(hypothesis_id)
         if not relation_node:
@@ -260,15 +201,6 @@ class HypothesisOperations:
         return deleted_relation
 
     def _is_node_used_elsewhere(self, node_id: str) -> bool:
-        """
-        Check if a node is used by other hypotheses.
-
-        Args:
-            node_id: The ID of the node to check
-
-        Returns:
-            True if the node is used by other hypotheses, False otherwise
-        """
         query = """
         MATCH (n {id: $node_id})-[r:FLOWS_TO]->()
         RETURN count(r) as relationship_count
@@ -288,22 +220,6 @@ class HypothesisOperations:
                         object_: str = None, min_confidence: float = None,
                         max_confidence: float = None, subject_id: str = None,
                         object_id: str = None) -> list[Hypothesis]:
-        """
-        Find hypotheses matching the given criteria.
-
-        Args:
-            subject: Subject name to match
-            relation: Relation to match
-            object_: Object name to match
-            min_confidence: Minimum confidence value
-            max_confidence: Maximum confidence value
-            subject_id: Subject ID to match
-            object_id: Object ID to match
-
-        Returns:
-            A list of Hypothesis objects matching the criteria
-        """
-        # Build the query based on the provided criteria
         query = """
         MATCH (s:Subject)-[:FLOWS_TO]->(r:Relation)-[:FLOWS_TO]->(o:Object)
         WHERE 1=1
@@ -376,17 +292,6 @@ class HypothesisOperations:
         return hypotheses
 
     def _create_relationship(self, from_node_id: str, to_node_id: str, relationship_type: str) -> bool:
-        """
-        Create a relationship between two nodes.
-
-        Args:
-            from_node_id: The ID of the source node
-            to_node_id: The ID of the target node
-            relationship_type: The type of relationship to create
-
-        Returns:
-            True if the relationship was created, False otherwise
-        """
         query = f"""
         MATCH (a), (b)
         WHERE a.id = $from_id AND b.id = $to_id
@@ -400,15 +305,6 @@ class HypothesisOperations:
             return record is not None
 
     def _get_connected_nodes(self, relation_id: str) -> tuple[Optional[dict[str, Any]], Optional[dict[str, Any]]]:
-        """
-        Get the subject and object nodes connected to a relation node.
-
-        Args:
-            relation_id: The ID of the relation node
-
-        Returns:
-            A tuple containing the subject and object nodes (as dictionaries)
-        """
         query = """
         MATCH (s:Subject)-[:FLOWS_TO]->(r:Relation)-[:FLOWS_TO]->(o:Object)
         WHERE r.id = $relation_id
@@ -427,15 +323,6 @@ class HypothesisOperations:
             return None, None
 
     def _delete_relationships(self, relation_id: str) -> bool:
-        """
-        Delete all relationships connected to a relation node.
-
-        Args:
-            relation_id: The ID of the relation node
-
-        Returns:
-            True if the relationships were deleted, False otherwise
-        """
         query = """
         MATCH (s)-[r1:FLOWS_TO]->(rel:Relation)-[r2:FLOWS_TO]->(o)
         WHERE rel.id = $relation_id
@@ -449,16 +336,6 @@ class HypothesisOperations:
             return record and record["deleted_count"] > 0
 
     def _delete_relationship(self, from_node_id: str, to_node_id: str) -> bool:
-        """
-        Delete a specific relationship between two nodes.
-
-        Args:
-            from_node_id: The ID of the source node
-            to_node_id: The ID of the target node
-
-        Returns:
-            True if the relationship was deleted, False otherwise
-        """
         query = """
         MATCH (a {id: $from_id})-[r:FLOWS_TO]->(b {id: $to_id})
         DELETE r
