@@ -21,7 +21,7 @@ def pre_visit(le_stack: list[tuple[InferenceNode, int]], tip: tuple[InferenceNod
 
 def pop_recursive(state):
     le_stack = stack(state)
-    evidence = pop(state)
+    pop(state)
     while len(le_stack) > 1 and le_stack[-2][0].children.index(le_stack[-1][0]) == len(le_stack[-2][0].children) - 1:
         print(f"Recursive pop: {le_stack[-1]}")
         post_visit(le_stack, le_stack[-1])
