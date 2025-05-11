@@ -12,8 +12,10 @@ def visit_evidence(state: CodeExplorerState) -> dict[str, Any]:
     current = stack(state)[-1]
     print(f"Visiting evidence: {current[0].just_str()}")
     le_stack = stack(state)
+    print(f"Evidence is updating count of {le_stack[-2][0].just_str()} from {le_stack[-2][1]} by 1...")
+
     le_stack[-2] = (le_stack[-2][0], le_stack[-2][1] + 1)
     return CodeExplorerState(input=state[INPUT_KEY], current_request=state[CURRENT_REQUEST_KEY],
                              messages=state[MESSAGES_KEY], inference_stack=[],
                              base_hypothesis=state[BASE_HYPOTHESIS_KEY],
-                             recursion_stack=state[RECURSION_STACK_KEY])
+                             recursion_stack=le_stack,)
