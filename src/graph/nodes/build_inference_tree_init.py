@@ -1,8 +1,8 @@
 from typing import Any
 
+from belief import equally_likely
 from graph.state import CodeExplorerState
 from graph.state_keys import CURRENT_REQUEST_KEY, INPUT_KEY, MESSAGES_KEY
-from belief import Belief, equally_likely
 from hypothesis import Hypothesis, HypothesisSubject, HypothesisObject
 from induction_node import InferenceNode
 
