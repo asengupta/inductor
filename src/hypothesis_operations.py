@@ -1,6 +1,6 @@
 from typing import Optional, Any
 
-from belief import Belief
+from belief import BetaBernoulliBelief
 from hypothesis import Hypothesis
 from hypothesis_subject import HypothesisSubject
 from hypothesis_object import HypothesisObject
@@ -80,7 +80,7 @@ class HypothesisOperations:
         # Create a Hypothesis object
         alpha = relation_node.get("belief_alpha", 1)
         beta = relation_node.get("belief_beta", 1)
-        belief = Belief(alpha=alpha, beta=beta)
+        belief = BetaBernoulliBelief(alpha=alpha, beta=beta)
 
         return Hypothesis(
             subject=subject,
@@ -301,7 +301,7 @@ class HypothesisOperations:
                 relation_node = dict(record["r"].items())
                 alpha = relation_node.get("belief_alpha", 1)
                 beta = relation_node.get("belief_beta", 1)
-                belief = Belief(alpha=alpha, beta=beta)
+                belief = BetaBernoulliBelief(alpha=alpha, beta=beta)
 
                 hypothesis = Hypothesis(
                     subject=subject,

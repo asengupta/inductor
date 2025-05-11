@@ -4,9 +4,9 @@ from typing import Any
 
 from dataclasses_json import dataclass_json
 
-from belief import Belief, equally_likely
-from hypothesis_subject import HypothesisSubject
+from belief import BetaBernoulliBelief, equally_likely, BeliefProtocol
 from hypothesis_object import HypothesisObject
+from hypothesis_subject import HypothesisSubject
 from random_words import random_text
 
 
@@ -16,7 +16,7 @@ class Hypothesis:
     subject: HypothesisSubject
     relation: str
     object: HypothesisObject
-    belief: Belief = field(default_factory=equally_likely)
+    belief: BetaBernoulliBelief = field(default_factory=equally_likely)
     contribution_to_root: float = 0.0
     id: str = field(default_factory=lambda: str(uuid.uuid4()))
 
@@ -39,7 +39,7 @@ class Hypothesis:
         if not isinstance(self.object, HypothesisObject):
             raise ValueError("Object must be a HypothesisObject instance")
 
-        if not isinstance(self.belief, Belief):
+        if not isinstance(self.belief, BeliefProtocol):
             raise ValueError("Belief must be a Belief instance")
 
         if not isinstance(self.contribution_to_root, (int, float)):
@@ -71,7 +71,7 @@ class Hypothesis:
         # Extract the main attributes
         relation = data.get('relation', '')
         belief_data = data.get('belief', None)
-        belief = Belief.from_dict(belief_data) if belief_data else equally_likely()
+        belief = BetaBernoulliBelief.from_dict(belief_data) if belief_data else equally_likely()
         contribution_to_root = data.get('contribution_to_root', 0.0)
         id_ = data.get('id', str(uuid.uuid4()))
 
@@ -106,7 +106,7 @@ class Hypothesis:
 
     @classmethod
     def create_from_strings(cls, subject: str, relation: str, object_: str,
-                            belief: Belief = None, contribution_to_root: float = 0.0,
+                            belief: BeliefProtocol = None, contribution_to_root: float = 0.0,
                             id_: str = None) -> 'Hypothesis':
         if id_ is None:
             id_ = str(uuid.uuid4())
@@ -125,6 +125,7 @@ class Hypothesis:
             contribution_to_root=contribution_to_root,
             id=id_
         )
+
 
 def random_hypothesis() -> Hypothesis:
     return Hypothesis.create_from_strings(random_text(), random_text(), random_text())

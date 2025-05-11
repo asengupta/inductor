@@ -12,7 +12,7 @@ from dotenv import load_dotenv
 from mcp.server import FastMCP
 
 from evidence import Evidence
-from belief import Belief, equally_likely
+from belief import BetaBernoulliBelief, equally_likely
 from hypothesis import Hypothesis
 from hypothesis_subject import HypothesisSubject
 from hypothesis_object import HypothesisObject
@@ -229,11 +229,11 @@ async def update_hypothesis(hypothesis_id: str, relation: Optional[str] = None,
             hypothesis.relation = relation
 
         if belief_alpha is not None and belief_beta is not None:
-            hypothesis.belief = Belief(alpha=belief_alpha, beta=belief_beta)
+            hypothesis.belief = BetaBernoulliBelief(alpha=belief_alpha, beta=belief_beta)
         elif belief_alpha is not None:
-            hypothesis.belief = Belief(alpha=belief_alpha, beta=hypothesis.belief.beta)
+            hypothesis.belief = BetaBernoulliBelief(alpha=belief_alpha, beta=hypothesis.belief.beta)
         elif belief_beta is not None:
-            hypothesis.belief = Belief(alpha=hypothesis.belief.alpha, beta=belief_beta)
+            hypothesis.belief = BetaBernoulliBelief(alpha=hypothesis.belief.alpha, beta=belief_beta)
 
         # Save the updates
         updated = hypothesis_ops.update_hypothesis(hypothesis)
@@ -840,7 +840,7 @@ async def create_multiple_hypotheses(hypotheses_data: list[dict[str, Any]]) -> d
                     alpha = belief_data.get("alpha")
                     beta = belief_data.get("beta")
                     if alpha is not None and beta is not None:
-                        belief = Belief(alpha=alpha, beta=beta)
+                        belief = BetaBernoulliBelief(alpha=alpha, beta=beta)
                     else:
                         belief = equally_likely()
                 else:
@@ -940,7 +940,7 @@ async def create_multiple_hypotheses_with_objects(hypotheses_data: list[dict[str
                     alpha = belief_data.get("alpha")
                     beta = belief_data.get("beta")
                     if alpha is not None and beta is not None:
-                        belief = Belief(alpha=alpha, beta=beta)
+                        belief = BetaBernoulliBelief(alpha=alpha, beta=beta)
                     else:
                         belief = equally_likely()
                 else:

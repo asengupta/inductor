@@ -3,7 +3,7 @@ from dataclasses import dataclass, field
 
 from dataclasses_json import dataclass_json
 
-from belief import Belief, random_belief
+from belief import random_belief, BetaBernoulliBelief
 from random_words import random_text
 
 
@@ -12,7 +12,7 @@ from random_words import random_text
 class Evidence:
     evidence_description: str
     contribution_to_hypothesis: float
-    belief: Belief
+    belief: BetaBernoulliBelief
     id: str = field(default_factory=lambda: str(uuid.uuid4()), compare=False)
 
     def __post_init__(self):
