@@ -11,3 +11,4 @@ EXIT_DECISION = "exit_decision"
 VISIT_HYPOTHESIS_DECISION = "visit_hypothesis_decision"
 VISIT_EVIDENCE_DECISION = "visit_evidence_decision"
 DUMMY_INFERENCE_NODE = InferenceNode(random_hypothesis(), [])
+CONTINUE_RECURSE_INFERENCE_TREE_DECISION = "continue_recurse_inference_tree_decision"
