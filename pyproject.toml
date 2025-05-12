@@ -1,9 +1,9 @@
 [project]
-name = "agent"
+name = "Inductor"
 version = "0.0.1"
-description = "Starter template for making a new agent LangGraph."
+description = "Code Explorer for HLASM"
 authors = [
-    { name = "William Fu-Hinthorn", email = "13333726+hinthornw@users.noreply.github.com" },
+    { name = "Avishek Sen Gupta", email = "foo@bar.com" },
 ]
 readme = "README.md"
 license = { text = "MIT" }

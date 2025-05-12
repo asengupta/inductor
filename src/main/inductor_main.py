@@ -1,5 +1,5 @@
 import asyncio
-from graph.graph_builder import make_graph, start_task_graph, mcp_client
+from src.graph.graph_builder import make_graph, start_task_graph, mcp_client
 
 
 async def run_inductor():
