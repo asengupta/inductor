@@ -3,6 +3,7 @@ import json
 from contextlib import asynccontextmanager
 from typing import Any, AsyncGenerator
 
+from anthropic import InternalServerError
 from dotenv import load_dotenv
 from langchain_core.messages import HumanMessage
 from langchain_core.tools import BaseTool
@@ -11,6 +12,7 @@ from langgraph.constants import START, END
 from langgraph.graph import StateGraph
 from langgraph.graph.state import CompiledStateGraph
 from langgraph.prebuilt import ToolNode, tools_condition
+from langgraph.types import RetryPolicy
 
 from graph.models import anthropic_model
 from graph.node_names import (
@@ -116,7 +118,8 @@ async def make_graph(client: MultiServerMCPClient) -> AsyncGenerator[CompiledSta
         workflow.add_node(VALIDATE_HYPOTHESIS_PRE_EXEC, validate_hypothesis_pre_exec)
         workflow.add_node(VALIDATE_HYPOTHESIS_POST_EXEC, validate_hypothesis_post_exec)
         workflow.add_node(VISIT_HYPOTHESIS, visit_hypothesis)
-        workflow.add_node(VISIT_EVIDENCE, visit_evidence_build(base_llm, mcp_tools))
+        workflow.add_node(VISIT_EVIDENCE, visit_evidence_build(base_llm, mcp_tools),
+                          retry=RetryPolicy(retry_on=InternalServerError, initial_interval=10))
         workflow.add_node(UPDATE_POSTERIORS, update_posteriors)
 
         workflow.add_node(DATA_FOR_HYPOTHESIS_TOOL, ToolNode(mcp_tools, handle_tool_errors=True))
