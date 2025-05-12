@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 
 from dataclasses_json import dataclass_json
 
-from belief import BeliefProtocol
+from src.domain.belief import BeliefProtocol
 
 
 @dataclass_json

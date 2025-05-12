@@ -4,8 +4,8 @@ from typing import List, Union
 
 from dataclasses_json import dataclass_json
 
-from evidence import Evidence
-from hypothesis import Hypothesis
+from src.domain.evidence import Evidence
+from src.domain.hypothesis import Hypothesis
 
 
 @dataclass_json

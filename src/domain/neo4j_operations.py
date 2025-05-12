@@ -2,7 +2,7 @@ from typing import Optional, Any
 
 from neo4j import GraphDatabase, Driver, Session
 
-from id_provider import IdProvider
+from src.domain.id_provider import IdProvider
 
 
 class Neo4jOperations:

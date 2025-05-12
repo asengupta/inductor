@@ -4,11 +4,11 @@ from typing import Any
 
 from dataclasses_json import dataclass_json
 
-from belief import BeliefProtocol
-from beta_bernoulli_belief import BetaBernoulliBelief, equally_likely
-from hypothesis_object import HypothesisObject
-from hypothesis_subject import HypothesisSubject
-from random_words import random_text
+from src.domain.belief import BeliefProtocol
+from src.domain.beta_bernoulli_belief import BetaBernoulliBelief, equally_likely
+from src.domain.hypothesis_object import HypothesisObject
+from src.domain.hypothesis_subject import HypothesisSubject
+from src.domain.random_words import random_text
 
 
 @dataclass_json

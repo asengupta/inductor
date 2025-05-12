@@ -11,14 +11,14 @@ from typing import Any, Optional
 from dotenv import load_dotenv
 from mcp.server import FastMCP
 
-from domain.beta_bernoulli_belief import BetaBernoulliBelief, equally_likely
-from domain.evidence import Evidence
-from domain.hypothesis import Hypothesis
-from domain.hypothesis_object import HypothesisObject
-from domain.hypothesis_operations import HypothesisOperations
-from domain.hypothesis_subject import HypothesisSubject
-from domain.id_provider import UuidProvider
-from domain.neo4j_operations import Neo4jOperations
+from src.domain.beta_bernoulli_belief import BetaBernoulliBelief, equally_likely
+from src.domain.evidence import Evidence
+from src.domain.hypothesis import Hypothesis
+from src.domain.hypothesis_object import HypothesisObject
+from src.domain.hypothesis_operations import HypothesisOperations
+from src.domain.hypothesis_subject import HypothesisSubject
+from src.domain.id_provider import UuidProvider
+from src.domain.neo4j_operations import Neo4jOperations
 
 # Load environment variables from .env file
 load_dotenv("./env/.env")

@@ -27,6 +27,14 @@ dependencies = [
     "dataclasses_json"
 ]
 
+[tool.poetry]
+name = "Inductor"  # This should match your expected package name
+version = "0.0.1"
+description = "Code Explorer for HLASM"
+packages = [
+    {include = "src"}  # Make sure this points to your source directory
+]
+
 [tool.poetry.dependencies]
 python = "^3.13"
 

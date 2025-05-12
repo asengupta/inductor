@@ -3,8 +3,8 @@ from dataclasses import dataclass, field
 
 from dataclasses_json import dataclass_json
 
-from beta_bernoulli_belief import BetaBernoulliBelief, random_belief
-from random_words import random_text
+from src.domain.beta_bernoulli_belief import BetaBernoulliBelief, random_belief
+from src.domain.random_words import random_text
 
 
 @dataclass_json

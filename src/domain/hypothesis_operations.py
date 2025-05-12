@@ -1,10 +1,10 @@
 from typing import Optional, Any
 
-from beta_bernoulli_belief import BetaBernoulliBelief
-from hypothesis import Hypothesis
-from hypothesis_subject import HypothesisSubject
-from hypothesis_object import HypothesisObject
-from neo4j_operations import Neo4jOperations
+from src.domain.beta_bernoulli_belief import BetaBernoulliBelief
+from src.domain.hypothesis import Hypothesis
+from src.domain.hypothesis_object import HypothesisObject
+from src.domain.hypothesis_subject import HypothesisSubject
+from src.domain.neo4j_operations import Neo4jOperations
 
 
 class HypothesisOperations:
