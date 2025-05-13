@@ -54,6 +54,7 @@ from src.taskgraph.router_constants import (
 from src.taskgraph.state import CodeExplorerState
 from src.taskgraph.state_keys import MESSAGES_KEY
 from src.taskgraph.tool_names import CREATE_EVIDENCE_STRATEGY_MCP_TOOL_NAME, BREAKDOWN_HYPOTHESIS_MCP_TOOL_NAME
+from src.taskgraph.models import bedrock_model
 
 load_dotenv("./env/.env")
 
@@ -93,8 +94,9 @@ async def make_graph(client: MultiServerMCPClient) -> AsyncGenerator[CompiledSta
                                          tool.name in [CREATE_EVIDENCE_STRATEGY_MCP_TOOL_NAME,
                                                        BREAKDOWN_HYPOTHESIS_MCP_TOOL_NAME]]
         # print(mcp_tools)
-        base_llm = anthropic_model()
-        llm_with_tool = base_llm.bind_tools(mcp_tools, tool_choice="auto")
+        # base_llm = anthropic_model()
+        base_llm = bedrock_model()
+        llm_with_tool = base_llm.bind_tools(mcp_tools)
         # llm_with_tool = bedrock_model().bind_tools(mcp_tools)
         agent_decider = reverse_engineering_step_decider(llm_with_tool)
         lead = reverse_engineering_lead(llm_with_tool)
