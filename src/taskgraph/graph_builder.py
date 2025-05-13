@@ -53,8 +53,10 @@ from src.taskgraph.router_constants import (
 )
 from src.taskgraph.state import CodeExplorerState
 from src.taskgraph.state_keys import MESSAGES_KEY
-from src.taskgraph.tool_names import CREATE_EVIDENCE_STRATEGY_MCP_TOOL_NAME, BREAKDOWN_HYPOTHESIS_MCP_TOOL_NAME
+from src.taskgraph.tool_names import CREATE_EVIDENCE_STRATEGY_MCP_TOOL_NAME, BREAKDOWN_HYPOTHESIS_MCP_TOOL_NAME, \
+    LIST_SECTIONS, MATCH_REGEX_PATTERN
 from src.taskgraph.models import bedrock_model
+from src.taskgraph.tool_names import CYCLOMATIC_COMPLEXITY_OF_SECTION, CYCLOMATIC_COMPLEXITY_OF_FULL_CODEBASE
 
 load_dotenv("./env/.env")
 
@@ -93,10 +95,17 @@ async def make_graph(client: MultiServerMCPClient) -> AsyncGenerator[CompiledSta
         inference_tree_building_tools = [tool for tool in mcp_tools if
                                          tool.name in [CREATE_EVIDENCE_STRATEGY_MCP_TOOL_NAME,
                                                        BREAKDOWN_HYPOTHESIS_MCP_TOOL_NAME]]
+        evidence_gathering_tools = [tool for tool in mcp_tools if
+                                         tool.name in [CYCLOMATIC_COMPLEXITY_OF_SECTION,
+                                                       CYCLOMATIC_COMPLEXITY_OF_FULL_CODEBASE,
+                                                       MATCH_REGEX_PATTERN,
+                                                       LIST_SECTIONS]]
         # print(mcp_tools)
-        # base_llm = anthropic_model()
-        base_llm = bedrock_model()
+        base_llm = anthropic_model()
+        # base_llm = bedrock_model()
         llm_with_tool = base_llm.bind_tools(mcp_tools)
+        inference_tree_builder_llm = base_llm.bind_tools(inference_tree_building_tools)
+        # evidence_gatherer_llm = base_llm.bind_tools(evidence_gathering_tools)
         # llm_with_tool = bedrock_model().bind_tools(mcp_tools)
         agent_decider = reverse_engineering_step_decider(llm_with_tool)
         lead = reverse_engineering_lead(llm_with_tool)
@@ -113,14 +122,14 @@ async def make_graph(client: MultiServerMCPClient) -> AsyncGenerator[CompiledSta
         workflow.add_node(EXPLORE_FREELY, free_explore(llm_with_tool))
         workflow.add_node(SYSTEM_QUERY, system_query(llm_with_tool, mcp_tools))
         workflow.add_node(BUILD_INFERENCE_TREE_INIT, build_inference_tree_init_node)
-        workflow.add_node(DECOMPOSE_HYPOTHESIS, decompose_hypothesis(llm_with_tool, inference_tree_building_tools))
+        workflow.add_node(DECOMPOSE_HYPOTHESIS, decompose_hypothesis(inference_tree_builder_llm, inference_tree_building_tools))
         workflow.add_node(BUILD_INFERENCE_NODE_BUILD, build_inference_node_build)
         workflow.add_node(INFERENCE_TREE_BUILD_STEP_CALCULATOR, inference_tree_build_step_calculator)
         workflow.add_node(VALIDATE_HYPOTHESIS_INIT, validate_hypothesis_init)
         workflow.add_node(VALIDATE_HYPOTHESIS_PRE_EXEC, validate_hypothesis_pre_exec)
         workflow.add_node(VALIDATE_HYPOTHESIS_POST_EXEC, validate_hypothesis_post_exec)
         workflow.add_node(VISIT_HYPOTHESIS, visit_hypothesis)
-        workflow.add_node(VISIT_EVIDENCE, visit_evidence_build(base_llm, mcp_tools),
+        workflow.add_node(VISIT_EVIDENCE, visit_evidence_build(base_llm, evidence_gathering_tools),
                           retry=RetryPolicy(retry_on=InternalServerError, initial_interval=10))
         workflow.add_node(UPDATE_POSTERIORS, update_posteriors)
 

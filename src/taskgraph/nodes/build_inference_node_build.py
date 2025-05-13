@@ -53,6 +53,7 @@ def build_inference_node_build(state: CodeExplorerState) -> dict[str, Any]:
 
 
 def parsed(tool_message_content: str | list[str, dict]):
+    print(f"Parsing tool message: {tool_message_content}")
     tool_message_content = json.loads(tool_message_content)
     return [json.loads(raw_child) for raw_child in tool_message_content] if isinstance(tool_message_content,
                                                                                        list) else [

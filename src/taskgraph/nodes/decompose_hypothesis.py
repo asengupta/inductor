@@ -18,6 +18,7 @@ def decompose_hypothesis(tool_llm: LLM, tools: list[BaseTool]) -> LanggraphNode:
         message = "Validation of hypothesis not yet implemented"
         prompt = f"The hypothesis is: {current_hypothesis}."
         generic_breakdown_prompt = f"""
+        You are analysing an HLASM program (High Level Assembly Language for z/OS Mainframes)
         Based on the list of tools provided, you have the following options:
         1) If you think you can gather evidence for this hypothesis directly using the tools provided,
         call the '{CREATE_EVIDENCE_STRATEGY_MCP_TOOL_NAME}' tool with the list of evidences needed to be gathered,
@@ -27,8 +28,8 @@ def decompose_hypothesis(tool_llm: LLM, tools: list[BaseTool]) -> LanggraphNode:
         2) If you think this hypothesis needs to be broken down further into smaller, more testable hypotheses,
         call the '{BREAKDOWN_HYPOTHESIS_MCP_TOOL_NAME}' tool with the list of the sub-hypotheses you come up with.
         A testable hypothesis is one which is specific to the codebase and unambiguous, and can
-        be verified with the tools provided.
-        For each sub-hypothesis, also provide its percentage of contribution to proving the root hypothesis.
+        be verified with the tools provided. Do not produce similar or duplicate hypotheses.
+        For each sub-hypothesis, also provide its percentage of contribution to proving the root hypothesis (this number MUST be between 0 and 1).
         3) If the stack depth is more than 2, you must use the '{CREATE_EVIDENCE_STRATEGY_MCP_TOOL_NAME}' tool.
         
         

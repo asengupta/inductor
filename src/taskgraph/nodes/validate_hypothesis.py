@@ -4,7 +4,8 @@ from src.domain.evidence import Evidence
 from src.domain.induction_node import InferenceNode
 from src.taskgraph.nodes.state_operations import stack, push, pop
 from src.taskgraph.state import CodeExplorerState
-from src.taskgraph.state_keys import CURRENT_REQUEST_KEY, INPUT_KEY, MESSAGES_KEY, RECURSION_STACK_KEY, BASE_HYPOTHESIS_KEY
+from src.taskgraph.state_keys import CURRENT_REQUEST_KEY, INPUT_KEY, MESSAGES_KEY, RECURSION_STACK_KEY, \
+    BASE_HYPOTHESIS_KEY
 
 
 def validate_hypothesis_init(state: CodeExplorerState) -> dict[str, Any]:
@@ -17,6 +18,17 @@ def validate_hypothesis_init(state: CodeExplorerState) -> dict[str, Any]:
     #                                                [
     #                                                    InferenceNode(Evidence("Search for common input function patterns", 0.5, equally_likely())),
     #                                                    InferenceNode(Evidence("Analyze function names and docstrings for input-related keywords", 0.5, equally_likely()))
+    #                                                ]),
+    #                                  InferenceNode(Hypothesis.create_from_strings("program", "lacks", "output functions", equally_likely(), 0.5),
+    #                                                [
+    #                                                    InferenceNode(Evidence("Search for print statements in the entire codebase using regex pattern matching", 0.5, equally_likely())),
+    #                                                    InferenceNode(Evidence("Search for custom output function definitions using regex", 0.5, equally_likely()))
+    #                                                ])
+    #                                  ])
+    # root_hypothesis = InferenceNode(Hypothesis.create_from_strings("program", "does not interact with", "user", equally_likely(), 1),
+    #                                 [InferenceNode(Hypothesis.create_from_strings("program", "lacks", "input functions", equally_likely(), 0.5),
+    #                                                [
+    #                                                    InferenceNode(Evidence("Search for common input function patterns", 1.0, equally_likely())),
     #                                                ]),
     #                                  InferenceNode(Hypothesis.create_from_strings("program", "lacks", "output functions", equally_likely(), 0.5),
     #                                                [

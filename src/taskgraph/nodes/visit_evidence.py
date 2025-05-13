@@ -22,12 +22,13 @@ def visit_evidence_build(llm: LLM, tools: list[BaseTool]) -> Callable[
             "Don't use a lot of tools. Only use what fits the situation.",
             f"The hypothesis is: {le_stack[-2][0].just_str()}",
             f"The evidence you are required to collect is the following: {current[0].just_str()}",
-            f"As output, also list the number of evidences for and against the hypothesis."
+            f"As output, also list the number of evidences for and against the hypothesis.",
+            f"Very importantly, absence of evidence does NOT count against the hypothesis, so do not count such instances as being against the hypothesis."
         ]
 
         joined_prompt = "\n".join(messages)
         agent = create_react_agent(model=llm, tools=tools,
-                                   response_format=EvidenceResult)
+                                   response_format=EvidenceResult, debug=False)
 
         response = await agent.ainvoke({"messages": [{"role": "user", "content": joined_prompt}]})
         print("Response from gathering evidence")
@@ -40,6 +41,7 @@ def visit_evidence_build(llm: LLM, tools: list[BaseTool]) -> Callable[
         evidence_node.belief = evidence_node.belief.update((structured_response["for_hypothesis"], structured_response["against_hypothesis"]))
         print(f"After Evidence Update: {evidence_node.belief}")
         le_stack[-2] = (le_stack[-2][0], le_stack[-2][1] + 1)
+        # le_stack[-2] = (le_stack[-2][0], 1)
         return CodeExplorerState(input=state[INPUT_KEY], current_request=state[CURRENT_REQUEST_KEY],
                                  messages=state[MESSAGES_KEY], inference_stack=[],
                                  base_hypothesis=state[BASE_HYPOTHESIS_KEY],

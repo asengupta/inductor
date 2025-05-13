@@ -1,2 +1,6 @@
 CREATE_EVIDENCE_STRATEGY_MCP_TOOL_NAME = "create_evidence_strategy"
 BREAKDOWN_HYPOTHESIS_MCP_TOOL_NAME = "breakdown_hypothesis"
+CYCLOMATIC_COMPLEXITY_OF_FULL_CODEBASE = "cyclomaticComplexityOfFullCodeBase"
+CYCLOMATIC_COMPLEXITY_OF_SECTION = "cyclomaticComplexityOfSection"
+MATCH_REGEX_PATTERN = "matchRegexPattern"
+LIST_SECTIONS = "listSections"
