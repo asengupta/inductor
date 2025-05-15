@@ -1,8 +1,6 @@
-# Inductor LangGraph MCP
+# Inductor
 
 A LangGraph-based system for reverse engineering HLASM (High Level Assembler) code using hypothesis generation, validation, and Neo4j for knowledge storage.
-
-![Graph view in LangGraph studio UI](./static/studio_ui.png)
 
 ## Overview
 
@@ -10,7 +8,7 @@ This project implements a reverse engineering pipeline for HLASM codebases using
 
 1. **Neo4j Operations** - Basic CRUD operations for Neo4j nodes
 2. **Hypothesis Management** - Creating, validating, and managing hypotheses about code functionality
-3. **MCP (Model-Control-Persistence) Servers** - JSON-RPC interfaces for interacting with Neo4j and hypothesis operations
+3. **MCP (Model Context Protocol) Servers** - STDIO interfaces for interacting with Neo4j and hypothesis operations
 4. **LangGraph Workflow** - A graph-based workflow for reverse engineering that uses LLMs to guide the process
 
 The system allows you to:
@@ -66,14 +64,14 @@ The core of the project is a LangGraph workflow that guides the reverse engineer
 
 ### Installation
 
-1. Clone the repository:
+1. **Clone the repository:**
 
 ```bash
-git clone https://github.com/langchain-ai/inductor-langgraph-mcp.git
-cd inductor-langgraph-mcp
+git clone https://github.com/asengupta/inductor
+cd inductor
 ```
 
-2. Install dependencies:
+2. **Install dependencies:**
 
 ```bash
 poetry install
@@ -85,25 +83,49 @@ For development dependencies:
 poetry install --with dev
 ```
 
-3. Create a `.env` file with Neo4j connection details:
+3. **Create a `.env` file with Neo4j connection details:**
 
 ```
 NEO4J_URI=bolt://localhost:7687
 NEO4J_USER=neo4j
 NEO4J_PASSWORD=your_password
+```
+
+3a. Anthropic API
+
+If you are using the **Anthropic API** directly, set the following:
+
+```
 ANTHROPIC_API_KEY=<your_anthropic_key>
 ANTHROPIC_MODEL_ID=<anthropic_model_id>
 ```
 
-### Running the System
+Make sure this line is being used in ```graph_builder.py```:
 
-1. Start the MCP servers:
-
-```bash
-poetry run python src/agent/hypothesis_mcp_server.py
+```python
+base_llm = anthropic_model()
 ```
 
-2. Run the LangGraph workflow:
+3b. Bedrock API
+
+If you are using the **AWS Bedrock API**, set the following:
+
+```bash
+AWS_ACCESS_KEY_ID=<aws-access-key>
+AWS_SECRET_ACCESS_KEY=<aws-secret-access-key>
+AWS_MODEL_ID=<bedrock-model-id>
+AWS_REGION=<aws-region>
+```
+
+Make sure this line is being used in ```graph_builder.py```:
+
+```python
+base_llm = bedrock_model()
+```
+
+### Running the System
+
+Run the LangGraph workflow using:
 
 ```bash
 poetry run python src/main/inductor_main.py
