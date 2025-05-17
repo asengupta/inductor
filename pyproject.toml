@@ -27,7 +27,8 @@ dependencies = [
     "dataclasses_json",
     "popper-ilp @ git+https://github.com/logic-and-learning-lab/Popper@main",
     "janus-swi",
-    "bitarray"
+    "bitarray",
+    "setuptools"
 ]
 
 [tool.poetry]
