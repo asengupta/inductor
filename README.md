@@ -1,10 +1,10 @@
 # Inductor
 
-A LangGraph-based system for reverse engineering HLASM (High Level Assembler) code using hypothesis generation, validation, and Neo4j for knowledge storage.
+A LangGraph-based system for exploring codebases using hypothesis generation, validation, and Neo4j for knowledge storage.
 
 ## Overview
 
-This project implements a reverse engineering pipeline for HLASM codebases using LangGraph. It combines:
+This project implements an interactive way of comprehending codebases using LangGraph. It combines:
 
 1. **Neo4j Operations** - Basic CRUD operations for Neo4j nodes
 2. **Hypothesis Management** - Creating, validating, and managing hypotheses about code functionality
@@ -12,7 +12,7 @@ This project implements a reverse engineering pipeline for HLASM codebases using
 4. **LangGraph Workflow** - A graph-based workflow for reverse engineering that uses LLMs to guide the process
 
 The system allows you to:
-- Generate hypotheses about HLASM code functionality
+- Generate hypotheses about code functionality
 - Explore evidence to validate or refute hypotheses
 - Store and manage hypotheses in a Neo4j database
 - Navigate through a guided reverse engineering process
@@ -39,7 +39,7 @@ The project includes MCP servers that provide JSON-RPC interfaces for:
 
 - Neo4j operations
 - Hypothesis management
-- HLASM analysis
+- Code analysis
 
 These servers can be integrated with LangGraph using the `langchain_mcp_adapters` package. The MCP servers are implemented in the `src/agent/hypothesis_mcp_server.py` and `src/agent/simple_mcp_server.py` files.
 
@@ -133,7 +133,7 @@ poetry run python src/main/inductor_main.py
 
 ## Usage
 
-The system provides a conversational interface for reverse engineering HLASM code:
+The system provides a conversational interface for reverse engineering code:
 
 1. **Generate Hypotheses** - Ask the system to generate hypotheses about specific parts of the code
 2. **Explore Evidence** - Request the system to gather evidence to support or refute hypotheses

@@ -24,7 +24,10 @@ dependencies = [
     "anthropic",
     "langchain-aws",
     "neo4j",
-    "dataclasses_json"
+    "dataclasses_json",
+    "popper-ilp @ git+https://github.com/logic-and-learning-lab/Popper@main",
+    "janus-swi",
+    "bitarray"
 ]
 
 [tool.poetry]

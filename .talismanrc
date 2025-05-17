@@ -39,3 +39,5 @@ fileignoreconfig:
   checksum: c69451aaacf01c409e1be9dfdab13803cdaf471c84a27e65d5f271f464b67e0d
 - filename: README.md
   checksum: 6aace585891a46283062e8ad3b757fbc13ff36826dc2a6c5bc83bc5c308bdb4c
+- filename: poetry.lock
+  checksum: a7c8aada98e1600f5915cb42089837c808c84ada9c59ba26982b0aebef6296ab
