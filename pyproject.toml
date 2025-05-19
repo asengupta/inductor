@@ -32,7 +32,10 @@ dependencies = [
     "setuptools",
     "wheel",
     "pip",
-    "spacy"
+    "spacy",
+    "markdown-it-py[plugins]",
+    "langchain-ollama",
+    "ollama"
 ]
 
 [tool.poetry]

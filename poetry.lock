@@ -61,18 +61,18 @@ trio = ["trio (>=0.26.1)"]
 
 [[package]]
 name = "awscli"
-version = "1.40.17"
+version = "1.40.18"
 description = "Universal Command Line Environment for AWS."
 optional = false
 python-versions = ">=3.9"
 groups = ["main"]
 files = [
-    {file = "awscli-1.40.17-py3-none-any.whl", hash = "sha256:9115c4c0c80cb885b7512327e6c1d31b48691024bc0c04d9fd228fc9eeee0cb0"},
-    {file = "awscli-1.40.17.tar.gz", hash = "sha256:22bdd7a538a3a8a017f64938729144918bac39b24c61986648dcacd307864df6"},
+    {file = "awscli-1.40.18-py3-none-any.whl", hash = "sha256:595bde085d3f270a34ff0c08f46d78fb67565a33c37c862c1d82c71305892538"},
+    {file = "awscli-1.40.18.tar.gz", hash = "sha256:143fe42f522502dcf5e657c08b4c6e13987cb1ae54bbc3bad1921590c1c28f3a"},
 ]
 
 [package.dependencies]
-botocore = "1.38.18"
+botocore = "1.38.19"
 colorama = ">=0.2.5,<0.4.7"
 docutils = ">=0.18.1,<=0.19"
 PyYAML = ">=3.10,<6.1"
@@ -275,18 +275,18 @@ numpy = {version = ">=1.19.0,<3.0.0", markers = "python_version >= \"3.9\""}
 
 [[package]]
 name = "boto3"
-version = "1.38.18"
+version = "1.38.19"
 description = "The AWS SDK for Python"
 optional = false
 python-versions = ">=3.9"
 groups = ["main"]
 files = [
-    {file = "boto3-1.38.18-py3-none-any.whl", hash = "sha256:38ecb477ba9fc4edcf97133bf1fe33261ebec6c58d59982abff3cea167624211"},
-    {file = "boto3-1.38.18.tar.gz", hash = "sha256:bd723bfbc109bdc63e017ead74dd22f2cf8a7515e24e730870b8a70af823e626"},
+    {file = "boto3-1.38.19-py3-none-any.whl", hash = "sha256:d57d8040d04b8fefb7439062529653701cc90d5b2734cc4f1144fedb75ba94a7"},
+    {file = "boto3-1.38.19.tar.gz", hash = "sha256:fdd69f23e6216a508bbc1fbda9486791c161f3ecd5933ac7090d7290f6f2d0f5"},
 ]
 
 [package.dependencies]
-botocore = ">=1.38.18,<1.39.0"
+botocore = ">=1.38.19,<1.39.0"
 jmespath = ">=0.7.1,<2.0.0"
 s3transfer = ">=0.12.0,<0.13.0"
 
@@ -295,14 +295,14 @@ crt = ["botocore[crt] (>=1.21.0,<2.0a0)"]
 
 [[package]]
 name = "botocore"
-version = "1.38.18"
+version = "1.38.19"
 description = "Low-level, data-driven core of boto 3."
 optional = false
 python-versions = ">=3.9"
 groups = ["main"]
 files = [
-    {file = "botocore-1.38.18-py3-none-any.whl", hash = "sha256:0b5ddf195f15218f30ec63d8aba9e55cf60af2984c068276b9fd206059043310"},
-    {file = "botocore-1.38.18.tar.gz", hash = "sha256:ae4c97383e797e9648f8721bb0217fd9efd228e9fbc661d83dc0959be083ec5c"},
+    {file = "botocore-1.38.19-py3-none-any.whl", hash = "sha256:f937a20e75889215a99280ea0fdd4e1716ffede23e4f9af7bc9c64af9bc63e61"},
+    {file = "botocore-1.38.19.tar.gz", hash = "sha256:796b948c05017eb33385b798990cd91ed4af0e881eb9eb1ee6e17666be02abc9"},
 ]
 
 [package.dependencies]
@@ -1215,6 +1215,22 @@ langchain-core = ">=0.3.36,<0.4"
 mcp = ">=1.7"
 
 [[package]]
+name = "langchain-ollama"
+version = "0.3.3"
+description = "An integration package connecting Ollama and LangChain"
+optional = false
+python-versions = ">=3.9"
+groups = ["main"]
+files = [
+    {file = "langchain_ollama-0.3.3-py3-none-any.whl", hash = "sha256:f1c745a4b59d36bb51995c23c6b0fbc20f71956715659425ab88639a14b213cd"},
+    {file = "langchain_ollama-0.3.3.tar.gz", hash = "sha256:7d6ed75bfb706751b83173fe886b72ae25bb0b1bd7f3eb2622821c4149f7807b"},
+]
+
+[package.dependencies]
+langchain-core = ">=0.3.60,<1.0.0"
+ollama = ">=0.4.8,<1.0.0"
+
+[[package]]
 name = "langchain-text-splitters"
 version = "0.3.8"
 description = "LangChain text splitting utilities"
@@ -1470,6 +1486,7 @@ files = [
 ]
 
 [package.dependencies]
+mdit-py-plugins = {version = "*", optional = true, markers = "extra == \"plugins\""}
 mdurl = ">=0.1,<1.0"
 
 [package.extras]
@@ -1602,6 +1619,26 @@ uvicorn = {version = ">=0.23.1", markers = "sys_platform != \"emscripten\""}
 cli = ["python-dotenv (>=1.0.0)", "typer (>=0.12.4)"]
 rich = ["rich (>=13.9.4)"]
 ws = ["websockets (>=15.0.1)"]
+
+[[package]]
+name = "mdit-py-plugins"
+version = "0.4.2"
+description = "Collection of plugins for markdown-it-py"
+optional = false
+python-versions = ">=3.8"
+groups = ["main"]
+files = [
+    {file = "mdit_py_plugins-0.4.2-py3-none-any.whl", hash = "sha256:0c673c3f889399a33b95e88d2f0d111b4447bdfea7f237dab2d488f459835636"},
+    {file = "mdit_py_plugins-0.4.2.tar.gz", hash = "sha256:5f2cd1fdb606ddf152d37ec30e46101a60512bc0e5fa1a7002c36647b09e26b5"},
+]
+
+[package.dependencies]
+markdown-it-py = ">=1.0.0,<4.0.0"
+
+[package.extras]
+code-style = ["pre-commit"]
+rtd = ["myst-parser", "sphinx-book-theme"]
+testing = ["coverage", "pytest", "pytest-cov", "pytest-regressions"]
 
 [[package]]
 name = "mdurl"
@@ -1810,6 +1847,22 @@ files = [
     {file = "numpy-2.2.6-pp310-pypy310_pp73-win_amd64.whl", hash = "sha256:d042d24c90c41b54fd506da306759e06e568864df8ec17ccc17e9e884634fd00"},
     {file = "numpy-2.2.6.tar.gz", hash = "sha256:e29554e2bef54a90aa5cc07da6ce955accb83f21ab5de01a62c8478897b264fd"},
 ]
+
+[[package]]
+name = "ollama"
+version = "0.4.8"
+description = "The official Python client for Ollama."
+optional = false
+python-versions = "<4.0,>=3.8"
+groups = ["main"]
+files = [
+    {file = "ollama-0.4.8-py3-none-any.whl", hash = "sha256:04312af2c5e72449aaebac4a2776f52ef010877c554103419d3f36066fe8af4c"},
+    {file = "ollama-0.4.8.tar.gz", hash = "sha256:1121439d49b96fa8339842965d0616eba5deb9f8c790786cdf4c0b3df4833802"},
+]
+
+[package.dependencies]
+httpx = ">=0.27,<0.29"
+pydantic = ">=2.9.0,<3.0.0"
 
 [[package]]
 name = "openai"
@@ -3693,4 +3746,4 @@ dev = ["mypy", "pytest", "ruff"]
 [metadata]
 lock-version = "2.1"
 python-versions = "~3.12"
-content-hash = "5c0defa9c0262bcff7ca5671aedccb753b2498787e857c8fcac65e4c834f1b45"
+content-hash = "58a5ff4d299984de958fb37c36e70e4c721ed85add3af644568d1fda13bab2f8"

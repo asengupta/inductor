@@ -48,3 +48,5 @@ fileignoreconfig:
   checksum: 180cd10dfe434b53dae827f5d3d0784eeabdf6a1a3d2ae7a28da464e9177beac
 - filename: poetry.lock
   checksum: 1d8f47a1baee2b48a21b238a23124bca520d003f97565923c1765fb86cc752dc
+- filename: poetry.lock
+  checksum: d2cd3b442f71bbcfe8baa5eef39973e207e7a7b4e3cddfc0240fae4a93cce2ff

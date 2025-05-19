@@ -1,6 +1,8 @@
 import os
+
 from langchain_anthropic import ChatAnthropic
 from langchain_aws.chat_models.bedrock import ChatBedrockConverse
+from langchain_ollama import OllamaLLM, ChatOllama
 
 AWS_MODEL_ID = "AWS_MODEL_ID"
 AWS_REGION = "AWS_REGION"
@@ -15,6 +17,10 @@ def anthropic_model():
         max_tokens=1024
     )
     return llm
+
+
+def ollama_model():
+    return ChatOllama(model="mistral")
 
 
 def bedrock_model():
