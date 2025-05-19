@@ -7,7 +7,8 @@ authors = [
 ]
 readme = "README.md"
 license = { text = "MIT" }
-requires-python = ">=3.11"
+requires-python = "<3.13"
+#requires-python = ">=3.13,<3.14"
 dependencies = [
     "langgraph",
     "python-dotenv",
@@ -28,7 +29,10 @@ dependencies = [
     "popper-ilp @ git+https://github.com/logic-and-learning-lab/Popper@main",
     "janus-swi",
     "bitarray",
-    "setuptools"
+    "setuptools",
+    "wheel",
+    "pip",
+    "spacy"
 ]
 
 [tool.poetry]
@@ -40,7 +44,7 @@ packages = [
 ]
 
 [tool.poetry.dependencies]
-python = "^3.13"
+python = "~3.12"
 
 [project.optional-dependencies]
 dev = ["mypy>=1.11.1", "ruff>=0.6.1", "pytest>=7.0.0"]
