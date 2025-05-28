@@ -1,4 +1,6 @@
-pos(loads_advances(loadA)).
-pos(loads_advances(loadB)).
-
-neg(loads_advances(loadF)).
+pos(loads_advances(a)).
+pos(loads_advances(b)).
+neg(loads_advances(f)).
+neg(loads_advances(g)).
+neg(loads_advances(h)).
+neg(loads_advances(x)).

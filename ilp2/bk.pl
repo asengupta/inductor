@@ -1,19 +1,17 @@
-event(loadA).
-event(loadB).
-event(loadC).
-event(loadF).
-event(loadG).
-event(loadH).
+action(load,a,1).
+action(load,b,1).
+action(load,g,1).
+action(load,h,2).
 
-event(advanceA).
-event(advanceB).
-event(advanceC).
-event(advanceF).
-event(advanceG).
-event(advanceH).
+action(advance,a,2).
+action(advance,b,2).
+action(advance,f,1).
+action(advance,f,2).
+action(advance,h,1).
 
-after(loadA, advanceA).
-after(loadB, advanceB).
-after(loadC, advanceC).
-after(advanceF, loadF).
-after(advanceH, loadH).
+
+before(1, 2).
+
+loads_at(X,T) :- action(load,X,T).
+advances_at(X,T) :- action(advance,X,T).
+
