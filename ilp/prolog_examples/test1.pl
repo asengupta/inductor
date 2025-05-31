@@ -43,3 +43,41 @@ append([H1|T1],L2,[H1|T3]) :- append(T1,L2,T3).
 %=> HX=c,TX=[d,e,f],H3=b,T3=[c,d,e,f]
 %=> HX=b,TX=[c,d,e,f],H3=a,T3=[b,c,d,e,f]
 %=> append([a,b,c],[d,e,f],[a|[b,c,d,e,f]])
+
+reverse([],ACC,ACC).
+reverse([H|T],ACC,R) :- reverse(T,[H|ACC],R).
+
+%=> reverse([a|[b,c]],[],R) :- reverse([b,c],[a|[]],R)=reverse([b,c],[a],R)
+%=> reverse([b|[c]],[a],R) :- reverse([c],[b|[a]],R) = reverse([c],[b,a],R)
+%=> reverse([c|[]],[b,a],R) :- reverse([],[c|[b,a]],R) = reverse([],[c,b,a],R)
+%=> reverse([],[c,b,a],R) :- reverse([],[c,b,a],[c,b,a])
+
+len([],0).
+len([_|T],L) :- len(T,X),L is X+1.
+
+len2([],ACC,ACC).
+len2([_|T],ACC,L) :- ACC1 is 1+ACC,len2(T,ACC1,L).
+
+max2([],MAX,MAX).
+max2([H|T],CURR_MAX,MAX) :- (H > CURR_MAX->NEWMAX=H;NEWMAX=CURR_MAX), max2(T,NEWMAX,MAX).
+
+into2([],[]).
+into2([H|T],RESULT) :- DBL is H*2, into2(T,RESULTX), RESULT=[DBL|RESULTX].
+
+filter_even([],[]).
+filter_even([H|T],R) :- filter_even(T,RESULTX), Remainder is H mod 2,(Remainder=:=0 -> R=[H|RESULTX];R=RESULTX).
+
+double(X,Y) :- Y is X*2.
+map2([],_,[]).
+map2([H|T],Map_pred,[Mapped|RESULTX]) :- map2(T,Map_pred,RESULTX),call(Map_pred,H,Mapped).
+
+isEven(X) :- 0 is X mod 2.
+filter2([],_,[]).
+filter2([H|T],FilterPred,[H|AlreadyFiltered]) :- call(FilterPred,H),filter2(T, FilterPred, AlreadyFiltered).
+filter2([H|T],FilterPred,AlreadyFiltered) :- \+call(FilterPred,H),filter2(T, FilterPred, AlreadyFiltered).
+
+%=> reverse([a|[b]],[X|[a]]) :- reverse([b],X)
+%=> reverse([a|[b]],[X|[a]]) :- reverse([b],X)
+%=> reverse([b],[X|[b]])
+%=> reverse([b],[b])
+%=> reverse([a|[b]],[H1=b|?])
