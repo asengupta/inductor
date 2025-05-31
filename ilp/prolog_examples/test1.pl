@@ -33,7 +33,7 @@ path(a,b).
 
 append([],[],[]).
 append([],[H|T],[H|T]).
-append([H1|T1],L2,[H3|T3]) :- append(T1,L2,[HX|TX]),H3=H1,T3=[HX|TX].
+append([H1|T1],L2,[H1|T3]) :- append(T1,L2,T3).
 
 %append([a,b,c],[d,e,f],[H3|T3])
 %=> append([b,c],[d,e,f],[HX|TX]) H3=a,T3=[HX|TX]
