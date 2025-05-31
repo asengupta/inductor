@@ -30,3 +30,16 @@ path(X,Y) :- edge(X,Y).
 path(X,Y) :- edge(X,Z),path(Z,Y).
 
 path(a,b).
+
+append([],[],[]).
+append([],[H|T],[H|T]).
+append([H1|T1],L2,[H3|T3]) :- append(T1,L2,[HX|TX]),H3=H1,T3=[HX|TX].
+
+%append([a,b,c],[d,e,f],[H3|T3])
+%=> append([b,c],[d,e,f],[HX|TX]) H3=a,T3=[HX|TX]
+%=> append([c],[d,e,f],[HX|TX]) H3=b,T3=[HX|TX]
+%=> append([],[d,e,f],[HX|TX]) H3=c,T3=[HX|TX]
+%=> HX=d,TX=[e,f],H3=c,T3=[d,e,f]
+%=> HX=c,TX=[d,e,f],H3=b,T3=[c,d,e,f]
+%=> HX=b,TX=[c,d,e,f],H3=a,T3=[b,c,d,e,f]
+%=> append([a,b,c],[d,e,f],[a|[b,c,d,e,f]])
