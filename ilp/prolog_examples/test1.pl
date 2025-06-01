@@ -108,3 +108,17 @@ rle([],[]).
 rle([X],[[1,X]]).
 rle([H|T],Groups) :- rle(T,[[Count,GroupType]|TC]), H==GroupType, NewCount is Count+1, Groups=[[NewCount|[GroupType]]|TC].
 rle([H|T],Groups) :- rle(T,[[Count,GroupType]|TC]), \+ H==GroupType, Groups=[[1,H] | [[Count|[GroupType]]|TC]].
+
+make([0,_],Pre,Pre).
+make([Times,X],Pre,R) :- TimesMinusOne is Times-1, make([TimesMinusOne,X],Pre,Expanded),R=[X|Expanded].
+
+rld([],[]).
+rld([[Times,GroupType]],R) :- make([Times,GroupType],[],R).
+rld([[Times,GroupType]|T],Decoded) :- rld(T,Expanded), make([Times,GroupType],Expanded,Decoded).
+
+increment([],X,[[X,1]]).
+increment([[Group,C]|T],X,R) :- X==Group, CountPlusOne is C+1, R=[[Group,CountPlusOne]|T].
+increment([[Group,C]|T],X,R) :- \+ X==Group, increment(T,X,Rest), R=[[Group,C]|Rest].
+
+freq([],Map,Map).
+freq([H|T],Map,R) :- increment(Map,H,UpdatedMap), freq(T,UpdatedMap,R).
