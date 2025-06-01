@@ -122,3 +122,37 @@ increment([[Group,C]|T],X,R) :- \+ X==Group, increment(T,X,Rest), R=[[Group,C]|R
 
 freq([],Map,Map).
 freq([H|T],Map,R) :- increment(Map,H,UpdatedMap), freq(T,UpdatedMap,R).
+
+simplify(or2(true,_),true).
+simplify(or2(_,true),true).
+simplify(or2(false,X),R) :- simplify(X,RX), R=RX.
+simplify(or2(X,false),R) :- simplify(X,RX), R=RX.
+simplify(or2(X,X),R) :- simplify(X,RX),R=RX.
+simplify(or2(X,Y),R) :- simplify(X,RX), simplify(Y,RY), simplify(or2(RX,RY),RZ), R=RZ.
+
+simplify(and2(false,_),false).
+simplify(and2(_,false),false).
+simplify(and2(true,X),R) :- simplify(X,RX), R=RX.
+simplify(and2(X,true),R) :- simplify(X,RX), R=RX.
+simplify(and2(X,X),R) :- simplify(X,RX),R=RX.
+simplify(and2(X,Y),R) :- simplify(X,RX), simplify(Y,RY), simplify(and2(RX,RY),RZ), R=RZ.
+
+simplify(not2(false),true).
+simplify(not2(true),false).
+simplify(not2(not2(X)),R) :- simplify(X,RX), R=RX.
+simplify(not2(X),R) :- simplify(X,RX), simplify(not2(RX),RZ), R=RZ.
+
+simplify(X,X).
+
+node(node(node(empty,empty,5),node(empty,empty,6),1),node(node(empty,empty,7),node(empty,empty,8),2),3).
+
+mirror(node(empty,empty,V),node(empty,empty,V)).
+mirror(node(L,R,V),node(MirroredRight,MirroredLeft,V)) :- mirror(L,MirroredLeft),mirror(R,MirroredRight).
+
+search2(empty,_,false).
+search2(node(_,_,V),Term,true) :- V==Term.
+search2(node(L,R,V),Term,Result) :- \+ V == Term,
+                                                search2(L,Term,LeftSearchSucceeded),
+                                                search2(R,Term,RightSearchSucceeded),
+                                                simplify(or2(LeftSearchSucceeded,RightSearchSucceeded),Result).
+
