@@ -94,3 +94,11 @@ uniq([H|T],Seen,[H|RESULTX]) :- \+ contains(H,Seen),uniq(T,[H|Seen],RESULTX).
 
 %uniq([H|T],Seen,R) :- contains(H,Seen)->(NewSeen=Seen,uniq(T,NewSeen,RESULTX),R=RESULTX);
 %                                        (NewSeen=[H|Seen],uniq(T,NewSeen,RESULTX),R=[H|RESULTX]).
+
+
+group_consecutive([],[]).
+group_consecutive([X],[[X]]).
+group_consecutive([H|T],Result) :-
+        group_consecutive(T,[[GroupHead|GroupTail]|TX]), H==GroupHead, !,Result=[[H|[GroupHead|GroupTail]]|TX].
+group_consecutive([H|T],Result) :-
+        group_consecutive(T,[[GroupHead|GroupTail]|TX]), \+ H==GroupHead, !, Result=[[H]|[[GroupHead|GroupTail]|TX]].
