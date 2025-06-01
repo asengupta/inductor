@@ -76,8 +76,12 @@ filter2([],_,[]).
 filter2([H|T],FilterPred,[H|AlreadyFiltered]) :- call(FilterPred,H),filter2(T, FilterPred, AlreadyFiltered).
 filter2([H|T],FilterPred,AlreadyFiltered) :- \+call(FilterPred,H),filter2(T, FilterPred, AlreadyFiltered).
 
-%=> reverse([a|[b]],[X|[a]]) :- reverse([b],X)
-%=> reverse([a|[b]],[X|[a]]) :- reverse([b],X)
-%=> reverse([b],[X|[b]])
-%=> reverse([b],[b])
-%=> reverse([a|[b]],[H1=b|?])
+
+concat([],L,L).
+concat([H1|T1],B,[H1|R]) :- concat(T1,B,R).
+
+flatten([],[]).
+flatten([[H1|T1]|T],R) :- flatten([H1|T1],RESULTH),!,flatten(T,RESULTX),concat(RESULTH,RESULTX,R).
+flatten([[]|T],R) :- flatten(T,R).
+flatten([H|T],R) :- flatten(T,RESULTX),R=[H|RESULTX].
+
