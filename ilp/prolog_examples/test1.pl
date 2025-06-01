@@ -102,3 +102,9 @@ group_consecutive([H|T],Result) :-
         group_consecutive(T,[[GroupHead|GroupTail]|TX]), H==GroupHead, !,Result=[[H|[GroupHead|GroupTail]]|TX].
 group_consecutive([H|T],Result) :-
         group_consecutive(T,[[GroupHead|GroupTail]|TX]), \+ H==GroupHead, !, Result=[[H]|[[GroupHead|GroupTail]|TX]].
+
+
+rle([],[]).
+rle([X],[[1,X]]).
+rle([H|T],Groups) :- rle(T,[[Count,GroupType]|TC]), H==GroupType, NewCount is Count+1, Groups=[[NewCount|[GroupType]]|TC].
+rle([H|T],Groups) :- rle(T,[[Count,GroupType]|TC]), \+ H==GroupType, Groups=[[1,H] | [[Count|[GroupType]]|TC]].
