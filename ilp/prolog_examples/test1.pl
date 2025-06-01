@@ -156,3 +156,19 @@ search2(node(L,R,V),Term,Result) :- \+ V == Term,
                                                 search2(R,Term,RightSearchSucceeded),
                                                 simplify(or2(LeftSearchSucceeded,RightSearchSucceeded),Result).
 
+satisfiesLowerBound(_,minusInfinity) :- true,!.
+satisfiesLowerBound(V,LowerBound) :- V>LowerBound.
+
+satisfiesUpperBound(_,plusInfinity) :- true,!.
+satisfiesUpperBound(V,UpperBound) :- V<UpperBound.
+
+withinBounds(V,[LowerBound,UpperBound]) :- satisfiesLowerBound(V,LowerBound),satisfiesUpperBound(V,UpperBound).
+
+isBTree(empty,_,true).
+isBTree(node(L,R,V),[LowerBound,UpperBound],Result) :-
+                                                      (withinBounds(V,[LowerBound,UpperBound]) -> (
+                                                              isBTree(L,[LowerBound,V],LeftIsBTree),
+                                                              isBTree(R,[V,UpperBound],RightIsBTree),
+                                                              simplify(and2(LeftIsBTree,RightIsBTree),Result)
+                                                      );Result=false).
+
