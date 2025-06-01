@@ -85,3 +85,12 @@ flatten([[H1|T1]|T],R) :- flatten([H1|T1],RESULTH),!,flatten(T,RESULTX),concat(R
 flatten([[]|T],R) :- flatten(T,R).
 flatten([H|T],R) :- flatten(T,RESULTX),R=[H|RESULTX].
 
+contains(_,[]) :- false.
+contains(Search,[H|T]) :- H == Search;contains(Search,T).
+
+uniq([],_,[]).
+uniq([H|T],Seen,RESULTX) :- contains(H,Seen),uniq(T,Seen,RESULTX).
+uniq([H|T],Seen,[H|RESULTX]) :- \+ contains(H,Seen),uniq(T,[H|Seen],RESULTX).
+
+%uniq([H|T],Seen,R) :- contains(H,Seen)->(NewSeen=Seen,uniq(T,NewSeen,RESULTX),R=RESULTX);
+%                                        (NewSeen=[H|Seen],uniq(T,NewSeen,RESULTX),R=[H|RESULTX]).
