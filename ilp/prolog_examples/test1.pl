@@ -251,10 +251,13 @@ rewrite_once(Rules,ComplexTerm,RewrittenComplexTerm) :- ComplexTerm =.. [F|Args]
                                         rewrite_args_list(Rules,Args,RewrittenArgs),
                                         RewrittenComplexTerm=.. [F|RewrittenArgs].
 
-rewrite_all2_(Rules,Term,empty,R) :- rewrite_once(Rules,Term,RewrittenTerm),
-                                    rewrite_all2_(Rules,Term,RewrittenTerm,R).
-rewrite_all2_(_,Term,RewrittenTerm,Term) :- RewrittenTerm==Term.
-rewrite_all2_(Rules,_,RewrittenTerm,R) :-rewrite_once(Rules,RewrittenTerm,NewRewrittenTerm),
-                                        rewrite_all2_(Rules,RewrittenTerm,NewRewrittenTerm,R).
+rewrite_all2_(Rules,Term,empty,TraceAcc,Trace,R) :- rewrite_once(Rules,Term,RewrittenTerm),
+                                    rewrite_all2_(Rules,Term,RewrittenTerm,TraceAcc,TraceX,R),
+                                    Trace=[Term|[RewrittenTerm|TraceX]].
 
-rewrite_all2(Rules,Term,R) :- rewrite_all2_(Rules,Term,empty,R).
+rewrite_all2_(_,Term,RewrittenTerm,TraceAcc,TraceAcc,Term) :- RewrittenTerm==Term.
+rewrite_all2_(Rules,_,RewrittenTerm,TraceAcc,Trace,R) :-rewrite_once(Rules,RewrittenTerm,NewRewrittenTerm),
+                                        rewrite_all2_(Rules,RewrittenTerm,NewRewrittenTerm,TraceAcc,TraceX,R),
+                                        Trace=[NewRewrittenTerm|TraceX].
+
+rewrite_all2(Rules,Term,Trace,R) :- rewrite_all2_(Rules,Term,empty,[],Trace,R).
