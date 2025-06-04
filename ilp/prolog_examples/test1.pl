@@ -231,3 +231,30 @@ remove2(K,Map,R) :- remove2_(K,Map,[],R).
 merge2(Map1,[],Map1).
 merge2([],Map2,Map2).
 merge2([-(K,V)|T],Map2,R) :- put2(-(K,V),Map2,RX),merge2(T,RX,R).
+
+
+rewrite_direct_match([],Term,Term).
+rewrite_direct_match([LHS=>RHS|_],LHS,RHS).
+rewrite_direct_match([_|T],Term,R) :- rewrite_direct_match(T,Term,R).
+
+rewrite_args_list(_,[],[]).
+rewrite_args_list([],Args,Args).
+rewrite_args_list(Rules,[Term|T],R) :- rewrite_once(Rules,Term,RewrittenTerm),
+                                                rewrite_args_list(Rules,T,RemainingRewrittenTerms),
+                                                R=[RewrittenTerm|RemainingRewrittenTerms].
+
+
+rewrite_once(Rules,Term,RewrittenTerm) :- rewrite_direct_match(Rules,Term,RewrittenTerm),
+                                Term \= RewrittenTerm.
+rewrite_once(_,Term,Term) :- Term =.. [_].
+rewrite_once(Rules,ComplexTerm,RewrittenComplexTerm) :- ComplexTerm =.. [F|Args],
+                                        rewrite_args_list(Rules,Args,RewrittenArgs),
+                                        RewrittenComplexTerm=.. [F|RewrittenArgs].
+
+rewrite_all2_(Rules,Term,empty,R) :- rewrite_once(Rules,Term,RewrittenTerm),
+                                    rewrite_all2_(Rules,Term,RewrittenTerm,R).
+rewrite_all2_(_,Term,RewrittenTerm,Term) :- RewrittenTerm==Term.
+rewrite_all2_(Rules,_,RewrittenTerm,R) :-rewrite_once(Rules,RewrittenTerm,NewRewrittenTerm),
+                                        rewrite_all2_(Rules,RewrittenTerm,NewRewrittenTerm,R).
+
+rewrite_all2(Rules,Term,R) :- rewrite_all2_(Rules,Term,empty,R).
