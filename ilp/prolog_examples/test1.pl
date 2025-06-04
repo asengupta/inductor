@@ -88,7 +88,7 @@ flatten([[]|T],R) :- flatten(T,R).
 flatten([H|T],R) :- flatten(T,RESULTX),R=[H|RESULTX].
 
 contains(_,[]) :- false.
-contains(Search,[H|T]) :- H == Search;contains(Search,T).
+contains(Search,[H|T]) :- (writeln("Comparing " + H + Search),H == Search);contains(Search,T).
 
 uniq([],_,[]).
 uniq([H|T],Seen,RESULTX) :- contains(H,Seen),uniq(T,Seen,RESULTX).
@@ -162,11 +162,23 @@ simplify(implies(true,X),RX) :- simplify(X,RX).
 simplify(implies(X,Y),R) :- simplify(X,RX), simplify(Y,RY), ImpliesExpr=or2(not2(RX),RY), (atLeastOnePrimitive([RX,RY])->simplify(ImpliesExpr,R);R=ImpliesExpr).
 simplify(X,X).
 
-entails(Formulas,Goal,R) :- simplify(Goal,SimpleGoal),entails_(Formulas,true,SimpleGoal,R).
 
-entails_(_,false,_,true).
-entails_([],TruthValue,SimpleGoal,R) :- writeln("Got here: " + TruthValue + SimpleGoal), simplify(implies(TruthValue, SimpleGoal), R).
-entails_([H|T],TruthValue,SimpleGoal,R) :- writeln('Is this recursing?'), simplify(H,RH),simplify(and2(TruthValue,RH),RS),entails_(T,RS,SimpleGoal,R).
+continueBasedOnFactExistence(CurrentTail,OriginalClauses,DiscoveredClauses,Goal,FactExists,implies(X,Y),AtLeastOneSimplification) :-
+                                           (FactExists -> (
+                                                              AtLeastOneSimplification=true,
+                                                              simplify(implies(FactExists,Deduction),true),
+                                                              writeln("Deduction=" + Deduction),
+                                                              (Deduction==true->UpdatedClauses=[Y|DiscoveredClauses];UpdatedClauses=DiscoveredClauses),
+                                                              writeln("UpdatedClauses=" + UpdatedClauses),
+                                                              entails_(CurrentTail,OriginalClauses,UpdatedClauses,Goal,AtLeastOneSimplification)
+                                                          );
+                                                          UpdatedClauses=[implies(X,Y)|DiscoveredClauses]
+                                           ),
+                                           entails_(CurrentTail,OriginalClauses,UpdatedClauses,Goal,AtLeastOneSimplification).
+
+iterate(true,_,_) :- true.
+iterate(false,_,false) :- false.
+iterate(false,DiscoveredClauses,Goal,true) :- writeln("Going at it again..."), entails(DiscoveredClauses,Goal).
 
 node(node(node(empty,empty,5),node(empty,empty,6),1),node(node(empty,empty,7),node(empty,empty,8),2),3).
 
@@ -197,3 +209,25 @@ isBTree(node(L,R,V),[LowerBound,UpperBound],Result) :-
                                                       );Result=false).
 
 
+member2(_,[]) :- false.
+member2(-(K,V), [(-(KX,VX))|_]) :- K==KX,V==VX.
+member2(-(K,V), [_|T]) :- member2(-(K,V),T).
+
+get2(_,[],empty).
+get2(K, [(-(KX,VX))|_],VX) :- K==KX.
+get2(K, [_|T],R) :- get2(K,T,R).
+
+put2_(-(K,V),[],Replaced,R) :- Replaced->R=[];R=[-(K,V)].
+put2_(-(K,V),[-(KX,_)|T],_,[-(K,V)|RX]) :- K==KX,put2_(-(K,V),T,true,RX).
+put2_(-(K,V),[H|T],Replaced,[H|RX]) :- put2_(-(K,V),T,Replaced,RX).
+
+remove2_(_,[],Acc,Acc).
+remove2_(K,[-(KX,_)|T],Acc,R) :- K==KX,remove2_(K,T,Acc,R).
+remove2_(K,[H|T],Acc,R) :- remove2_(K,T,[H|Acc],R).
+
+put2(-(K,V),Map,R) :- put2_(-(K,V),Map,false,R).
+remove2(K,Map,R) :- remove2_(K,Map,[],R).
+
+merge2(Map1,[],Map1).
+merge2([],Map2,Map2).
+merge2([-(K,V)|T],Map2,R) :- put2(-(K,V),Map2,RX),merge2(T,RX,R).
