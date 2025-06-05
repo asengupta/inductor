@@ -233,8 +233,9 @@ merge2([],Map2,Map2).
 merge2([-(K,V)|T],Map2,R) :- put2(-(K,V),Map2,RX),merge2(T,RX,R).
 
 
+safe_eval(Condition) :- catch(Condition,_,fail).
 rewrite_direct_match([],Term,Term).
-rewrite_direct_match([Rule|_],Term,RHS) :- copy_term(Rule,:(LHS=>RHS,Guard)),LHS=Term,Guard.
+rewrite_direct_match([Rule|_],Term,RHS) :- copy_term(Rule,:(LHS=>RHS,Guard)),LHS=Term,safe_eval(Guard).
 rewrite_direct_match([Rule|_],Term,RHS) :- copy_term(Rule,LHS=>RHS),LHS=Term.
 rewrite_direct_match([_|T],Term,R) :- rewrite_direct_match(T,Term,R).
 
