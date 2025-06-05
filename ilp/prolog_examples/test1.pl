@@ -234,7 +234,8 @@ merge2([-(K,V)|T],Map2,R) :- put2(-(K,V),Map2,RX),merge2(T,RX,R).
 
 
 rewrite_direct_match([],Term,Term).
-rewrite_direct_match([LHS=>RHS|_],LHS,RHS).
+rewrite_direct_match([Rule|_],Term,RHS) :- copy_term(Rule,:(LHS=>RHS,Guard)),LHS=Term,Guard.
+rewrite_direct_match([Rule|_],Term,RHS) :- copy_term(Rule,LHS=>RHS),LHS=Term.
 rewrite_direct_match([_|T],Term,R) :- rewrite_direct_match(T,Term,R).
 
 rewrite_args_list(_,[],[]).
@@ -261,3 +262,4 @@ rewrite_all2_(Rules,_,RewrittenTerm,TraceAcc,Trace,R) :-rewrite_once(Rules,Rewri
                                         Trace=[NewRewrittenTerm|TraceX].
 
 rewrite_all2(Rules,Term,Trace,R) :- rewrite_all2_(Rules,Term,empty,[],Trace,R).
+
