@@ -83,6 +83,6 @@ interpret(jnz(reg(JumpRegister)),NextIP,Registers,Flag,UpdatedRegisters,UpdatedF
 interpret(jz(JumpIP),OldNextIP,Registers,Flag,Registers,Flag,UpdatedIP) :- interpret_condition(OldNextIP,JumpIP,Flag,isZero,UpdatedIP).
 interpret(jnz(JumpIP),OldNextIP,Registers,Flag,Registers,Flag,UpdatedIP) :- interpret_condition(OldNextIP,JumpIP,Flag,isNotZero,UpdatedIP).
 
-trace(Program,FinalTrace,FinalRegisters,FinalFlag) :- instruction_pointer_map(Program,[],1,IPMap),
+trace(Program,FinalTrace,FinalRegisters,FinalFlag) :- instruction_pointer_map(Program,[],0,IPMap),
                                                       writeln("IP MAP IS " + IPMap),
-                                                      exec_(1,IPMap,[],0,[],FinalTrace,FinalRegisters,FinalFlag).
+                                                      exec_(0,IPMap,[],0,[],FinalTrace,FinalRegisters,FinalFlag).
