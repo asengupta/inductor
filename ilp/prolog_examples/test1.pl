@@ -265,26 +265,26 @@ rewrite_all2_(Rules,_,RewrittenTerm,TraceAcc,Trace,R) :-rewrite_once(Rules,Rewri
 
 rewrite_all2(Rules,Term,Trace,R) :- rewrite_all2_(Rules,Term,empty,[],Trace,R).
 
-before(instr(_,T1),instr(_,T2)) :- T1 < T2.
-after(instr(_,T1),instr(_,T2)) :- T1 > T2.
-affects(instr(Register,_),Register).
-
-affectors([],Acc,_,Acc) :- writeln("Base case").
-affectors([instr(Register,Time)|T],Acc,Register,Mutators) :- affectors(T,[instr(Register,Time)|Acc],Register,Mutators).
-affectors([_|T],Acc,Register,Mutators) :- affectors(T,Acc,Register,Mutators).
-
-mvc(to(ToOffset,Length,ToRegister),from(offset(FromRegister,FromOffset))) :- writeln("Most general form").
-mvc(to(ToOffset,Length,ToRegister),from(FromRegister)) :- mvc(to(ToOffset,Length,ToRegister),from(offset(FromRegister,0))).
-la(ToRegister,value(Length,FromRegister)).
-
-load_advance(mvc(to(ToOffset,Length,ToRegister),from(offset(FromRegister,FromOffset))),la(ToRegister,from(Length,ToRegister))).
-load_advance(mvc(to(ToOffset,Length,ToRegister),from(FromRegister)),la(ToRegister,from(Length,ToRegister))).
+%before(instr(_,T1),instr(_,T2)) :- T1 < T2.
+%after(instr(_,T1),instr(_,T2)) :- T1 > T2.
+%affects(instr(Register,_),Register).
+%
+%affectors([],Acc,_,Acc) :- writeln("Base case").
+%affectors([instr(Register,Time)|T],Acc,Register,Mutators) :- affectors(T,[instr(Register,Time)|Acc],Register,Mutators).
+%affectors([_|T],Acc,Register,Mutators) :- affectors(T,Acc,Register,Mutators).
+%
+%mvc(to(ToOffset,Length,ToRegister),from(offset(FromRegister,FromOffset))) :- writeln("Most general form").
+%mvc(to(ToOffset,Length,ToRegister),from(FromRegister)) :- mvc(to(ToOffset,Length,ToRegister),from(offset(FromRegister,0))).
+%la(ToRegister,value(Length,FromRegister)).
+%
+%load_advance(mvc(to(ToOffset,Length,ToRegister),from(offset(FromRegister,FromOffset))),la(ToRegister,from(Length,ToRegister))).
+%load_advance(mvc(to(ToOffset,Length,ToRegister),from(FromRegister)),la(ToRegister,from(Length,ToRegister))).
 
 execute([],ReversedHistory,ReversedHistory).
 execute([mvc(reg(ToRegister),Value)|T],ReversedHistory,CompleteReversedHistory) :- execute(T,[set(reg(ToRegister),Value)|ReversedHistory],CompleteReversedHistory).
 execute([_|T],ReversedHistory,CompleteReversedHistory) :- execute(T,ReversedHistory,CompleteReversedHistory).
 
 latestValue(_,[],empty).
-latestValue(reg(Variable),[set(reg(Variable),reg(From))|T],TransitiveValue) :- latestValue(reg(From),T,TransitiveValue).
+latestValue(reg(Variable),[set(reg(Variable),reg(From))|RemainingReversedHistory],TransitiveValue) :- latestValue(reg(From),RemainingReversedHistory,TransitiveValue).
 latestValue(reg(Variable),[set(reg(Variable),Value)|_],Value).
-latestValue(reg(Variable),[_|T],FinalValueX) :- latestValue(reg(Variable),T,FinalValueX).
+latestValue(reg(Variable),[_|RemainingReversedHistory],FinalValueX) :- latestValue(reg(Variable),RemainingReversedHistory,FinalValueX).
