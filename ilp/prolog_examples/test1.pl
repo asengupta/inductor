@@ -301,3 +301,11 @@ exec([mvc(reg(ToRegister),Value)|T],Registers,Flag,TraceAcc,FinalTrace,FinalRegi
 exec([Instr|T],Registers,Flag,TraceAcc,FinalTrace,FinalRegisters) :- 
                                                         exec(T,Registers,Flag,TraceAcc,RemainingTrace,FinalRegisters),
                                                         FinalTrace=[Instr|RemainingTrace].
+
+simpleGet(_,Result) :- Result=xxx.
+
+badLoop([]) :- writeln("Done").
+badLoop([H|_]) :- get2(H,[1-a,2-b,3-c],Result),
+                  Result==empty,
+                  writeln("2) H is empty, apparently not " + H + Result).
+badLoop([H|T]) :- writeln("Printing " + H),badLoop(T).
