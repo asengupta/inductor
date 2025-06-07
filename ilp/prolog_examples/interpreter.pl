@@ -45,6 +45,7 @@ exec_helper(IP,IPMap,Instr,Registers,Flag,TraceAcc,FinalTrace,FinalRegisters,Fin
                                                         NextIP is IP+1,
                                                         interpret(Instr,NextIP,Registers,Flag,UpdatedRegisters,UpdatedFlag,UpdatedIP),
 %                                                        UpdatedIP is IP+1,
+                                                        write("Next IP is " + UpdatedIP),
                                                         exec_(UpdatedIP,IPMap,UpdatedRegisters,UpdatedFlag,TraceAcc,RemainingTrace,FinalRegisters,FinalFlag),
                                                         FinalTrace=[Instr|RemainingTrace],!.
 
@@ -56,12 +57,20 @@ interpret(cmp(reg(CmpRegister),CmpValue),NextIP,Registers,_,Registers,UpdatedFla
                                                         get2(CmpRegister,Registers,RegisterValue),
                                                         equate(RegisterValue,CmpValue,UpdatedFlag).
 
-interpret(j(reg(JumpRegister)),_,Registers,Flag,Registers,Flag,UpdatedIP) :- 
+interpret(j(reg(JumpRegister)),NextIP,Registers,Flag,UpdatedRegisters,UpdatedFlag,UpdatedIP) :- 
                                                         writeln("In jmp indirect" + JumpRegister + Registers),
                                                         get2(JumpRegister,Registers,RegisterValue),
-                                                        UpdatedIP=RegisterValue.
+                                                        interpret(j(RegisterValue),NextIP,Registers,Flag,UpdatedRegisters,UpdatedFlag,UpdatedIP).
 
 interpret(j(NewIP),_,Registers,Flag,Registers,Flag,NewIP) :- writeln("In jmp direct" + NewIP + Registers).
+
+interpret(jz(reg(JumpRegister)),NextIP,Registers,Flag,UpdatedRegisters,UpdatedFlag,NewIP) :- 
+                                                        writeln("In JZ indirect match" + JumpRegister + Registers),
+                                                        get2(JumpRegister,Registers,RegisterValue),
+                                                        interpret(jz(RegisterValue),NextIP,Registers,Flag,UpdatedRegisters,UpdatedFlag,NewIP).
+
+interpret(jz(NewIP),_,Registers,0,Registers,0,NewIP) :- writeln("In jmpIfZero direct match" + NewIP + Registers).
+interpret(jz(_),NextIP,Registers,Flag,Registers,Flag,NextIP) :- Flag\=0.
 
 trace(Program,FinalTrace,FinalRegisters,FinalFlag) :- instruction_pointer_map(Program,[],1,IPMap),
                                                       writeln("IP MAP IS " + IPMap),
