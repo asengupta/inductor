@@ -44,7 +44,6 @@ exec_helper(IP,IPMap,Instr,Registers,Flag,TraceAcc,FinalTrace,FinalRegisters,Fin
                                                         writeln("Interpreting " + Instr),
                                                         NextIP is IP+1,
                                                         interpret(Instr,NextIP,Registers,Flag,UpdatedRegisters,UpdatedFlag,UpdatedIP),
-%                                                        UpdatedIP is IP+1,
                                                         write("Next IP is " + UpdatedIP),
                                                         exec_(UpdatedIP,IPMap,UpdatedRegisters,UpdatedFlag,TraceAcc,RemainingTrace,FinalRegisters,FinalFlag),
                                                         FinalTrace=[Instr|RemainingTrace],!.
@@ -54,6 +53,9 @@ interpret_condition(OldIP,_,Flag,Condition,OldIP) :- \+ call(Condition,Flag).
 
 isZero(0).
 isNotZero(X) :- \+ isZero(X).
+plusOne(X,PlusOne) :- PlusOne is X+1.
+minusOne(X,MinusOne) :- MinusOne is X-1.
+calculate(Expr,Value,Result) :- call(Expr,Value,Result).
 
 interpret(mvc(reg(ToRegister),Value),NextIP,Registers,Flag,UpdatedRegisters,Flag,NextIP) :- 
                                                         writeln("In mvc" + ToRegister + Registers),
@@ -82,6 +84,14 @@ interpret(jnz(reg(JumpRegister)),NextIP,Registers,Flag,UpdatedRegisters,UpdatedF
 
 interpret(jz(JumpIP),OldNextIP,Registers,Flag,Registers,Flag,UpdatedIP) :- interpret_condition(OldNextIP,JumpIP,Flag,isZero,UpdatedIP).
 interpret(jnz(JumpIP),OldNextIP,Registers,Flag,Registers,Flag,UpdatedIP) :- interpret_condition(OldNextIP,JumpIP,Flag,isNotZero,UpdatedIP).
+
+interpret(inc(reg(Register)),NextIP,Registers,Flag,UpdatedRegisters,Flag,NextIP) :- interpret_update_reg(reg(Register),plusOne,Registers,UpdatedRegisters).
+interpret(dec(reg(Register)),NextIP,Registers,Flag,UpdatedRegisters,Flag,NextIP) :- interpret_update_reg(reg(Register),minusOne,Registers,UpdatedRegisters).
+
+interpret_update_reg(reg(Register),Calculation,Registers,UpdatedRegisters) :- 
+                                                            get2(Register,Registers,RegisterValue),
+                                                            calculate(Calculation,RegisterValue,Result),
+                                                            update_reg(-(reg(Register),Result),Registers,UpdatedRegisters).
 
 trace(Program,FinalTrace,FinalRegisters,FinalFlag) :- instruction_pointer_map(Program,[],0,IPMap),
                                                       writeln("IP MAP IS " + IPMap),
