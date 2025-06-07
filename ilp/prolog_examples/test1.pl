@@ -288,3 +288,16 @@ latestValue(_,[],empty).
 latestValue(reg(Variable),[set(reg(Variable),reg(From))|RemainingReversedHistory],TransitiveValue) :- latestValue(reg(From),RemainingReversedHistory,TransitiveValue).
 latestValue(reg(Variable),[set(reg(Variable),Value)|_],Value).
 latestValue(reg(Variable),[_|RemainingReversedHistory],FinalValueX) :- latestValue(reg(Variable),RemainingReversedHistory,FinalValueX).
+
+update_reg(-(reg(ToRegister),reg(FromRegister)),Registers,UpdatedRegisters) :- get2(FromRegister,Registers,Value),
+                                                                               update_reg(-(reg(ToRegister),Value),Registers,UpdatedRegisters).
+update_reg(-(reg(ToRegister),Value),Registers,UpdatedRegisters) :- put2(-(ToRegister,Value),Registers,UpdatedRegisters).
+
+exec([],Registers,_,TraceAcc,TraceAcc,Registers).
+exec([mvc(reg(ToRegister),Value)|T],Registers,Flag,TraceAcc,FinalTrace,FinalRegisters) :- 
+                                                        update_reg(-(reg(ToRegister),Value),Registers,UpdatedRegisters),
+                                                        exec(T,UpdatedRegisters,Flag,TraceAcc,RemainingTrace,FinalRegisters),
+                                                        FinalTrace=[mvc(reg(ToRegister),Value)|RemainingTrace].
+exec([Instr|T],Registers,Flag,TraceAcc,FinalTrace,FinalRegisters) :- 
+                                                        exec(T,Registers,Flag,TraceAcc,RemainingTrace,FinalRegisters),
+                                                        FinalTrace=[Instr|RemainingTrace].
