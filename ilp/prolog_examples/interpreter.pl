@@ -29,47 +29,41 @@ equate(LHS,LHS,0).
 equate(LHS,RHS,1) :- LHS < RHS.
 equate(LHS,RHS,-1) :- LHS > RHS.
 
-exec([],Registers,Flag,TraceAcc,TraceAcc,Registers,Flag).
-exec([mvc(reg(ToRegister),Value)|T],Registers,Flag,TraceAcc,FinalTrace,FinalRegisters,FinalFlag) :- 
-                                                        update_reg(-(reg(ToRegister),Value),Registers,UpdatedRegisters),
-                                                        exec(T,UpdatedRegisters,Flag,TraceAcc,RemainingTrace,FinalRegisters,FinalFlag),
-                                                        FinalTrace=[mvc(reg(ToRegister),Value)|RemainingTrace].
-exec([cmp(reg(CmpRegister),CmpValue)|T],Registers,_,TraceAcc,FinalTrace,FinalRegisters,FinalFlag) :- 
-                                                        get2(CmpRegister,Registers,RegisterValue),
-                                                        equate(RegisterValue,CmpValue,UpdatedFlag),
-                                                        exec(T,Registers,UpdatedFlag,TraceAcc,RemainingTrace,FinalRegisters,FinalFlag),
-                                                        FinalTrace=[cmp(reg(CmpRegister),CmpValue)|RemainingTrace].
-
-exec([Instr|T],Registers,Flag,TraceAcc,FinalTrace,FinalRegisters,FinalFlag) :- 
-                                                        exec(T,Registers,Flag,TraceAcc,RemainingTrace,FinalRegisters,FinalFlag),
-                                                        FinalTrace=[Instr|RemainingTrace].
-
 instruction_pointer_map([],IPMap,_,IPMap).
 instruction_pointer_map([Instr|T],IPMap,IPCounter,FinalIPMap) :- put2(-(IPCounter,Instr),IPMap,UpdatedIPMap),
                                                                  UpdatedIPCounter is IPCounter+1,
                                                                  instruction_pointer_map(T,UpdatedIPMap,UpdatedIPCounter,FinalIPMap).
 
 
-exec2(IP,IPMap,Registers,Flag,TraceAcc,FinalTrace,FinalRegisters,FinalFlag) :- 
+exec_(IP,IPMap,Registers,Flag,TraceAcc,FinalTrace,FinalRegisters,FinalFlag) :- 
                                                     get2(IP,IPMap,Instr),
                                                     exec_helper(IP,IPMap,Instr,Registers,Flag,TraceAcc,FinalTrace,FinalRegisters,FinalFlag).
 
 exec_helper(_,_,empty,Registers,Flag,TraceAcc,TraceAcc,Registers,Flag).
 exec_helper(IP,IPMap,Instr,Registers,Flag,TraceAcc,FinalTrace,FinalRegisters,FinalFlag) :-
                                                         writeln("Interpreting " + Instr),
-                                                        interpret(Instr,Registers,Flag,UpdatedRegisters,UpdatedFlag),
-                                                        UpdatedIP is IP+1,
-                                                        exec2(UpdatedIP,IPMap,UpdatedRegisters,UpdatedFlag,TraceAcc,RemainingTrace,FinalRegisters,FinalFlag),
+                                                        NextIP is IP+1,
+                                                        interpret(Instr,NextIP,Registers,Flag,UpdatedRegisters,UpdatedFlag,UpdatedIP),
+%                                                        UpdatedIP is IP+1,
+                                                        exec_(UpdatedIP,IPMap,UpdatedRegisters,UpdatedFlag,TraceAcc,RemainingTrace,FinalRegisters,FinalFlag),
                                                         FinalTrace=[Instr|RemainingTrace],!.
 
-interpret(mvc(reg(ToRegister),Value),Registers,Flag,UpdatedRegisters,Flag) :- 
+interpret(mvc(reg(ToRegister),Value),NextIP,Registers,Flag,UpdatedRegisters,Flag,NextIP) :- 
                                                         writeln("In mvc" + ToRegister + Registers),
                                                         update_reg(-(reg(ToRegister),Value),Registers,UpdatedRegisters).
-interpret(cmp(reg(CmpRegister),CmpValue),Registers,_,Registers,UpdatedFlag) :- 
+interpret(cmp(reg(CmpRegister),CmpValue),NextIP,Registers,_,Registers,UpdatedFlag,NextIP) :- 
                                                         writeln("In cmp" + CmpRegister + Registers),
                                                         get2(CmpRegister,Registers,RegisterValue),
                                                         equate(RegisterValue,CmpValue,UpdatedFlag).
 
+interpret(j(reg(JumpRegister)),_,Registers,Flag,Registers,Flag,UpdatedIP) :- 
+                                                        writeln("In jmp indirect" + JumpRegister + Registers),
+                                                        get2(JumpRegister,Registers,RegisterValue),
+                                                        UpdatedIP=RegisterValue.
+
+interpret(j(NewIP),_,Registers,Flag,Registers,Flag,NewIP) :- writeln("In jmp direct" + NewIP + Registers).
+
 trace(Program,FinalTrace,FinalRegisters,FinalFlag) :- instruction_pointer_map(Program,[],1,IPMap),
                                                       writeln("IP MAP IS " + IPMap),
-                                                      exec2(1,IPMap,[],0,[],FinalTrace,FinalRegisters,FinalFlag).
+                                                      exec_(1,IPMap,[],0,[],FinalTrace,FinalRegisters,FinalFlag).
+
