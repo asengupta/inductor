@@ -88,6 +88,8 @@ interpret(jnz(JumpIP),OldNextIP,Registers,Flag,Registers,Flag,UpdatedIP) :- inte
 interpret(inc(reg(Register)),NextIP,Registers,Flag,UpdatedRegisters,Flag,NextIP) :- interpret_update_reg(reg(Register),plusOne,Registers,UpdatedRegisters).
 interpret(dec(reg(Register)),NextIP,Registers,Flag,UpdatedRegisters,Flag,NextIP) :- interpret_update_reg(reg(Register),minusOne,Registers,UpdatedRegisters).
 
+interpret(term(String),NextIP,Registers,Flag,Registers,Flag,NextIP) :- writeln(String).
+
 interpret_update_reg(reg(Register),Calculation,Registers,UpdatedRegisters) :- 
                                                             get2(Register,Registers,RegisterValue),
                                                             calculate(Calculation,RegisterValue,Result),
