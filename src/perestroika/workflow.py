@@ -35,8 +35,8 @@ async def call_mcp_server(state: WorkflowState) -> WorkflowState:
     # Get tools from the MCP server
     tools = await cmd_line_mcp_client.get_tools()
 
-    # base_llm = anthropic_model()
-    base_llm = ollama_model()
+    base_llm = anthropic_model()
+    # base_llm = ollama_model()
     # Create a ReAct agent with the tools
     agent = create_react_agent(
         model=base_llm,
@@ -47,7 +47,7 @@ async def call_mcp_server(state: WorkflowState) -> WorkflowState:
     prompt = """
     You are a helpful assistant with access to tools.
     Use the tools available to you to help the user accomplish their tasks.
-    List the contents of the current directory. Do not qualify the results with any extra information.
+    Summarise the purpose of the project in `/Users/asgupta/code/inductor` without looking at the README.md.
     """
 
     # Invoke the agent with the prompt
@@ -90,7 +90,7 @@ async def run_workflow():
     graph = await create_workflow()
 
     # Run the workflow
-    result = await graph.ainvoke({"messages": [HumanMessage(content="Starting workflow")]})
+    result = await graph.ainvoke({"messages": [HumanMessage(content="Starting workflow")]}, {"recursion_limit": 200})
 
     print("Workflow completed!")
     print(f"Results: {result['results']}")
