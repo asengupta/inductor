@@ -8,7 +8,7 @@ from langgraph.graph import StateGraph
 from langgraph.prebuilt import create_react_agent
 from pydantic import BaseModel, Field
 
-from src.taskgraph.models import anthropic_model
+from src.taskgraph.models import anthropic_model, ollama_model
 
 
 # Define a simple state model for our workflow
@@ -35,7 +35,8 @@ async def call_mcp_server(state: WorkflowState) -> WorkflowState:
     # Get tools from the MCP server
     tools = await cmd_line_mcp_client.get_tools()
 
-    base_llm = anthropic_model()
+    # base_llm = anthropic_model()
+    base_llm = ollama_model()
     # Create a ReAct agent with the tools
     agent = create_react_agent(
         model=base_llm,
@@ -50,6 +51,11 @@ async def call_mcp_server(state: WorkflowState) -> WorkflowState:
     """
 
     # Invoke the agent with the prompt
+    # response = await agent.ainvoke({
+    #     "messages": [
+    #         {"role": "user", "content": prompt}
+    #     ]
+    # })
     response = await agent.ainvoke({
         "messages": [
             {"role": "user", "content": prompt}
