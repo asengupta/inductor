@@ -12,7 +12,7 @@ ANTHROPIC_MODEL_ID = "ANTHROPIC_MODEL_ID"
 def anthropic_model():
     anthropic_model_id = os.environ.get(ANTHROPIC_MODEL_ID)
     llm = ChatAnthropic(
-        model=anthropic_model_id,
+        model="claude-sonnet-4-5-20250929",
         temperature=0,
         max_tokens=1024
     )
