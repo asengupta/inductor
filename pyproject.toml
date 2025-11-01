@@ -35,7 +35,18 @@ dependencies = [
     "spacy",
     "markdown-it-py[plugins]",
     "langchain-ollama",
-    "ollama"
+    "ollama",
+#    "transformers==4.51.3",
+    "transformers",
+    "hf-transfer",
+    "transformer-utils",
+    "sentence-transformers",
+    "torch",
+    "torchvision",
+    "pillow",
+    "numpy",
+    "einops",
+    "peft"
 ]
 
 [tool.poetry]
